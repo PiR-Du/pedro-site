@@ -186,14 +186,14 @@
     .btn-example:hover    { background: var(--accent-dim); }
   </style>
 </head>
+
 <body>
   <div class="wrapper">
     <header>
-      <span class="eyebrow">Python · WebAssembly</span>
       <h1>Sudoku Solver</h1>
     </header>
 
-    <div class="status-bar loading" id="status">⏳ Chargement de Python…</div>
+    <div class="status-bar loading" id="status">Chargement de Python…</div>
 
     <div class="grid-wrapper">
       <div class="grid" id="grid"></div>
@@ -204,7 +204,6 @@
     <div class="actions">
       <button class="btn btn-solve" id="btn-solve" onclick="solveGrid()" disabled>Résoudre</button>
       <button class="btn btn-reset" onclick="resetGrid()">Effacer tout</button>
-      <button class="btn btn-example" onclick="loadExample()">Exemple</button>
     </div>
   </div>
 
@@ -213,18 +212,6 @@
     let selected = null;
     let given    = new Set();
     let pyodide  = null;
-
-    const EXAMPLE = [
-      5,3,0, 0,7,0, 0,0,0,
-      6,0,0, 1,9,5, 0,0,0,
-      0,9,8, 0,0,0, 0,6,0,
-      8,0,0, 0,6,0, 0,0,3,
-      4,0,0, 8,0,3, 0,0,1,
-      7,0,0, 0,2,0, 0,0,6,
-      0,6,0, 0,0,0, 2,8,0,
-      0,0,0, 4,1,9, 0,0,5,
-      0,0,0, 0,8,0, 0,7,9,
-    ];
 
     // ── Construction grille
     const gridEl = document.getElementById('grid');
@@ -249,7 +236,7 @@
     }
     const eraseBtn = document.createElement('button');
     eraseBtn.className   = 'num-btn erase';
-    eraseBtn.textContent = '⌫ Effacer';
+    eraseBtn.textContent = 'Effacer';
     eraseBtn.addEventListener('click', () => enterNumber(0));
     numpad.appendChild(eraseBtn);
 
@@ -310,7 +297,7 @@
         cell.className = 'cell';
         cell.dataset.row = row; cell.dataset.col = col;
       });
-      setStatus('ready', '✔ Prêt — Saisissez votre grille');
+      setStatus('ready', 'Saisissez votre grille');
     }
 
     function loadExample() {
@@ -329,19 +316,19 @@
       if (!pyodide) return;
       const flat = Array.from(gridEl.children).map((c, i) => getCellValue(i));
 
-      setStatus('loading', '⏳ Résolution en cours…');
+      setStatus('loading', 'Résolution en cours…');
       document.getElementById('btn-solve').disabled = true;
 
       try {
         pyodide.globals.set('input_grid', pyodide.toPy(flat));
         const result = pyodide.runPython(`
-from solver import solve_sudoku
-result = solve_sudoku(list(input_grid))
-result
-        `);
+            from solver import solve_sudoku
+            result = solve_sudoku(list(input_grid))
+            result
+            `);
 
         if (result === null || result === undefined) {
-          setStatus('error', '✗ Aucune solution trouvée pour cette grille');
+          setStatus('error', 'Aucune solution trouvée pour cette grille');
         } else {
           const solved = result.toJs();
           solved.forEach((val, i) => {
@@ -352,10 +339,10 @@ result
               }, i * 8);
             }
           });
-          setTimeout(() => setStatus('solved', '✔ Grille résolue !'), 81 * 8 + 100);
+          setTimeout(() => setStatus('solved', 'Grille résolue !'), 81 * 8 + 100);
         }
       } catch(e) {
-        setStatus('error', '✗ Erreur : ' + e.message);
+        setStatus('error', 'Erreur : ' + e.message);
       }
 
       document.getElementById('btn-solve').disabled = false;

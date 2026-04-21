@@ -1,5 +1,4 @@
 def is_valid(board, row, col, num):
-    """Vérifie si num peut être placé en (row, col)."""
     # Vérif ligne
     if num in board[row]:
         return False
@@ -19,7 +18,6 @@ def is_valid(board, row, col, num):
 
 
 def solve(board):
-    """Résout le sudoku en place par backtracking. Renvoie True si résolu."""
     for row in range(9):
         for col in range(9):
             if board[row][col] == 0:
@@ -34,11 +32,6 @@ def solve(board):
 
 
 def solve_sudoku(flat_grid):
-    """
-    Point d'entrée appelé depuis JavaScript.
-    Reçoit une liste de 81 entiers (0 = case vide).
-    Renvoie la liste résolue, ou None si pas de solution.
-    """
     # Reconstruction de la grille 9x9
     board = [flat_grid[i*9:(i+1)*9] for i in range(9)]
 
