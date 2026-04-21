@@ -1,125 +1,162 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ========================= */
+/* ===== SUDOKU PAGE ====== */
+/* ========================= */
+
+/* Variables thème (sécurisé si déjà défini ailleurs) */
+:root {
+    --bg: #080c10;
+    --surface: #0f1419;
+    --surface2: #161c24;
+    --border: #1e2832;
+    --border2: #2a3542;
+    --accent: #00d4ff;
+    --accent-dim: #00d4ff22;
+    --success: #00e5a0;
+    --error: #ff4d6d;
+    --text: #d0dae8;
+    --muted: #4a5568;
+    --given: #e2eaf5;
+    --solved: #00d4ff;
 }
 
-/* GLOBAL */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #0f1115;
-    color: #e5e7eb;
-    line-height: 1.6;
-}
-
-/* HEADER */
-header {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-.subtitle {
-    color: #9ca3af;
-    margin-top: 5px;
-}
-
-/* HERO */
-.hero {
-    text-align: center;
-    padding: 40px 20px;
-    max-width: 800px;
+/* Wrapper Sudoku */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 520px;
     margin: auto;
 }
 
-.hero h2 {
-    font-weight: normal;
-}
-
-/* PROJECTS */
-.projects {
-    padding: 50px 20px;
-}
-
-.projects h2 {
+/* Status */
+.status-bar {
+    width: 100%;
     text-align: center;
-    margin-bottom: 30px;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.8rem;
 }
 
-.project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
+.status-bar.ready   { color: var(--success); }
+.status-bar.loading { color: var(--accent); }
+.status-bar.solved  { color: var(--success); }
+.status-bar.error   { color: var(--error); }
 
-/* CARD */
-.card {
-    background: #1a1d24;
-    padding: 20px;
+/* Grille */
+.grid-wrapper {
+    background: var(--surface);
+    padding: 1rem;
     border-radius: 12px;
-    transition: transform 0.2s, border 0.2s;
-    border: 1px solid transparent;
+    border: 1px solid var(--border2);
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    border: 1px solid #6366f1;
-}
-
-.card h3 {
-    margin-bottom: 10px;
-}
-
-.card p {
-    margin-bottom: 15px;
-    color: #9ca3af;
-}
-
-.card a {
-    text-decoration: none;
-    color: #6366f1;
-}
-
-/* ABOUT */
-.about {
-    padding: 50px 20px;
-    text-align: center;
-    max-width: 700px;
-    margin: auto;
-}
-
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 20px;
-    color: #6b7280;
-    font-size: 0.9em;
-}
-
-
-#grid {
+.grid {
     display: grid;
-    grid-template-columns: repeat(9, 40px);
-    gap: 5px;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    width: min(400px, 90vw);
+    aspect-ratio: 1;
+}
+
+.cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
     justify-content: center;
-    margin: 20px;
-}
-
-input {
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    font-size: 18px;
-    background: #1a1d24;
-    color: white;
-    border: 1px solid #333;
-}
-
-.buttons button {
-    margin: 10px;
-    padding: 10px 15px;
-    background: #6366f1;
-    border: none;
-    color: white;
+    font-family: monospace;
+    font-weight: bold;
     cursor: pointer;
+}
+
+.cell:hover {
+    background: #1e2832;
+}
+
+.cell.selected {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+}
+
+.cell.same-num {
+    background: #00d4ff0f;
+}
+
+.cell.given {
+    color: var(--given);
+}
+
+.cell.solved-cell {
+    color: var(--solved);
+}
+
+/* Séparateurs blocs */
+.cell[data-col="3"],
+.cell[data-col="6"] {
+    border-left: 2px solid var(--border2);
+}
+
+.cell[data-row="3"],
+.cell[data-row="6"] {
+    border-top: 2px solid var(--border2);
+}
+
+/* Numpad */
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+.num-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.6rem;
+    cursor: pointer;
+}
+
+.num-btn:hover {
+    border-color: var(--accent);
+}
+
+.num-btn.erase {
+    color: var(--error);
+}
+
+/* Boutons */
+.actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn {
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-solve {
+    background: var(--accent);
+    color: #000;
+    grid-column: span 2;
+}
+
+.btn-reset {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+}
+
+.btn-reset:hover {
+    background: #1e2832;
 }
