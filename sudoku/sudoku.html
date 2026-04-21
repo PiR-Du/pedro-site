@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sudoku Solver</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #080c10;
+      --surface:    #0f1419;
+      --surface2:   #161c24;
+      --border:     #1e2832;
+      --border2:    #2a3542;
+      --accent:     #00d4ff;
+      --accent-dim: #00d4ff22;
+      --success:    #00e5a0;
+      --error:      #ff4d6d;
+      --text:       #d0dae8;
+      --muted:      #4a5568;
+      --given:      #e2eaf5;
+      --solved:     #00d4ff;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      gap: 2rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, #00d4ff0a 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, #00e5a008 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    header { text-align: center; display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--given);
+      letter-spacing: -0.02em;
+    }
+
+    .status-bar {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      width: 100%;
+      text-align: center;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .status-bar.ready   { color: var(--success); border-color: #00e5a040; }
+    .status-bar.loading { color: var(--accent);  border-color: #00d4ff40; }
+    .status-bar.solved  { color: var(--success); border-color: #00e5a040; }
+    .status-bar.error   { color: var(--error);   border-color: #ff4d6d40; }
+
+    .grid-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 1.2rem;
+      box-shadow: 0 0 60px #00d4ff0a, 0 20px 60px #00000080;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      width: min(400px, 88vw);
+      aspect-ratio: 1;
+    }
+
+    .cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.85rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+      user-select: none;
+    }
+
+    .cell[data-col="3"], .cell[data-col="6"] { border-left: 2px solid var(--border2); }
+    .cell[data-row="3"], .cell[data-row="6"] { border-top: 2px solid var(--border2); }
+
+    .cell:hover       { background: #1e2832; border-color: var(--accent); }
+    .cell.selected    { background: var(--accent-dim); border-color: var(--accent); z-index: 1; }
+    .cell.same-num    { background: #00d4ff0f; }
+    .cell.given       { color: var(--given); }
+    .cell.solved-cell { color: var(--solved); animation: pop 0.25s ease; }
+
+    @keyframes pop {
+      0%   { transform: scale(0.75); opacity: 0; }
+      60%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+
+    .num-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.75rem 0;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .num-btn:hover  { background: #1e2832; border-color: var(--accent); }
+    .num-btn:active { transform: scale(0.93); }
+    .num-btn.erase  { color: var(--error); font-size: 0.8rem; font-family: 'Outfit', sans-serif; font-weight: 600; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:active           { transform: scale(0.97); }
+    .btn:disabled         { opacity: 0.35; cursor: not-allowed; }
+    .btn-solve            { background: var(--accent); color: #080c10; grid-column: span 2; }
+    .btn-solve:hover:not(:disabled) { opacity: 0.85; }
+    .btn-reset            { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+    .btn-reset:hover      { background: #1e2832; }
+    .btn-example          { background: var(--surface2); color: var(--accent); border: 1px solid #00d4ff30; }
+    .btn-example:hover    { background: var(--accent-dim); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <span class="eyebrow">Python · WebAssembly</span>
+      <h1>Sudoku Solver</h1>
+    </header>
+
+    <div class="status-bar loading" id="status">⏳ Chargement de Python…</div>
+
+    <div class="grid-wrapper">
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="numpad" id="numpad"></div>
+
+    <div class="actions">
+      <button class="btn btn-solve" id="btn-solve" onclick="solveGrid()" disabled>Résoudre</button>
+      <button class="btn btn-reset" onclick="resetGrid()">Effacer tout</button>
+      <button class="btn btn-example" onclick="loadExample()">Exemple</button>
+    </div>
+  </div>
+
+  <script>
+    // ── État
+    let selected = null;
+    let given    = new Set();
+    let pyodide  = null;
+
+    const EXAMPLE = [
+      5,3,0, 0,7,0, 0,0,0,
+      6,0,0, 1,9,5, 0,0,0,
+      0,9,8, 0,0,0, 0,6,0,
+      8,0,0, 0,6,0, 0,0,3,
+      4,0,0, 8,0,3, 0,0,1,
+      7,0,0, 0,2,0, 0,0,6,
+      0,6,0, 0,0,0, 2,8,0,
+      0,0,0, 4,1,9, 0,0,5,
+      0,0,0, 0,8,0, 0,7,9,
+    ];
+
+    // ── Construction grille
+    const gridEl = document.getElementById('grid');
+    for (let i = 0; i < 81; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+      cell.dataset.row   = Math.floor(i / 9);
+      cell.dataset.col   = i % 9;
+      cell.addEventListener('click', () => selectCell(i));
+      gridEl.appendChild(cell);
+    }
+
+    // ── Pavé numérique
+    const numpad = document.getElementById('numpad');
+    for (let n = 1; n <= 9; n++) {
+      const btn = document.createElement('button');
+      btn.className   = 'num-btn';
+      btn.textContent = n;
+      btn.addEventListener('click', () => enterNumber(n));
+      numpad.appendChild(btn);
+    }
+    const eraseBtn = document.createElement('button');
+    eraseBtn.className   = 'num-btn erase';
+    eraseBtn.textContent = '⌫ Effacer';
+    eraseBtn.addEventListener('click', () => enterNumber(0));
+    numpad.appendChild(eraseBtn);
+
+    // ── Sélection
+    function selectCell(index) {
+      selected = index;
+      refreshHighlights();
+    }
+
+    function refreshHighlights() {
+      const selVal = selected !== null ? getCellValue(selected) : 0;
+      Array.from(gridEl.children).forEach((cell, i) => {
+        cell.classList.remove('selected', 'same-num');
+        if (i === selected) cell.classList.add('selected');
+        else if (selVal > 0 && getCellValue(i) === selVal) cell.classList.add('same-num');
+      });
+    }
+
+    function getCellValue(index) {
+      const v = parseInt(gridEl.children[index].textContent.trim());
+      return isNaN(v) ? 0 : v;
+    }
+
+    // ── Saisie
+    function enterNumber(n) {
+      if (selected === null) return;
+      const cell = gridEl.children[selected];
+      cell.classList.remove('solved-cell', 'given');
+      if (n === 0) {
+        cell.textContent = '';
+        given.delete(selected);
+      } else {
+        cell.textContent = n;
+        cell.classList.add('given');
+        given.add(selected);
+      }
+      refreshHighlights();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (selected === null) return;
+      if (e.key >= '1' && e.key <= '9') { enterNumber(parseInt(e.key)); return; }
+      if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { enterNumber(0); return; }
+      const moves = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 };
+      if (moves[e.key] !== undefined) {
+        e.preventDefault();
+        const next = selected + moves[e.key];
+        if (next >= 0 && next < 81) selectCell(next);
+      }
+    });
+
+    // ── Reset / Exemple
+    function resetGrid() {
+      given.clear(); selected = null;
+      Array.from(gridEl.children).forEach(cell => {
+        cell.textContent = '';
+        const row = cell.dataset.row, col = cell.dataset.col;
+        cell.className = 'cell';
+        cell.dataset.row = row; cell.dataset.col = col;
+      });
+      setStatus('ready', '✔ Prêt — Saisissez votre grille');
+    }
+
+    function loadExample() {
+      resetGrid();
+      EXAMPLE.forEach((val, i) => {
+        if (val !== 0) {
+          gridEl.children[i].textContent = val;
+          gridEl.children[i].classList.add('given');
+          given.add(i);
+        }
+      });
+    }
+
+    // ── Résolution Python
+    async function solveGrid() {
+      if (!pyodide) return;
+      const flat = Array.from(gridEl.children).map((c, i) => getCellValue(i));
+
+      setStatus('loading', '⏳ Résolution en cours…');
+      document.getElementById('btn-solve').disabled = true;
+
+      try {
+        pyodide.globals.set('input_grid', pyodide.toPy(flat));
+        const result = pyodide.runPython(`
+from solver import solve_sudoku
+result = solve_sudoku(list(input_grid))
+result
+        `);
+
+        if (result === null || result === undefined) {
+          setStatus('error', '✗ Aucune solution trouvée pour cette grille');
+        } else {
+          const solved = result.toJs();
+          solved.forEach((val, i) => {
+            if (!given.has(i)) {
+              setTimeout(() => {
+                gridEl.children[i].textContent = val;
+                gridEl.children[i].classList.add('solved-cell');
+              }, i * 8);
+            }
+          });
+          setTimeout(() => setStatus('solved', '✔ Grille résolue !'), 81 * 8 + 100);
+        }
+      } catch(e) {
+        setStatus('error', '✗ Erreur : ' + e.message);
+      }
+
+      document.getElementById('btn-solve').disabled = false;
+    }
+
+    // ── Statut
+    function setStatus(type, msg) {
+      const el = document.getElementById('status');
+      el.className = 'status-bar ' + type;
+      el.textContent = msg;
+    }
+
+    // ── Init Pyodide
+    async function init() {
+      try {
+        pyodide = await loadPyodide();
+        const code = await (await fetch('solver.py')).text();
+        pyodide.FS.writeFile('/home/pyodide/solver.py', code);
+        pyodide.runPython(`import sys; sys.path.insert(0, '/home/pyodide')`);
+        setStatus('ready', '✔ Prêt — Saisissez votre grille');
+        document.getElementById('btn-solve').disabled = false;
+      } catch(e) {
+        setStatus('error', '✗ Erreur de chargement : ' + e.message);
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
