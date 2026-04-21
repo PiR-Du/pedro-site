@@ -4,8 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sudoku Solver</title>
+  <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-  <link rel="stylesheet" href="style.css">
+  
 </head>
 
 <body>
@@ -183,10 +184,10 @@
         const code = await (await fetch('solver.py')).text();
         pyodide.FS.writeFile('/home/pyodide/solver.py', code);
         pyodide.runPython(`import sys; sys.path.insert(0, '/home/pyodide')`);
-        setStatus('ready', '✔ Prêt — Saisissez votre grille');
+        setStatus('ready', 'Prêt — Saisissez votre grille');
         document.getElementById('btn-solve').disabled = false;
       } catch(e) {
-        setStatus('error', '✗ Erreur de chargement : ' + e.message);
+        setStatus('error', 'Erreur de chargement : ' + e.message);
       }
     }
     init();
