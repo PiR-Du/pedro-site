@@ -1,50 +1,126 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Pierre Duchesne</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pierre Duchesne — Data, Maths & Code</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header>
-    <h1>Pierre Duchesne</h1>
-    <p class="subtitle">Ingénierie & Data</p>
-</header>
-
-<section class="hero">
-    <h2>Construire des solutions simples pour résoudre des problèmes complexes</h2>
-</section>
-
-<section class="projects">
-    <h2>Projets</h2>
-
-    <div class="project-grid">
-
-        <div class="card">
-            <h3>Sudoku Solver</h3>
-            <p>Résolution automatique via backtracking.</p>
-            <a href="sudoku/sudoku.html">Voir le projet →</a>
-        </div>
-
-        <div class="card">
-            <h3>Encyclopédie</h3>
-            <p>Structuration de connaissances personnelles.</p>
-            <a href="#">Explorer →</a>
-        </div>
-
-        <div class="card">
-            <h3>Excel Comparatifs</h3>
-            <p>Outils d'aide à la décision.</p>
-            <a href="#">Voir les modèles →</a>
-        </div>
-
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Pierre Duchesne</span>
+      </a>
+      <nav class="nav">
+        <a class="active" href="index.html">Accueil</a>
+        <a href="sudoku/sudoku.html">Sudoku</a>
+      </nav>
     </div>
-</section>
+  </header>
 
-<footer>
-    <p>© 2026 — Pierre Duchesne</p>
-</footer>
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="grid-bg" aria-hidden="true"></div>
+      <div class="inner">
+        <h1>
+          <span class="text-gradient">Data - Maths - Code</span>
+        </h1>
+        <p class="lead">
+          Un coin du web où je rassemble mes expérimentations
+        </p>
+        <div class="cta">
+          <a href="#projets" class="btn btn-primary"> Explorer les projets
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projets -->
+    <section id="projets" class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">./projets</p>
+          <h2>Le bazar bien rangé</h2>
+        </div>
+        <p class="section-meta">1 en ligne · 3 à venir</p>
+      </div>
+
+      <div class="project-grid">
+        <a class="card interactive" href="sudoku/sudoku.html">
+          <div class="card-top">
+            <div class="card-icon">🧩</div>
+            <span class="card-status">Disponible</span>
+          </div>
+          <h3>Sudoku Solver</h3>
+          <p>Résolution automatique par backtracking, exécutée en Python dans le navigateur via Pyodide.</p>
+          <div class="card-bottom">
+            <span class="tag">Algorithmes</span>
+            <span class="arrow">Voir →</span>
+          </div>
+        </a>
+
+        <div class="card muted">
+          <div class="card-top">
+            <div class="card-icon">📚</div>
+            <span class="card-status">En cours</span>
+          </div>
+          <h3>Encyclopédie</h3>
+          <p>Structuration de connaissances personnelles, à mi-chemin entre wiki et carnet.</p>
+          <div class="card-bottom">
+            <span class="tag">Knowledge</span>
+          </div>
+        </div>
+
+        <div class="card muted">
+          <div class="card-top">
+            <div class="card-icon">📊</div>
+            <span class="card-status">En cours</span>
+          </div>
+          <h3>Excel Comparatifs</h3>
+          <p>Petits modèles d'aide à la décision : pondérations, scénarios, sensibilités.</p>
+          <div class="card-bottom">
+            <span class="tag">Décision</span>
+          </div>
+        </div>
+
+        <div class="card muted">
+          <div class="card-top">
+            <div class="card-icon">✶</div>
+            <span class="card-status">Bientôt</span>
+          </div>
+          <h3>Visualisations</h3>
+          <p>Expériences interactives autour des maths : fractales, automates, géométrie.</p>
+          <div class="card-bottom">
+            <span class="tag">Maths</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- À propos -->
+    <section class="section-narrow">
+      <div class="about-card">
+        <p class="eyebrow">./à-propos</p>
+        <h2>Construire des solutions simples pour des problèmes complexes.</h2>
+        <p>
+          J'aime décortiquer des problèmes, les modéliser, et les rendre tangibles
+          via du code et des visualisations. Ce site est un terrain de jeu —
+          pas un produit fini.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <p>© 2026 — Pierre Duchesne</p>
+      <p class="tag mono">Data · Maths · Code</p>
+    </div>
+  </footer>
 
 </body>
 </html>
