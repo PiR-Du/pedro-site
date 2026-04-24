@@ -3,26 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pierre Duchesne — Data, Maths & Code</title>
+  <title>Pierre Duchesne - Data, Maths & Code</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body data-root="." data-page="home">
 
-  <header class="site-header">
-    <div class="inner">
-      <a class="brand" href="index.html">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span>Pierre Duchesne</span>
-      </a>
-      <nav class="nav">
-        <a class="active" href="index.html">Accueil</a>
-        <a href="sudoku/sudoku.html">Sudoku</a>
-      </nav>
-    </div>
-  </header>
+  <div id="site-header"></div>
 
   <main>
-    <!-- Hero -->
     <section class="hero">
       <div class="grid-bg" aria-hidden="true"></div>
       <div class="inner">
@@ -30,97 +18,93 @@
           <span class="text-gradient">Data - Maths - Code</span>
         </h1>
         <p class="lead">
-          Un coin du web où je rassemble mes expérimentations
+          Un coin du web ou je rassemble mes experimentations.
         </p>
         <div class="cta">
-          <a href="#projets" class="btn btn-primary"> Explorer les projets
-          </a>
+          <a href="#projets" class="btn btn-primary">Explorer les projets</a>
         </div>
       </div>
     </section>
 
-    <!-- Projets -->
     <section id="projets" class="section">
       <div class="section-head">
         <div>
           <p class="eyebrow">./projets</p>
-          <h2>Le bazar bien rangé</h2>
+          <h2>Le bazar bien range</h2>
         </div>
-        <p class="section-meta">1 en ligne · 3 à venir</p>
+        <p class="section-meta">4 en ligne - 0 a venir</p>
       </div>
 
       <div class="project-grid">
         <a class="card interactive" href="sudoku/sudoku.html">
           <div class="card-top">
-            <div class="card-icon">🧩</div>
+            <div class="card-icon">S</div>
             <span class="card-status">Disponible</span>
           </div>
-          <h3>Sudoku Solver</h3>
-          <p>Résolution automatique par backtracking, exécutée en Python dans le navigateur via Pyodide.</p>
+          <h3>Solveur de Sudoku</h3>
+          <p>Resolution automatique par backtracking, executee en Python dans le navigateur via Pyodide.</p>
           <div class="card-bottom">
             <span class="tag">Algorithmes</span>
-            <span class="arrow">Voir →</span>
+            <span class="arrow">Voir -></span>
           </div>
         </a>
 
-        <div class="card muted">
+        <a class="card interactive" href="encyclopedia/index.html">
           <div class="card-top">
-            <div class="card-icon">📚</div>
-            <span class="card-status">En cours</span>
+            <div class="card-icon">E</div>
+            <span class="card-status">Disponible</span>
           </div>
-          <h3>Encyclopédie</h3>
-          <p>Structuration de connaissances personnelles, à mi-chemin entre wiki et carnet.</p>
+          <h3>Encyclopedie</h3>
+          <p>Structuration de connaissances personnelles, a mi-chemin entre wiki, carnet et carte mentale.</p>
           <div class="card-bottom">
-            <span class="tag">Knowledge</span>
+            <span class="tag">Savoirs</span>
+            <span class="arrow">Voir -></span>
           </div>
-        </div>
+        </a>
 
-        <div class="card muted">
+        <a class="card interactive" href="batch-cooking/index.html">
           <div class="card-top">
-            <div class="card-icon">📊</div>
-            <span class="card-status">En cours</span>
+            <div class="card-icon">B</div>
+            <span class="card-status">Disponible</span>
           </div>
-          <h3>Excel Comparatifs</h3>
-          <p>Petits modèles d'aide à la décision : pondérations, scénarios, sensibilités.</p>
+          <h3>Assistant batch cooking</h3>
+          <p>Planifier plusieurs repas, mutualiser les ingredients et organiser une session de cuisine efficace.</p>
           <div class="card-bottom">
-            <span class="tag">Décision</span>
+            <span class="tag">Cuisine</span>
+            <span class="arrow">Voir -></span>
           </div>
-        </div>
+        </a>
 
-        <div class="card muted">
+        <a class="card interactive" href="recommendations/index.html">
           <div class="card-top">
-            <div class="card-icon">✶</div>
-            <span class="card-status">Bientôt</span>
+            <div class="card-icon">R</div>
+            <span class="card-status">Disponible</span>
           </div>
-          <h3>Visualisations</h3>
-          <p>Expériences interactives autour des maths : fractales, automates, géométrie.</p>
+          <h3>Recommandations</h3>
+          <p>Un espace pour recommander films, musiques, series et jeux avec du contexte et des filtres utiles.</p>
           <div class="card-bottom">
-            <span class="tag">Maths</span>
+            <span class="tag">Culture</span>
+            <span class="arrow">Voir -></span>
           </div>
-        </div>
+        </a>
       </div>
     </section>
 
-    <!-- À propos -->
     <section class="section-narrow">
       <div class="about-card">
-        <p class="eyebrow">./à-propos</p>
-        <h2>Construire des solutions simples pour des problèmes complexes.</h2>
+        <p class="eyebrow">./a-propos</p>
+        <h2>Construire des solutions simples pour des problemes complexes.</h2>
         <p>
-          J'aime décortiquer des problèmes, les modéliser, et les rendre tangibles
-          via du code et des visualisations. Ce site est un terrain de jeu —
+          J'aime decortiquer des problemes, les modeliser, et les rendre tangibles
+          via du code et des visualisations. Ce site est un terrain de jeu,
           pas un produit fini.
         </p>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="inner">
-      <p>© 2026 — Pierre Duchesne</p>
-      <p class="tag mono">Data · Maths · Code</p>
-    </div>
-  </footer>
+  <div id="site-footer"></div>
 
+  <script src="shared-layout.js"></script>
 </body>
 </html>

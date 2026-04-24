@@ -1,0 +1,40 @@
+component_id,aisle,item,amount_per_person,unit
+beef-ragu,Protein,Beef mince,180,g
+beef-ragu,Produce,Onions,0.3,
+beef-ragu,Pantry,Crushed tomatoes,90,g
+grilled-chicken,Protein,Chicken breast,170,g
+grilled-chicken,Produce,Lemons,0.2,
+grilled-chicken,Pantry,Olive oil,0.4,tbsp
+salmon-fillets,Protein,Salmon fillets,170,g
+salmon-fillets,Produce,Lemons,0.2,
+salmon-fillets,Pantry,Olive oil,0.3,tbsp
+falafel-mix,Dry goods,Chickpeas,120,g
+falafel-mix,Produce,Parsley,0.15,bunch
+falafel-mix,Pantry,Spices,0.2,pack
+spaghetti-pasta,Dry goods,Spaghetti,90,g
+spaghetti-pasta,Dairy,Parmesan,12,g
+rice-quinoa,Dry goods,Rice,55,g
+rice-quinoa,Dry goods,Quinoa,35,g
+roast-potatoes,Produce,Potatoes,250,g
+roast-potatoes,Pantry,Olive oil,0.5,tbsp
+zucchini-noodles,Produce,Zucchini,220,g
+zucchini-noodles,Pantry,Olive oil,0.2,tbsp
+roasted-vegetables,Produce,Broccoli,90,g
+roasted-vegetables,Produce,Bell peppers,80,g
+roasted-vegetables,Produce,Red onions,50,g
+roasted-vegetables,Produce,Courgette,40,g
+salad-kit,Produce,Lettuce,60,g
+salad-kit,Produce,Cucumber,60,g
+salad-kit,Produce,Tomatoes,60,g
+salad-kit,Produce,Red onions,20,g
+broccoli-greens,Produce,Broccoli,120,g
+broccoli-greens,Produce,Green beans,70,g
+broccoli-greens,Produce,Spinach,50,g
+tomato-sauce,Pantry,Crushed tomatoes,70,g
+tomato-sauce,Produce,Garlic,0.5,clove
+tomato-sauce,Produce,Basil,0.1,bunch
+pesto-yogurt,Dairy,Greek yogurt,35,g
+pesto-yogurt,Pantry,Pesto,10,g
+creamy-curry,Pantry,Curry paste,12,g
+creamy-curry,Dairy,Cream,25,g
+creamy-curry,Produce,Garlic,0.4,clove

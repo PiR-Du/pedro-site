@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Encyclopedie - Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body data-root=".." data-page="encyclopedia">
+
+  <div id="site-header"></div>
+
+  <main>
+    <section class="project-page">
+      <p class="eyebrow">./projets/encyclopedia</p>
+      <h1>Encyclopedie</h1>
+      <p class="lead">
+        Une base de connaissances personnelle pour relier concepts, notes, resumes,
+        questions ouvertes et exemples concrets dans un meme espace.
+      </p>
+
+      <div class="project-hero">
+        <div class="hero-panel">
+          <h2>Entre wiki, carnet et carte mentale</h2>
+          <p>
+            Cette page servira a organiser des savoirs qui viennent de lectures,
+            videos, cours, experiences ou projets perso, avec une structure simple
+            a maintenir dans le temps.
+          </p>
+          <p>
+            L'accent sera mis sur la clarte : definitions courtes, liens entre notions,
+            niveaux de confiance, et exemples concrets pour eviter les notes mortes.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="../index.html#projets">Retour aux projets</a>
+            <a class="btn btn-outline" href="#structure">Voir la structure</a>
+          </div>
+        </div>
+
+        <aside class="info-panel">
+          <h2>Questions que la page doit resoudre</h2>
+          <ul class="fact-list">
+            <li><strong>Retrouver vite :</strong> ou ai-je deja note cette idee ?</li>
+            <li><strong>Relier :</strong> quelles notions se recoupent ?</li>
+            <li><strong>Clarifier :</strong> qu'est-ce que je comprends vraiment ?</li>
+            <li><strong>Capitaliser :</strong> comment transformer des notes en savoir durable ?</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div id="structure" class="split-layout">
+        <article class="content-panel">
+          <h2>Structure d'une entree</h2>
+          <ol class="number-list">
+            <li><span>1</span><div><strong>Definition.</strong> Une phrase courte pour cadrer le concept.</div></li>
+            <li><span>2</span><div><strong>Pourquoi c'est utile.</strong> Le role de la notion dans un contexte reel.</div></li>
+            <li><span>3</span><div><strong>Exemple.</strong> Une illustration concrete ou un cas d'usage.</div></li>
+            <li><span>4</span><div><strong>Liens.</strong> Concepts proches, contradictoires ou complementaires.</div></li>
+            <li><span>5</span><div><strong>Zone floue.</strong> Ce qu'il reste a verifier ou approfondir.</div></li>
+          </ol>
+        </article>
+
+        <aside class="content-panel">
+          <h2>Familles de contenus</h2>
+          <div class="pill-list">
+            <span>Maths</span>
+            <span>Programmation</span>
+            <span>Cuisine</span>
+            <span>IA</span>
+            <span>Decision</span>
+            <span>Productivite</span>
+            <span>Culture</span>
+            <span>Modelisation</span>
+          </div>
+          <p>
+            L'encyclopedie pourra melanger fiches evergreen, glossaire, anti-seche,
+            syntheses de lecture et notes de projets.
+          </p>
+        </aside>
+      </div>
+
+      <div class="content-grid">
+        <article class="mini-card">
+          <h3>Recherche par liens</h3>
+          <p>
+            Explorer les connaissances par voisinage plutot que seulement par dossiers.
+          </p>
+        </article>
+
+        <article class="mini-card">
+          <h3>Niveaux de confiance</h3>
+          <p>
+            Distinguer une intuition perso, une note de travail et un concept verifie.
+          </p>
+        </article>
+
+        <article class="mini-card">
+          <h3>Resume actionnable</h3>
+          <p>
+            Chaque fiche doit pouvoir se relire vite sans perdre l'idee principale.
+          </p>
+        </article>
+
+        <article class="mini-card">
+          <h3>Questions ouvertes</h3>
+          <p>
+            Garder visibles les angles morts pour orienter les futures lectures.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../shared-layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+component_id,label,quantity,calories,protein,carbs,fat
+beef-ragu,Swap to turkey mince,180 g turkey mince,245,29,6,11
+beef-ragu,Swap to lentil tomato base,220 g lentil base,210,14,26,5
+grilled-chicken,Swap to tofu strips,210 g tofu,205,22,6,10
+grilled-chicken,Swap to falafel mix,180 g falafel mix,260,14,24,11
+salmon-fillets,Swap to chicken strips,170 g chicken,240,33,2,9
+salmon-fillets,Swap to baked tofu,210 g tofu,205,22,6,10
+falafel-mix,Swap to grilled chicken,170 g chicken,240,33,2,9
+falafel-mix,Swap to salmon fillet,170 g salmon,285,31,0,17
+spaghetti-pasta,Swap to rice and quinoa,90 g dry mix,305,9,58,4
+spaghetti-pasta,Swap to zucchini noodles,220 g zucchini noodles,55,4,9,1
+rice-quinoa,Swap to spaghetti,90 g spaghetti,320,10,63,3
+rice-quinoa,Swap to roasted potatoes,250 g potatoes,245,5,42,7
+roast-potatoes,Swap to rice and quinoa,90 g dry mix,305,9,58,4
+roast-potatoes,Swap to zucchini noodles,220 g zucchini noodles,55,4,9,1
+zucchini-noodles,Swap to spaghetti,90 g spaghetti,320,10,63,3
+zucchini-noodles,Swap to rice and quinoa,90 g dry mix,305,9,58,4
+roasted-vegetables,Swap to salad kit,220 g salad kit,85,3,12,3
+roasted-vegetables,Swap to broccoli and greens,240 g greens tray,95,5,13,3
+salad-kit,Swap to roasted vegetables,260 g roasted veg,130,5,18,5
+salad-kit,Swap to broccoli and greens,240 g greens tray,95,5,13,3
+broccoli-greens,Swap to roasted vegetables,260 g roasted veg,130,5,18,5
+broccoli-greens,Swap to salad kit,220 g salad kit,85,3,12,3
+tomato-sauce,Swap to creamy curry sauce,65 g curry sauce,120,3,7,8
+tomato-sauce,Swap to pesto yogurt sauce,45 g pesto yogurt,95,4,3,7
+pesto-yogurt,Swap to tomato basil sauce,70 g tomato sauce,75,2,10,2
+pesto-yogurt,Swap to creamy curry sauce,65 g curry sauce,120,3,7,8
+creamy-curry,Swap to tomato basil sauce,70 g tomato sauce,75,2,10,2
+creamy-curry,Swap to pesto yogurt sauce,45 g pesto yogurt,95,4,3,7

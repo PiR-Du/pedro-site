@@ -1,0 +1,10 @@
+track,label,start,duration,intensity,subtitle
+oven,Preheat and load first trays,0,15,active hot,Start potatoes vegetables or baked mains
+oven,Roast proteins,15,28,passive hot,Chicken salmon or a tray of falafel
+oven,Finish casseroles and bakes,30,25,passive hot,Lasagna stuffed peppers or pasta bakes
+stovetop,Cook pasta or rice base,5,20,passive warm,Keep the grain base moving while prep continues
+stovetop,Simmer sauces and soups,18,22,active warm,Tomato sauce alfredo base or lentil soup
+stovetop,Fry quick components,42,10,active cool,Fried rice omelette fillings or taco mix
+prep,Wash and chop vegetables,0,18,active cool,Prep salad veg onions herbs and toppings
+prep,Mix marinades and seasonings,10,10,active cool,Season proteins and assemble sauces
+prep,Portion label and cool,50,18,active cool,Pack meals add dates and split fridge freezer

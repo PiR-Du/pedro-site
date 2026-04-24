@@ -3,78 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sudoku Solver — Pierre Duchesne</title>
+  <title>Solveur de Sudoku - Pierre Duchesne</title>
   <link rel="stylesheet" href="../style.css" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 </head>
-<body>
+<body data-root=".." data-page="sudoku">
 
-  <header class="site-header">
-    <div class="inner">
-      <a class="brand" href="../index.html">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span>Pierre Duchesne</span>
-      </a>
-      <nav class="nav">
-        <a href="../index.html">Accueil</a>
-        <a class="active" href="sudoku.html">Sudoku</a>
-      </nav>
-    </div>
-  </header>
+  <div id="site-header"></div>
 
   <main>
     <section class="sudoku-page">
       <p class="eyebrow">./projets/sudoku</p>
-      <h1>Sudoku Solver</h1>
+      <h1>Solveur de Sudoku</h1>
       <p class="lead">
-        Backtracking en Python, exécuté dans votre navigateur via
+        Backtracking en Python, execute dans votre navigateur via
         <span class="mono">Pyodide</span>.
       </p>
 
       <div class="status-bar loading" id="status">
         <span class="dot"></span>
-        <span id="status-msg">Chargement de Python…</span>
+        <span id="status-msg">Chargement de Python...</span>
       </div>
 
-      <div class="grid-wrapper">
-        <div class="grid" id="grid" role="grid" aria-label="Grille de Sudoku"></div>
+      <div class="sudoku-layout">
+        <div class="grid-wrapper">
+          <div class="grid" id="grid" role="grid" aria-label="Grille de Sudoku"></div>
+        </div>
+
+        <div class="controls-panel">
+          <div class="numpad" id="numpad"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="btn-solve" disabled>Resoudre</button>
+            <button class="btn btn-outline btn-danger" id="btn-reset">Effacer tout</button>
+          </div>
+        </div>
       </div>
 
-      <div class="numpad" id="numpad"></div>
-
-      <div class="actions">
-        <button class="btn btn-primary" id="btn-solve" disabled>Résoudre</button>
-        <button class="btn btn-outline btn-danger" id="btn-reset">Effacer</button>
-      </div>
-
-      <p class="hint">Astuce : flèches pour naviguer, 1-9 pour saisir, ⌫ pour effacer.</p>
+      <p class="hint">Astuce : fleches pour naviguer, 1-9 pour saisir, Suppr pour effacer.</p>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="inner">
-      <p>© 2026 — Pierre Duchesne</p>
-      <p class="tag mono">Data · Maths · Code</p>
-    </div>
-  </footer>
+  <div id="site-footer"></div>
 
+  <script src="../shared-layout.js"></script>
   <script>
-    // ───── État
-    let grid     = new Array(81).fill(0);
-    let given    = new Set();
-    let solved   = new Set();
+    let grid = new Array(81).fill(0);
+    let given = new Set();
+    let solved = new Set();
     let selected = null;
-    let pyodide  = null;
+    let pyodide = null;
 
-    const gridEl     = document.getElementById('grid');
-    const numpadEl   = document.getElementById('numpad');
-    const statusEl   = document.getElementById('status');
-    const statusMsg  = document.getElementById('status-msg');
-    const btnSolve   = document.getElementById('btn-solve');
-    const btnExample = document.getElementById('btn-example');
-    const btnReset   = document.getElementById('btn-reset');
+    const gridEl = document.getElementById('grid');
+    const numpadEl = document.getElementById('numpad');
+    const statusEl = document.getElementById('status');
+    const statusMsg = document.getElementById('status-msg');
+    const btnSolve = document.getElementById('btn-solve');
+    const btnReset = document.getElementById('btn-reset');
 
-    // ───── Build grid
     for (let i = 0; i < 81; i++) {
       const cell = document.createElement('button');
       cell.type = 'button';
@@ -82,12 +68,11 @@
       cell.dataset.index = i;
       cell.dataset.row = Math.floor(i / 9);
       cell.dataset.col = i % 9;
-      cell.setAttribute('aria-label', `Cellule ${Math.floor(i/9)+1},${(i%9)+1}`);
+      cell.setAttribute('aria-label', `Cellule ${Math.floor(i / 9) + 1},${(i % 9) + 1}`);
       cell.addEventListener('click', () => selectCell(i));
       gridEl.appendChild(cell);
     }
 
-    // ───── Build numpad
     for (let n = 1; n <= 9; n++) {
       const b = document.createElement('button');
       b.className = 'num-btn';
@@ -95,14 +80,14 @@
       b.addEventListener('click', () => enterNumber(n));
       numpadEl.appendChild(b);
     }
+
     const eraseBtn = document.createElement('button');
     eraseBtn.className = 'num-btn erase';
-    eraseBtn.textContent = '⌫';
+    eraseBtn.textContent = 'Suppr';
     eraseBtn.setAttribute('aria-label', 'Effacer');
     eraseBtn.addEventListener('click', () => enterNumber(0));
     numpadEl.appendChild(eraseBtn);
 
-    // ───── Render
     function render() {
       const selVal = selected !== null ? grid[selected] : 0;
       for (let i = 0; i < 81; i++) {
@@ -115,7 +100,10 @@
       }
     }
 
-    function selectCell(i) { selected = i; render(); }
+    function selectCell(i) {
+      selected = i;
+      render();
+    }
 
     function enterNumber(n) {
       if (selected === null) return;
@@ -133,24 +121,16 @@
 
     function resetGrid() {
       grid = new Array(81).fill(0);
-      given.clear(); solved.clear();
-      selected = null;
-      render();
-      if (pyodide) setStatus('ready', 'Prêt — saisissez votre grille');
-    }
-
-    function loadExample() {
-      grid = EXAMPLE.slice();
-      given = new Set();
+      given.clear();
       solved.clear();
-      EXAMPLE.forEach((v, i) => { if (v !== 0) given.add(i); });
       selected = null;
       render();
+      if (pyodide) setStatus('ready', 'Pret - saisissez votre grille');
     }
 
     async function solveGrid() {
       if (!pyodide) return;
-      setStatus('solving', 'Résolution en cours…');
+      setStatus('solving', 'Resolution en cours...');
       btnSolve.disabled = true;
       try {
         pyodide.globals.set('input_grid', pyodide.toPy(grid));
@@ -160,7 +140,7 @@ result = solve_sudoku(list(input_grid))
 result
         `);
         if (result === null || result === undefined) {
-          setStatus('error', 'Aucune solution trouvée pour cette grille');
+          setStatus('error', 'Aucune solution trouvee pour cette grille');
         } else {
           const arr = result.toJs();
           const newSolved = new Set();
@@ -170,7 +150,7 @@ result
           }
           solved = newSolved;
           render();
-          setStatus('solved', 'Grille résolue ✓');
+          setStatus('solved', 'Grille resolue');
         }
       } catch (e) {
         setStatus('error', 'Erreur : ' + e.message);
@@ -178,10 +158,9 @@ result
       btnSolve.disabled = false;
     }
 
-    // ───── Keyboard
     document.addEventListener('keydown', e => {
       if (selected === null) return;
-      if (e.key >= '1' && e.key <= '9') { enterNumber(parseInt(e.key)); return; }
+      if (e.key >= '1' && e.key <= '9') { enterNumber(parseInt(e.key, 10)); return; }
       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { enterNumber(0); return; }
       const moves = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 };
       if (moves[e.key] !== undefined) {
@@ -194,14 +173,13 @@ result
     btnSolve.addEventListener('click', solveGrid);
     btnReset.addEventListener('click', resetGrid);
 
-    // ───── Init Pyodide
     (async function init() {
       try {
         pyodide = await loadPyodide();
         const code = await (await fetch('solver.py')).text();
         pyodide.FS.writeFile('/home/pyodide/solver.py', code);
         pyodide.runPython(`import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')`);
-        setStatus('ready', 'Prêt — saisissez votre grille');
+        setStatus('ready', 'Pret - saisissez votre grille');
         btnSolve.disabled = false;
       } catch (e) {
         setStatus('error', 'Erreur de chargement : ' + e.message);
