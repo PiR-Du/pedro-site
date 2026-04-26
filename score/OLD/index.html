@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ScoreBoard Python</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🎲 ScoreBoard (Python)</h1>
+
+<div id="setup">
+  <input id="gameInput" placeholder="Nom du jeu">
+  <button onclick="startGame()">Démarrer</button>
+</div>
+
+<div id="app"></div>
+
+<!-- Pyodide -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+
+<script>
+let pyodide;
+
+async function initPyodide() {
+  pyodide = await loadPyodide();
+
+  await pyodide.runPythonAsync(`
+game = {
+    "name": "",
+    "players": [],
+    "rounds": []
+}
+
+def start_game(name):
+    game["name"] = name
+    game["players"] = ["Joueur 1", "Joueur 2"]
+    game["rounds"] = []
+    return game
+
+def add_round(score1, score2):
+    game["rounds"].append([score1, score2])
+    return game
+
+def get_totals():
+    totals = [0, 0]
+    for r in game["rounds"]:
+        totals[0] += r[0]
+        totals[1] += r[1]
+    return totals
+  `);
+}
+
+initPyodide();
+
+async function startGame() {
+  const name = document.getElementById("gameInput").value;
+
+  let result = await pyodide.runPythonAsync(`
+start_game("${name}")
+  `);
+
+  render();
+}
+
+async function addRound() {
+  let s1 = document.getElementById("s1").value;
+  let s2 = document.getElementById("s2").value;
+
+  await pyodide.runPythonAsync(`
+add_round(${s1}, ${s2})
+  `);
+
+  render();
+}
+
+async function render() {
+  let totals = await pyodide.runPythonAsync(`
+get_totals()
+  `);
+
+  document.getElementById("app").innerHTML = `
+    <h2>Scores</h2>
+    <input id="s1" type="number" placeholder="J1">
+    <input id="s2" type="number" placeholder="J2">
+    <button onclick="addRound()">Ajouter</button>
+
+    <h3>Total</h3>
+    <p>J1: ${totals[0]}</p>
+    <p>J2: ${totals[1]}</p>
+  `;
+}
+</script>
+
+</body>
+</html>

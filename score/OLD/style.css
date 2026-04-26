@@ -1,0 +1,22 @@
+body {
+  font-family: Arial;
+  padding: 20px;
+  background: #f4f4f4;
+}
+
+h1 {
+  color: purple;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+}
+
+button {
+  padding: 10px;
+  background: purple;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
