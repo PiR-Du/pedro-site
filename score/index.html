@@ -393,13 +393,6 @@ a { color: inherit; text-decoration: none; }
 .award-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
 .award-player { font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem; }
 .award-desc { font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.25rem; }
-.narrative-card {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.5rem;
-  box-shadow: var(--shadow-soft); margin-top: 1.5rem;
-  font-size: 0.925rem; color: var(--muted-foreground); line-height: 1.7;
-}
-.narrative-card em { color: var(--foreground); font-style: normal; font-weight: 500; }
 .awards-footer { margin-top: 2rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 
 /* ========== History Screen ========== */
@@ -622,7 +615,6 @@ a { color: inherit; text-decoration: none; }
             <h3 style="font-size:0.95rem;font-weight:600">Score Progression</h3>
             <div class="chart-tabs">
               <button class="chart-tab active" onclick="switchChart('line',this)">Line</button>
-              <button class="chart-tab" onclick="switchChart('bar',this)">Bar</button>
             </div>
           </div>
           <canvas id="main-chart"></canvas>
@@ -656,11 +648,6 @@ a { color: inherit; text-decoration: none; }
           </button>
         </div>
 
-        <!-- Live Stats -->
-        <div class="stats-mini" style="margin-top:1rem">
-          <div class="eyebrow">Live Stats</div>
-          <div class="stats-grid" id="live-stats"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -675,10 +662,6 @@ a { color: inherit; text-decoration: none; }
     <p id="awards-game-name" style="color:var(--muted-foreground)"></p>
   </div>
   <div class="podium" id="podium"></div>
-  <div class="award-card" style="border-radius:1rem;margin-top:1rem;padding:1.25rem;border:1px solid var(--border);background:var(--surface)">
-    <div class="eyebrow" style="margin-bottom:0.5rem">Game Narrative</div>
-    <p id="narrative-text" style="font-size:0.925rem;color:var(--muted-foreground);line-height:1.7"></p>
-  </div>
   <div style="margin-top:1.5rem">
     <div class="eyebrow" style="margin-bottom:1rem">🎉 Awards Ceremony</div>
     <div class="awards-grid" id="awards-grid"></div>
@@ -754,7 +737,7 @@ function showView(v) {
   document.getElementById('game-status-badge').style.display = state.currentGame ? '' : 'none';
   if (v === 'welcome') renderWelcome();
   if (v === 'history') renderHistory();
-  if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderLiveStats(); renderChart(); }
+  if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); }
   if (v === 'awards') renderAwards();
   window.scrollTo(0,0);
 }
@@ -988,7 +971,6 @@ function submitRound() {
   updateRoundInfo();
   renderLeaderboard();
   renderRoundHistory();
-  renderLiveStats();
   renderChart();
   // Reset inputs
   g.players.forEach((_,i) => { document.getElementById('score-'+i).value = 0; });
@@ -1039,7 +1021,6 @@ function commitEdit(pi, ri, input) {
   g.rounds[ri][pi] = parseInt(input.value) || 0;
   renderRoundHistory();
   renderLeaderboard();
-  renderLiveStats();
   renderChart();
 }
 
@@ -1092,25 +1073,6 @@ function renderChart() {
         animation: { duration: 400 },
       }
     });
-  } else {
-    // Final scores bar
-    const totals = getTotals(g);
-    state.activeChart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: totals.map(p=>`${p.avatar} ${p.name}`),
-        datasets: [{ label: 'Total Score', data: totals.map(p=>p.total), backgroundColor: totals.map(p=>p.color+'cc'), borderColor: totals.map(p=>p.color), borderWidth: 2, borderRadius: 6 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } } },
-          y: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } } }
-        },
-        animation: { duration: 400 },
-      }
-    });
   }
 }
 
@@ -1121,54 +1083,6 @@ function switchChart(mode, el) {
   renderChart();
 }
 
-// ============================================================
-// LIVE STATS
-// ============================================================
-function renderLiveStats() {
-  const g = state.currentGame; if(!g) return;
-  const ranked = getRanked(g);
-  const totals = getTotals(g);
-  const container = document.getElementById('live-stats');
-
-  if (!g.rounds.length) {
-    container.innerHTML = '<p style="color:var(--muted-foreground);font-size:0.8rem;grid-column:1/-1">Submit a round to see stats</p>';
-    return;
-  }
-
-  const leader = ranked[0];
-  const lastPlace = ranked[ranked.length-1];
-  
-  // Most consistent = lowest variance per round scores
-  const consistency = totals.map(p=>({...p, var: variance(p.perRound)}));
-  const mostConsistent = consistency.sort((a,b)=>a.var-b.var)[0];
-  const mostUnstable = consistency.sort((a,b)=>b.var-a.var)[0];
-
-  // Biggest single round
-  let bigRound = {val:-Infinity, player:null};
-  totals.forEach(p => p.perRound.forEach(s => { if(s>bigRound.val){bigRound.val=s;bigRound.player=p;} }));
-
-  container.innerHTML = `
-    <div class="stat-pill">
-      <div class="label">Leading</div>
-      <div class="value">${leader.avatar} ${leader.name}</div>
-      <div class="sub">${leader.total} pts</div>
-    </div>
-    <div class="stat-pill">
-      <div class="label">Last Place</div>
-      <div class="value">${lastPlace.avatar} ${lastPlace.name}</div>
-      <div class="sub">${lastPlace.total} pts</div>
-    </div>
-    <div class="stat-pill">
-      <div class="label">Most Stable</div>
-      <div class="value">${mostConsistent.avatar} ${mostConsistent.name}</div>
-      <div class="sub">σ² ${mostConsistent.var.toFixed(1)}</div>
-    </div>
-    <div class="stat-pill">
-      <div class="label">Best Single Round</div>
-      <div class="value">${bigRound.player?.avatar} ${bigRound.player?.name}</div>
-      <div class="sub">${bigRound.val} pts</div>
-    </div>`;
-}
 
 // ============================================================
 // END GAME
@@ -1269,9 +1183,6 @@ function renderAwards() {
       <div class="podium-score">${p.total}</div>
     </div>`).join('');
 
-  // Narrative
-  const narrative = generateNarrative(g);
-  document.getElementById('narrative-text').innerHTML = narrative;
 
   // Awards
   const awards = generateAwards(g);
@@ -1285,52 +1196,10 @@ function renderAwards() {
     </div>`).join('');
 }
 
-function generateNarrative(g) {
-  const ranked = g.finalRanked;
-  const winner = ranked[0];
-  const loser = ranked[ranked.length-1];
-  const stats = g.stats;
-  const rounds = g.rounds.length;
-
-  let story = [];
-
-  // Opening
-  const openings = [
-    `After ${rounds} intense round${rounds>1?'s':''} of <em>${g.name}</em>, the dust has finally settled.`,
-    `<em>${g.name}</em> proved to be a thrilling ${rounds}-round battle.`,
-    `${rounds} rounds, countless tense moments — this was <em>${g.name}</em> at its finest.`
-  ];
-  story.push(openings[Math.floor(Math.random()*openings.length)]);
-
-  // Winner
-  story.push(`<em>${winner.name}</em> emerged victorious with <em>${winner.total} points</em>${g.direction==='low'?' — the lowest of all':''}. `);
-
-  // Tyrant / domination
-  if (stats.tyrant === winner.name && g.rounds.length > 2) {
-    story.push(`They dominated the leaderboard for most of the game, keeping their opponents under constant pressure.`);
-  }
-
-  // Comeback
-  if (stats.comeback && stats.comeback.name !== winner.name && g.rounds.length > 2) {
-    story.push(`<em>${stats.comeback.name}</em> staged an impressive comeback in the second half, rallying back from behind.`);
-  } else if (stats.comeback && stats.comeback.name === winner.name && g.rounds.length > 2) {
-    story.push(`What makes this victory even sweeter: <em>${winner.name}</em> actually came from behind, turning the tide in the final rounds.`);
-  }
-
-  // Sniper
-  if (stats.sniper) {
-    story.push(`The decisive moment came in the last round, when <em>${stats.sniper.name}</em> struck with their best performance of the night.`);
-  }
-
-  // Loser consolation
-  story.push(`As for <em>${loser.name}</em>… well, there's always next time. ${loser.total} points isn't nothing!`);
-
-  return story.join(' ');
-}
-
 function generateAwards(g) {
   const ranked = g.finalRanked;
   const stats = g.stats;
+  const totals = getTotals(g);
   const awards = [];
 
   // The Snail - last place
@@ -1361,6 +1230,166 @@ function generateAwards(g) {
   // The Sniper - won on last round
   if (stats.sniper) {
     awards.push({ emoji:'🎯', title:'The Sniper', player: stats.sniper.name, desc: `Best performance in the final round. Timing is everything.` });
+  }
+  // 💥 BIG BANG — highest single round
+  let bigBang = { val: -Infinity, player: null };
+  totals.forEach(p => {
+    p.perRound.forEach(score => {
+      if (score > bigBang.val) {
+        bigBang.val = score;
+        bigBang.player = p;
+      }
+    });
+  });
+
+  if (bigBang.player) {
+    awards.push({
+      emoji: '💥',
+      title: 'The Big Bang',
+      player: bigBang.player.name,
+      desc: 'One explosive turn.'
+    });
+  }
+
+  // 🕳️ COLLAPSE — biggest drop between rounds
+  let collapse = { val: -Infinity, player: null };
+  totals.forEach(p => {
+    for (let i = 1; i < p.perRound.length; i++) {
+      const drop = p.perRound[i - 1] - p.perRound[i];
+      if (drop > collapse.val) {
+        collapse.val = drop;
+        collapse.player = p;
+      }
+    }
+  });
+
+  if (collapse.player) {
+    awards.push({
+      emoji: '🕳️',
+      title: 'The Collapse',
+      player: collapse.player.name,
+      desc: 'It all fell apart.'
+    });
+  }
+
+  // 🔄 REVERSAL — beat someone who was ahead most of the game
+  let reversal = null;
+  totals.forEach(p => {
+    let behindCount = 0;
+
+    g.rounds.forEach((_, ri) => {
+      const partial = getTotals({
+        ...g,
+        rounds: g.rounds.slice(0, ri + 1)
+      });
+
+      const sorted = partial.sort((a,b)=>g.direction==='high'?b.total-a.total:a.total-b.total);
+
+      if (sorted[0].name !== p.name) behindCount++;
+    });
+
+    if (behindCount > g.rounds.length / 2 && ranked[0].name === p.name) {
+      reversal = p;
+    }
+  });
+
+  if (reversal) {
+    awards.push({
+      emoji: '🔄',
+      title: 'The Reversal',
+      player: reversal.name,
+      desc: 'Tables: turned.'
+    });
+  }
+
+  // ⏳ CLUTCH — best last 2 rounds combined
+  let clutch = { val: -Infinity, player: null };
+  totals.forEach(p => {
+    const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
+    if (last2 > clutch.val) {
+      clutch.val = last2;
+      clutch.player = p;
+    }
+  });
+
+  if (clutch.player) {
+    awards.push({
+      emoji: '⏳',
+      title: 'The Clutch',
+      player: clutch.player.name,
+      desc: 'Pressure makes diamonds.'
+    });
+  }
+
+  // 🐢 TOURIST — always behind
+  let tourist = null;
+  totals.forEach(p => {
+    const alwaysLow = p.perRound.every(score => score < (Math.max(...p.perRound) * 0.6));
+    if (alwaysLow) tourist = p;
+  });
+
+  if (tourist) {
+    awards.push({
+      emoji: '🐢',
+      title: 'The Tourist',
+      player: tourist.name,
+      desc: 'Just happy to be here.'
+    });
+  }
+
+  // 🧮 ACCOUNTANT — steady gains
+  let accountant = { val: Infinity, player: null };
+  totals.forEach(p => {
+    const v = variance(p.perRound);
+    if (v < accountant.val) {
+      accountant.val = v;
+      accountant.player = p;
+    }
+  });
+
+  if (accountant.player) {
+    awards.push({
+      emoji: '🧮',
+      title: 'The Accountant',
+      player: accountant.player.name,
+      desc: 'Slow, boring… effective.'
+    });
+  }
+
+  // 🎢 ROLLERCOASTER — high variance
+  let roller = { val: -Infinity, player: null };
+  totals.forEach(p => {
+    const v = variance(p.perRound);
+    if (v > roller.val) {
+      roller.val = v;
+      roller.player = p;
+    }
+  });
+
+  if (roller.player) {
+    awards.push({
+      emoji: '🎢',
+      title: 'The Rollercoaster',
+      player: roller.player.name,
+      desc: 'Up, down, up, down…'
+    });
+  }
+
+  // 💤 SLEEPER — late game spike
+  let sleeper = null;
+  totals.forEach(p => {
+    const first = p.perRound.slice(0, Math.floor(p.perRound.length/2)).reduce((a,b)=>a+b,0);
+    const second = p.perRound.slice(Math.floor(p.perRound.length/2)).reduce((a,b)=>a+b,0);
+    if (second > first * 1.5) sleeper = p;
+  });
+
+  if (sleeper) {
+    awards.push({
+      emoji: '💤',
+      title: 'The Sleeper',
+      player: sleeper.name,
+      desc: 'We should’ve watched them.'
+    });
   }
 
   // The Champion - winner
