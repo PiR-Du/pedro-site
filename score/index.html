@@ -3,534 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoardNight — Score Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>BoardNight - Score Tracker</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-/* =========================================
-   Pierre Duchesne — Design system
-   Violet minimaliste, inspiré neal.fun / ncase.me
-   ========================================= */
-
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --radius: 0.75rem;
-  --background: oklch(0.99 0.005 290);
-  --foreground: oklch(0.18 0.02 280);
-  --surface: oklch(1 0 0);
-  --surface-soft: oklch(0.975 0.008 290);
-  --primary: oklch(0.55 0.22 295);
-  --primary-foreground: oklch(0.99 0.005 290);
-  --primary-soft: oklch(0.55 0.22 295 / 0.10);
-  --muted-foreground: oklch(0.50 0.02 280);
-  --border: oklch(0.92 0.01 290);
-  --border-strong: oklch(0.85 0.015 290);
-  --success: oklch(0.62 0.16 150);
-  --destructive: oklch(0.58 0.22 27);
-  --shadow-soft: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 8px 28px oklch(0.55 0.22 295 / 0.10);
-  --shadow-glow: 0 10px 40px -10px oklch(0.55 0.22 295 / 0.35);
-}
-
-html {
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  line-height: 1.6;
-  min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 0% 0%, oklch(0.55 0.22 295 / 0.06), transparent 40%),
-    radial-gradient(circle at 100% 0%, oklch(0.55 0.22 295 / 0.04), transparent 35%);
-}
-
-::selection { background-color: var(--primary-soft); color: var(--primary); }
-a { color: inherit; text-decoration: none; }
-.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-
-/* ========== Site Header ========== */
-.site-header {
-  position: sticky; top: 0; z-index: 40;
-  backdrop-filter: blur(12px);
-  background: color-mix(in oklab, var(--background) 70%, transparent);
-  border-bottom: 1px solid var(--border);
-}
-.site-header .inner {
-  max-width: 72rem; margin: 0 auto;
-  padding: 0 1rem; height: 3.5rem;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.brand {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  font-weight: 600; letter-spacing: -0.02em; font-size: 1.05rem;
-}
-.brand-dot {
-  display: inline-block; width: 0.625rem; height: 0.625rem;
-  border-radius: 9999px; background: var(--primary);
-  box-shadow: 0 0 12px oklch(0.55 0.22 295 / 0.6);
-}
-.header-actions { display: flex; align-items: center; gap: 0.5rem; }
-
-/* ========== Buttons ========== */
-.btn {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.625rem 1.25rem; border-radius: 0.5rem;
-  font-size: 0.875rem; font-weight: 500;
-  border: 1px solid transparent; cursor: pointer;
-  transition: all 0.15s; background: var(--surface);
-  color: var(--foreground); font-family: inherit;
-}
-.btn-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: var(--shadow-glow); }
-.btn-primary:hover { opacity: 0.9; }
-.btn-outline { border-color: var(--border); }
-.btn-outline:hover { border-color: var(--border-strong); }
-.btn-danger { border-color: var(--border); color: var(--destructive); }
-.btn-danger:hover { border-color: var(--destructive); background: color-mix(in oklab, var(--destructive) 8%, transparent); }
-.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
-.btn-icon { padding: 0.5rem; border-radius: 0.375rem; }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-/* ========== Eyebrow ========== */
-.eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;
-  color: var(--primary); margin-bottom: 0.4rem;
-}
-
-/* ========== Views ========== */
-.view { display: none; }
-.view.active { display: block; }
-
-/* ========== Welcome Screen ========== */
-#view-welcome {
-  max-width: 52rem; margin: 0 auto;
-  padding: 3rem 1.25rem;
-}
-.welcome-hero {
-  text-align: center; padding: 3rem 0 2.5rem;
-}
-.welcome-icon {
-  font-size: 3.5rem; margin-bottom: 1.25rem;
-  display: block; animation: float 3s ease-in-out infinite;
-}
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-.welcome-hero h1 {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 600; letter-spacing: -0.03em; line-height: 1.05;
-}
-.welcome-hero p {
-  margin: 1rem auto 0; max-width: 32rem;
-  color: var(--muted-foreground); font-size: 1.05rem;
-}
-.welcome-cards {
-  display: grid; gap: 1rem; margin-top: 2.5rem;
-  grid-template-columns: 1fr;
-}
-@media(min-width:640px){ .welcome-cards { grid-template-columns: 1fr 1fr; } }
-.welcome-card {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.5rem;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer; transition: all 0.2s;
-  text-align: left;
-}
-.welcome-card:hover { border-color: color-mix(in oklab, var(--primary) 40%, var(--border)); box-shadow: var(--shadow-card); transform: translateY(-2px); }
-.welcome-card-icon { font-size: 1.75rem; margin-bottom: 0.75rem; }
-.welcome-card h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
-.welcome-card p { margin-top: 0.35rem; font-size: 0.85rem; color: var(--muted-foreground); }
-.history-list { margin-top: 2rem; }
-.history-item {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 0.875rem 1rem; border-radius: 0.75rem;
-  border: 1px solid var(--border); background: var(--surface);
-  margin-bottom: 0.5rem; cursor: pointer; transition: all 0.15s;
-}
-.history-item:hover { border-color: color-mix(in oklab, var(--primary) 30%, var(--border)); }
-.history-item-info { flex: 1; }
-.history-item-info strong { font-size: 0.9rem; }
-.history-item-info span { display: block; font-size: 0.78rem; color: var(--muted-foreground); font-family: 'JetBrains Mono', monospace; }
-.history-item-badge {
-  font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
-  color: var(--primary); background: var(--primary-soft);
-  padding: 0.25rem 0.6rem; border-radius: 9999px;
-}
-
-/* ========== Setup Screen ========== */
-#view-setup {
-  max-width: 48rem; margin: 0 auto; padding: 2.5rem 1.25rem;
-}
-.setup-header { margin-bottom: 2rem; }
-.setup-header h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
-.field { margin-bottom: 1.25rem; }
-.field label { display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--muted-foreground); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
-.field input, .field select {
-  width: 100%; padding: 0.7rem 0.9rem; border-radius: 0.625rem;
-  border: 1px solid var(--border); background: var(--surface);
-  color: var(--foreground); font: inherit; font-size: 0.9rem;
-  transition: border-color 0.15s;
-}
-.field input:focus, .field select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
-.players-section { margin: 1.5rem 0; }
-.players-section h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; }
-.player-row {
-  display: flex; gap: 0.5rem; align-items: center;
-  padding: 0.6rem; border-radius: 0.75rem;
-  border: 1px solid var(--border); background: var(--surface);
-  margin-bottom: 0.5rem; transition: border-color 0.15s;
-}
-.player-row:focus-within { border-color: var(--primary); }
-.player-avatar-btn {
-  width: 2.25rem; height: 2.25rem; border-radius: 0.5rem;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; cursor: pointer; border: 1px solid var(--border);
-  background: var(--surface-soft); flex-shrink: 0; transition: all 0.15s;
-}
-.player-avatar-btn:hover { border-color: var(--primary); }
-.player-color-dot {
-  width: 0.75rem; height: 0.75rem; border-radius: 9999px; flex-shrink: 0;
-}
-.player-name-input {
-  flex: 1; border: none; background: transparent; font: inherit;
-  color: var(--foreground); font-size: 0.9rem; outline: none;
-}
-.add-player-btn {
-  width: 100%; padding: 0.75rem; border-radius: 0.75rem;
-  border: 1px dashed var(--border); background: transparent;
-  cursor: pointer; color: var(--muted-foreground); font: inherit;
-  font-size: 0.875rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-}
-.add-player-btn:hover { border-color: var(--primary); color: var(--primary); }
-.setup-footer { margin-top: 2rem; display: flex; gap: 0.75rem; }
-
-/* ========== Game Screen ========== */
-#view-game { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.25rem; }
-.game-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.game-title { flex: 1; }
-.game-title h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
-.game-title .round-info { font-size: 0.78rem; color: var(--muted-foreground); font-family: 'JetBrains Mono', monospace; margin-top: 0.15rem; }
-.game-layout {
-  display: grid; gap: 1rem;
-}
-@media(min-width:900px){ .game-layout { grid-template-columns: minmax(0,1.4fr) minmax(18rem,1fr); align-items: start; } }
-
-/* Leaderboard */
-.leaderboard-panel {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  box-shadow: var(--shadow-soft);
-}
-.panel-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem;
-}
-.panel-head h3 { font-size: 0.95rem; font-weight: 600; }
-.player-standing {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 0.875rem; border-radius: 0.75rem;
-  margin-bottom: 0.5rem; border: 1px solid var(--border);
-  background: var(--surface-soft); transition: all 0.3s; position: relative; overflow: hidden;
-}
-.player-standing.rank-1 {
-  border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
-  background: var(--primary-soft);
-}
-.player-standing.rank-1::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--primary); border-radius: 3px 0 0 3px;
-}
-.rank-number {
-  width: 1.5rem; height: 1.5rem; border-radius: 9999px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.7rem; font-weight: 600; font-family: 'JetBrains Mono', monospace;
-  background: var(--border); color: var(--muted-foreground); flex-shrink: 0;
-}
-.rank-1 .rank-number { background: var(--primary); color: var(--primary-foreground); }
-.standing-avatar { font-size: 1.1rem; }
-.standing-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
-.standing-score {
-  font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 600;
-}
-.rank-1 .standing-score { color: var(--primary); }
-.standing-delta {
-  font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
-  padding: 0.2rem 0.5rem; border-radius: 9999px;
-}
-.delta-up { background: color-mix(in oklab, var(--success) 15%, transparent); color: var(--success); }
-.delta-down { background: color-mix(in oklab, var(--destructive) 12%, transparent); color: var(--destructive); }
-.delta-same { background: var(--border); color: var(--muted-foreground); }
-
-/* Score Input Panel */
-.score-input-panel {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  box-shadow: var(--shadow-soft);
-}
-.score-input-panel h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; }
-.score-row {
-  display: flex; align-items: center; gap: 0.75rem;
-  margin-bottom: 0.625rem;
-}
-.score-player-name {
-  flex: 1; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500;
-}
-.score-input-field {
-  width: 6rem; padding: 0.5rem 0.65rem; border-radius: 0.5rem;
-  border: 1px solid var(--border); background: var(--surface-soft);
-  font: inherit; font-size: 0.9rem; font-family: 'JetBrains Mono', monospace;
-  color: var(--foreground); text-align: right; transition: all 0.15s;
-}
-.score-input-field:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); background: var(--surface); }
-.score-stepper { display: flex; gap: 0.25rem; }
-.stepper-btn {
-  width: 1.75rem; height: 1.75rem; border-radius: 0.375rem;
-  border: 1px solid var(--border); background: var(--surface);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; line-height: 1; color: var(--muted-foreground); transition: all 0.15s;
-}
-.stepper-btn:hover { border-color: var(--primary); color: var(--primary); }
-.submit-round-btn {
-  width: 100%; margin-top: 1rem; padding: 0.75rem; border-radius: 0.625rem;
-  background: var(--primary); color: var(--primary-foreground);
-  font: inherit; font-size: 0.875rem; font-weight: 600;
-  border: none; cursor: pointer; box-shadow: var(--shadow-glow);
-  transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-}
-.submit-round-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-/* Chart Panel */
-.chart-panel {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  box-shadow: var(--shadow-soft); margin-top: 1rem;
-}
-.chart-panel canvas { max-height: 260px; }
-.chart-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
-.chart-tab {
-  padding: 0.35rem 0.75rem; border-radius: 9999px;
-  border: 1px solid var(--border); background: transparent;
-  font: inherit; font-size: 0.78rem; cursor: pointer; color: var(--muted-foreground); transition: all 0.15s;
-}
-.chart-tab.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
-
-/* Round History */
-.round-history {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  box-shadow: var(--shadow-soft); margin-top: 1rem; overflow-x: auto;
-}
-.history-table {
-  width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 28rem;
-}
-.history-table th, .history-table td {
-  padding: 0.6rem 0.75rem; text-align: right;
-  border-bottom: 1px solid var(--border);
-}
-.history-table th:first-child, .history-table td:first-child { text-align: left; }
-.history-table th {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--muted-foreground); background: var(--surface-soft);
-}
-.history-table tbody tr:last-child td { border-bottom: none; }
-.history-table .total-row { font-weight: 600; background: var(--surface-soft); }
-.col-rank { text-align: center !important; }
-.editable-cell { cursor: pointer; }
-.editable-cell:hover { color: var(--primary); }
-
-/* ========== Stats mini panel ========== */
-.stats-mini {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  box-shadow: var(--shadow-soft); margin-top: 1rem;
-}
-.stats-grid { display: grid; gap: 0.75rem; grid-template-columns: 1fr 1fr; margin-top: 0.75rem; }
-.stat-pill {
-  padding: 0.75rem; border-radius: 0.75rem;
-  background: var(--surface-soft); border: 1px solid var(--border);
-}
-.stat-pill .label { font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-foreground); }
-.stat-pill .value { font-size: 0.875rem; font-weight: 600; margin-top: 0.2rem; }
-.stat-pill .sub { font-size: 0.7rem; color: var(--muted-foreground); }
-
-/* ========== End Game / Awards ========== */
-#view-awards { max-width: 56rem; margin: 0 auto; padding: 2rem 1.25rem; }
-.ceremony-header { text-align: center; padding: 2rem 0; }
-.ceremony-header .trophy { font-size: 3rem; display: block; animation: float 3s ease-in-out infinite; }
-.ceremony-header h2 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; margin-top: 0.75rem; }
-.ceremony-header p { color: var(--muted-foreground); margin-top: 0.5rem; }
-.podium { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 2rem 0; align-items: end; }
-.podium-slot {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem 1rem;
-  text-align: center; box-shadow: var(--shadow-soft);
-}
-.podium-slot.p1 {
-  border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
-  background: var(--primary-soft); box-shadow: var(--shadow-card);
-}
-.podium-avatar { font-size: 2rem; display: block; }
-.podium-rank { font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--muted-foreground); margin-top: 0.25rem; }
-.podium-name { font-size: 0.9rem; font-weight: 600; margin-top: 0.35rem; }
-.podium-score { font-size: 1.25rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 0.25rem; }
-.p1 .podium-score { color: var(--primary); }
-.awards-grid { display: grid; gap: 0.75rem; grid-template-columns: 1fr 1fr; margin-top: 2rem; }
-@media(min-width:640px){ .awards-grid { grid-template-columns: 1fr 1fr 1fr; } }
-.award-card {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1rem;
-  text-align: center; box-shadow: var(--shadow-soft);
-  animation: award-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-@keyframes award-pop { from { opacity:0; transform: scale(0.7) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
-.award-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
-.award-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
-.award-player { font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem; }
-.award-desc { font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.25rem; }
-.awards-footer { margin-top: 2rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-
-/* ========== History Screen ========== */
-#view-history { max-width: 64rem; margin: 0 auto; padding: 2rem 1.25rem; }
-#view-history h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
-.history-game-card {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1.25rem;
-  margin-bottom: 0.75rem; box-shadow: var(--shadow-soft);
-  cursor: pointer; transition: all 0.2s;
-}
-.history-game-card:hover { border-color: color-mix(in oklab, var(--primary) 40%, var(--border)); box-shadow: var(--shadow-card); transform: translateY(-1px); }
-.hgc-head { display: flex; align-items: center; gap: 0.75rem; }
-.hgc-name { flex: 1; font-weight: 600; }
-.hgc-date { font-size: 0.78rem; color: var(--muted-foreground); font-family: 'JetBrains Mono', monospace; }
-.hgc-players { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.hgc-player-chip {
-  display: flex; align-items: center; gap: 0.35rem;
-  font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 9999px;
-  border: 1px solid var(--border); background: var(--surface-soft);
-}
-.global-stats { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-bottom: 2rem; }
-@media(min-width:640px){ .global-stats { grid-template-columns: repeat(4, 1fr); } }
-.gstat {
-  border: 1px solid var(--border); border-radius: 1rem;
-  background: var(--surface); padding: 1rem; box-shadow: var(--shadow-soft);
-}
-.gstat .num { font-size: 1.75rem; font-weight: 700; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
-.gstat .lbl { font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.2rem; }
-
-/* ========== Modal / Overlay ========== */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 1rem; backdrop-filter: blur(4px);
-  opacity: 0; pointer-events: none; transition: opacity 0.2s;
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-.modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 1.25rem; padding: 1.5rem; width: 100%; max-width: 26rem;
-  box-shadow: var(--shadow-card); transform: translateY(8px);
-  transition: transform 0.2s;
-}
-.modal-overlay.open .modal { transform: translateY(0); }
-.modal h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
-.avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
-.avatar-option {
-  width: 100%; aspect-ratio: 1; border-radius: 0.5rem;
-  border: 1px solid var(--border); background: var(--surface-soft);
-  font-size: 1.35rem; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; transition: all 0.15s;
-}
-.avatar-option:hover { border-color: var(--primary); transform: scale(1.1); }
-.avatar-option.selected { border-color: var(--primary); background: var(--primary-soft); }
-
-/* ========== Toast ========== */
-.toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; }
-.toast {
-  background: var(--primary); color: var(--primary-foreground);
-  border-radius: 0.75rem; padding: 0.75rem 1.25rem;
-  font-size: 0.875rem; font-weight: 500;
-  box-shadow: var(--shadow-card);
-  animation: slide-in 0.3s ease; pointer-events: none;
-}
-@keyframes slide-in { from { opacity:0; transform: translateX(1rem); } to { opacity:1; transform: translateX(0); } }
-.toast.out { animation: slide-out 0.3s ease forwards; }
-@keyframes slide-out { to { opacity:0; transform: translateX(1rem); } }
-
-/* ========== Badge / Chips ========== */
-.badge {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.2rem 0.6rem; border-radius: 9999px;
-  border: 1px solid var(--border); font-size: 0.72rem;
-  color: var(--muted-foreground); background: var(--surface);
-}
-.badge .dot { width: 0.375rem; height: 0.375rem; border-radius: 9999px; background: var(--success); animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-
-/* ========== Color picker ========== */
-.color-picker { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.color-swatch {
-  width: 1.5rem; height: 1.5rem; border-radius: 9999px; cursor: pointer;
-  border: 2px solid transparent; transition: all 0.15s;
-}
-.color-swatch.selected { border-color: var(--foreground); transform: scale(1.15); }
-
-/* ========== Edit cell inline ========== */
-.inline-edit {
-  width: 5rem; border: 1px solid var(--primary); border-radius: 0.375rem;
-  padding: 0.25rem 0.4rem; font: inherit; font-size: 0.8rem;
-  font-family: 'JetBrains Mono', monospace; text-align: right;
-  background: var(--surface); color: var(--foreground);
-}
-
-/* ========== Confetti ========== */
-.confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 150; overflow: hidden; }
-.confetti-piece {
-  position: absolute; top: -10px;
-  width: 8px; height: 8px; border-radius: 2px;
-  animation: confetti-fall linear forwards;
-}
-@keyframes confetti-fall {
-  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-}
-
-/* ========== Responsive ========== */
-@media(max-width:480px){
-  .podium { grid-template-columns: 1fr; }
-  .awards-grid { grid-template-columns: 1fr 1fr; }
-  .stats-grid { grid-template-columns: 1fr; }
-}
-</style>
 </head>
-<body>
+<body data-root=".." data-page="score">
 
-<!-- HEADER -->
-<header class="site-header">
-  <div class="inner">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      BoardNight
-    </div>
-    <div class="header-actions">
-      <div id="game-status-badge" class="badge" style="display:none">
-        <span class="dot"></span>
-        <span id="badge-text">Game in progress</span>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="showView('history')" id="btn-history">History</button>
-    </div>
-  </div>
-</header>
+<div id="site-header"></div>
 
 <!-- VIEWS -->
 
 <!-- WELCOME -->
 <div id="view-welcome" class="view active">
-  <div style="max-width:52rem;margin:0 auto;padding:3rem 1.25rem">
     <div class="welcome-hero">
       <span class="welcome-icon">🎲</span>
       <div class="eyebrow">Board Game Night</div>
@@ -550,12 +35,10 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
     <div class="history-list" id="recent-games-list"></div>
-  </div>
 </div>
 
 <!-- SETUP -->
 <div id="view-setup" class="view">
-  <div style="max-width:48rem;margin:0 auto;padding:2.5rem 1.25rem">
     <div class="setup-header">
       <div class="eyebrow">New Session</div>
       <h2>Set up your game</h2>
@@ -572,7 +55,7 @@ a { color: inherit; text-decoration: none; }
       </select>
     </div>
     <div class="players-section">
-      <h3>Players <span style="color:var(--muted-foreground);font-weight:400;font-size:0.8rem">(2–8)</span></h3>
+      <h3>Players <span class="player-count-note">(2–8)</span></h3>
       <div id="player-list"></div>
       <button class="add-player-btn" id="add-player-btn" onclick="addPlayerRow()">
         <span>+</span> Add player
@@ -582,12 +65,10 @@ a { color: inherit; text-decoration: none; }
       <button class="btn btn-outline" onclick="showView('welcome')">← Back</button>
       <button class="btn btn-primary" onclick="startGame()">Start Game →</button>
     </div>
-  </div>
 </div>
 
 <!-- GAME -->
 <div id="view-game" class="view">
-  <div style="max-width:72rem;margin:0 auto;padding:1.5rem 1.25rem">
     <div class="game-header">
       <div class="game-title">
         <h2 id="game-display-name">Game</h2>
@@ -610,27 +91,27 @@ a { color: inherit; text-decoration: none; }
         </div>
 
         <!-- Charts -->
-        <div class="chart-panel" style="margin-top:1rem">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
-            <h3 style="font-size:0.95rem;font-weight:600">Score Progression</h3>
+        <div class="chart-panel">
+          <div class="chart-panel-head">
+            <h3 class="panel-title">Score Progression</h3>
             <div class="chart-tabs">
               <button class="chart-tab active" onclick="switchChart('line',this)">Line</button>
             </div>
           </div>
           <canvas id="main-chart"></canvas>
-          <div id="chart-no-data" style="text-align:center;padding:2rem;color:var(--muted-foreground);font-size:0.85rem">
+          <div id="chart-no-data" class="empty-message empty-message-large">
             Submit round scores to see the chart
           </div>
         </div>
 
         <!-- Round history -->
-        <div class="round-history" style="margin-top:1rem">
+        <div class="round-history">
           <div class="panel-head">
-            <h3 style="font-size:0.95rem;font-weight:600">Round History</h3>
-            <span style="font-size:0.75rem;color:var(--muted-foreground)">Click a score to edit</span>
+            <h3 class="panel-title">Round History</h3>
+            <span class="panel-note">Click a score to edit</span>
           </div>
           <div id="round-history-wrap">
-            <p style="text-align:center;padding:1.5rem;color:var(--muted-foreground);font-size:0.85rem">No rounds yet</p>
+            <p class="empty-message">No rounds yet</p>
           </div>
         </div>
       </div>
@@ -650,7 +131,6 @@ a { color: inherit; text-decoration: none; }
 
       </div>
     </div>
-  </div>
 </div>
 
 <!-- AWARDS -->
@@ -659,11 +139,11 @@ a { color: inherit; text-decoration: none; }
     <span class="trophy">🏆</span>
     <div class="eyebrow">Game Over</div>
     <h2>Final Results</h2>
-    <p id="awards-game-name" style="color:var(--muted-foreground)"></p>
+    <p id="awards-game-name"></p>
   </div>
   <div class="podium" id="podium"></div>
-  <div style="margin-top:1.5rem">
-    <div class="eyebrow" style="margin-bottom:1rem">🎉 Awards Ceremony</div>
+  <div class="awards-section">
+    <div class="eyebrow awards-eyebrow">🎉 Awards Ceremony</div>
     <div class="awards-grid" id="awards-grid"></div>
   </div>
   <div class="awards-footer">
@@ -674,31 +154,29 @@ a { color: inherit; text-decoration: none; }
 
 <!-- HISTORY -->
 <div id="view-history" class="view">
-  <div style="max-width:64rem;margin:0 auto;padding:2rem 1.25rem">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
-      <div style="flex:1">
+    <div class="history-page-head">
+      <div class="flex-fill">
         <div class="eyebrow">All Time</div>
-        <h2 style="font-size:1.5rem;font-weight:600;letter-spacing:-0.02em">Game History</h2>
+        <h2>Game History</h2>
       </div>
       <button class="btn btn-outline btn-sm" onclick="showView('welcome')">← Home</button>
     </div>
     <div class="global-stats" id="global-stats"></div>
     <div id="history-games-list">
-      <p style="text-align:center;padding:3rem;color:var(--muted-foreground)">No games played yet. Start your first game!</p>
+      <p class="empty-message empty-message-xl">No games played yet. Start your first game!</p>
     </div>
-  </div>
 </div>
 
 <!-- Avatar Modal -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="modal">
     <h3>Pick Avatar & Color</h3>
-    <div class="eyebrow" style="margin-bottom:0.5rem">Avatar</div>
+    <div class="eyebrow modal-eyebrow">Avatar</div>
     <div class="avatar-grid" id="avatar-grid"></div>
-    <div class="eyebrow" style="margin-bottom:0.5rem">Color</div>
+    <div class="eyebrow modal-eyebrow">Color</div>
     <div class="color-picker" id="color-picker"></div>
-    <div style="display:flex;gap:0.5rem">
-      <button class="btn btn-primary" style="flex:1" onclick="confirmAvatar()">Confirm</button>
+    <div class="modal-actions">
+      <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirm</button>
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
     </div>
   </div>
@@ -734,7 +212,8 @@ let state = {
 function showView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.getElementById('view-' + v).classList.add('active');
-  document.getElementById('game-status-badge').style.display = state.currentGame ? '' : 'none';
+  const statusBadge = document.getElementById('game-status-badge');
+  if (statusBadge) statusBadge.style.display = state.currentGame ? '' : 'none';
   if (v === 'welcome') renderWelcome();
   if (v === 'history') renderHistory();
   if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); }
@@ -766,10 +245,10 @@ function variance(arr) {
 function renderWelcome() {
   const list = document.getElementById('recent-games-list');
   if (!state.history.length) { list.innerHTML = ''; return; }
-  list.innerHTML = `<div class="eyebrow" style="margin-bottom:0.75rem">Recent Games</div>` +
+  list.innerHTML = `<div class="eyebrow recent-title">Recent Games</div>` +
     state.history.slice(-5).reverse().map((g,i) => `
       <div class="history-item" onclick="reviewGame(${state.history.length-1-i})">
-        <div style="font-size:1.5rem">${g.players[0]?.avatar||'🎲'}</div>
+        <div class="history-avatar">${g.players[0]?.avatar||'🎲'}</div>
         <div class="history-item-info">
           <strong>${g.name}</strong>
           <span>${g.players.length} players · ${g.rounds.length} rounds · ${new Date(g.date).toLocaleDateString()}</span>
@@ -797,7 +276,7 @@ function renderSetupPlayers() {
       <div class="player-color-dot" style="background:${p.color}"></div>
       <input class="player-name-input" type="text" value="${p.name}" placeholder="Player name"
         oninput="state.setupPlayers[${i}].name=this.value">
-      <button class="btn btn-icon btn-danger" onclick="removePlayer(${i})" title="Remove" style="flex-shrink:0">✕</button>
+      <button class="btn btn-icon btn-danger" onclick="removePlayer(${i})" title="Remove">✕</button>
     </div>`).join('');
   document.getElementById('add-player-btn').style.display = state.setupPlayers.length >= 8 ? 'none' : '';
 }
@@ -833,8 +312,6 @@ function startGame() {
 
   showView('game');
   document.getElementById('game-display-name').textContent = gameName;
-  document.getElementById('game-status-badge').style.display = '';
-  document.getElementById('badge-text').textContent = gameName;
   updateRoundInfo();
 }
 
@@ -981,7 +458,7 @@ function renderRoundHistory() {
   const g = state.currentGame; if(!g) return;
   const wrap = document.getElementById('round-history-wrap');
   if (!g.rounds.length) {
-    wrap.innerHTML = '<p style="text-align:center;padding:1.5rem;color:var(--muted-foreground);font-size:0.85rem">No rounds yet</p>';
+    wrap.innerHTML = '<p class="empty-message">No rounds yet</p>';
     return;
   }
   const totals = getTotals(g);
@@ -1177,7 +654,7 @@ function renderAwards() {
   const ranks = ['1st','2nd','3rd'];
   podium.innerHTML = top.map((p,i) => `
     <div class="podium-slot${i===0?' p1':''}">
-      <span class="podium-avatar" style="font-size:${i===0?'2.5':'2'}rem">${p.avatar}</span>
+      <span class="podium-avatar">${p.avatar}</span>
       <div class="podium-rank">${medals[i]} ${ranks[i]}</div>
       <div class="podium-name" style="color:${p.color}">${p.name}</div>
       <div class="podium-score">${p.total}</div>
@@ -1434,7 +911,7 @@ function renderHistory() {
     <div class="gstat"><div class="num">${topPlayer?topPlayer[0].slice(0,8):'—'}</div><div class="lbl">Most wins${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
 
   if (!state.history.length) {
-    container.innerHTML = '<p style="text-align:center;padding:3rem;color:var(--muted-foreground)">No games played yet. Start your first game!</p>';
+    container.innerHTML = '<p class="empty-message empty-message-xl">No games played yet. Start your first game!</p>';
     return;
   }
 
@@ -1443,10 +920,10 @@ function renderHistory() {
     return `
       <div class="history-game-card" onclick="reviewGame(${realIdx})">
         <div class="hgc-head">
-          <span style="font-size:1.25rem">${g.players?.[0]?.avatar||'🎲'}</span>
+          <span class="hgc-avatar">${g.players?.[0]?.avatar||'🎲'}</span>
           <span class="hgc-name">${g.name}</span>
           <span class="hgc-date">${new Date(g.date).toLocaleDateString()} · ${g.rounds?.length||0} rounds</span>
-          <span class="history-item-badge" style="background:var(--primary-soft);color:var(--primary);font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:9999px;font-family:'JetBrains Mono',monospace">
+          <span class="history-item-badge">
             🏆 ${g.winner||'?'}
           </span>
         </div>
@@ -1501,5 +978,6 @@ function launchConfetti() {
 initSetup();
 renderWelcome();
 </script>
+<script src="../shared-layout.js"></script>
 </body>
 </html>

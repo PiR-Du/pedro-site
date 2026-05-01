@@ -1,0 +1,30 @@
+const INITIAL_DATA = {
+  "infos": [
+    { "title": "Loi de Pareto", "text": "80% des effets viennent de 20% des causes.", "category": "Productivité", "source": "Pareto" },
+    { "title": "Typage Statique", "text": "Le typage statique réduit les bugs à l'exécution.", "category": "Code", "source": "Martin Fowler" },
+    { "title": "Réduction Culinaire", "text": "Une bonne sauce commence toujours par une réduction.", "category": "Cuisine", "source": "Escoffier" },
+    { "title": "Incertitude", "text": "Le principe de l'incertitude d'Heisenberg.", "category": "Physique", "source": "Heisenberg" },
+    { "title": "IA Probabiliste", "text": "L'IA générative repose sur des modèles de probabilité.", "category": "IA", "source": "Andrew Ng" },
+    { "title": "Système 1", "text": "Le système 1 est rapide, intuitif et émotionnel.", "category": "Psychologie", "source": "Daniel Kahneman" },
+    { "title": "Système 2", "text": "Le système 2 est lent, réfléchi et logique.", "category": "Psychologie", "source": "Daniel Kahneman" },
+    { "title": "Simplicité", "text": "La simplicité est la sophistication suprême.", "category": "Design", "source": "Léonard de Vinci" },
+    { "title": "Mécanisme d'attention", "text": "Un transformateur utilise des mécanismes d'attention.", "category": "IA", "source": "Andrew Ng" },
+    { "title": "Refactoring", "text": "Améliorer le code sans changer son comportement.", "category": "Code", "source": "Martin Fowler" },
+    { "title": "Affordance", "text": "L'affordance est la capacité d'un objet à suggérer son usage.", "category": "Design", "source": "Don Norman" },
+    { "title": "Relativité", "text": "E=mc² : l'énergie et la masse sont interchangeables.", "category": "Physique", "source": "Einstein" },
+    { "title": "Clean Code", "text": "Le code est fait pour être lu par des humains.", "category": "Code", "source": "Robert C. Martin" },
+    { "title": "LLM", "text": "Les Large Language Models prédisent le mot suivant.", "category": "IA", "source": "Yann LeCun" },
+    { "title": "Biais d'ancrage", "text": "La première information reçue influence le jugement.", "category": "Psychologie", "source": "Daniel Kahneman" },
+    { "title": "GTD", "text": "Vider son esprit pour se concentrer sur l'action.", "category": "Productivité", "source": "David Allen" },
+    { "title": "Schrödinger", "text": "Un chat à la fois mort et vivant tant qu'on n'observe pas.", "category": "Physique", "source": "Heisenberg" },
+    { "title": "Réaction Maillard", "text": "La chimie des saveurs lors de la cuisson des viandes.", "category": "Cuisine", "source": "Hervé This" },
+    { "title": "Fibonacci", "text": "Une suite où chaque nombre est la somme des deux précédents.", "category": "Maths", "source": "Fibonacci" },
+    { "title": "Nombre d'Or", "text": "Une proportion divine que l'on retrouve dans la nature.", "category": "Maths", "source": "Fibonacci" },
+    { "title": "CNN", "text": "Les réseaux de neurones parfaits pour la vision.", "category": "IA", "source": "Yann LeCun" },
+    { "title": "Gestalt", "text": "Le cerveau perçoit les objets comme un tout cohérent.", "category": "Design", "source": "Don Norman" },
+    { "title": "SOLID", "text": "5 principes pour un code robuste et maintenable.", "category": "Code", "source": "Robert C. Martin" },
+    { "title": "Time Blocking", "text": "Allouer des blocs de temps fixes pour chaque tâche.", "category": "Productivité", "source": "David Allen" },
+    { "title": "Le Flow", "text": "État de concentration totale où le temps disparaît.", "category": "Psychologie", "source": "Mihaly C." },
+    { "title": "Entropie", "text": "Désordre croissant dans tout système fermé.", "category": "Physique", "source": "Einstein" }
+  ]
+};

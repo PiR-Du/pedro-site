@@ -3,896 +3,284 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Assistant batch cooking - Pierre Duchesne</title>
+  <title>Batch Cooking - Simplifié</title>
   <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <style>
+    .batch-container { max-width: 800px; margin: 0 auto; padding: 4rem 1.5rem; }
+    .selector-box { 
+      background: var(--surface); 
+      border: 1px solid var(--border); 
+      border-radius: 1rem; 
+      padding: 2rem; 
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 3rem;
+    }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tab-btn {
+      flex: 1; padding: 0.75rem; border-radius: 0.5rem;
+      border: 1px solid var(--border); background: var(--surface-soft);
+      cursor: pointer; transition: all 0.2s; font-weight: 500;
+    }
+    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .input-group select {
+      padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border);
+      font-size: 1rem; background: var(--surface);
+    }
+    #selectors-container select { margin-bottom: 0.5rem; }
+    #selectors-container select:last-child { margin-bottom: 0; }
+    
+    .generate-btn {
+      width: 100%; margin-top: 1.5rem; padding: 1rem; border-radius: 0.5rem;
+      background: var(--primary); color: white; border: none;
+      font-weight: 600; cursor: pointer; transition: transform 0.1s;
+    }
+    .generate-btn:active { transform: scale(0.98); }
+    
+    .plan-grid { display: grid; gap: 1rem; }
+    .day-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 1.25rem; display: flex; gap: 1rem;
+      align-items: center;
+    }
+    .day-label { 
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary);
+      text-transform: uppercase; writing-mode: vertical-lr; transform: rotate(180deg);
+      border-right: 1px solid var(--border); padding-left: 0.5rem;
+    }
+    .meal-info h3 { font-family: var(--font-serif); font-size: 1.5rem; }
+    .meal-ingredients { font-size: 0.85rem; color: var(--muted-foreground); margin-top: 0.25rem; }
+  </style>
 </head>
 <body data-root=".." data-page="batch-cooking">
 
   <div id="site-header"></div>
 
   <main>
-    <section class="project-page batch-shell">
-      <p class="eyebrow">./projets/batch-cooking-helper</p>
-      <h1>Assistant batch cooking</h1>
-      <p class="lead">
-        Partez d'un plat que vous voulez manger cette semaine ou de 3 ingredients deja disponibles,
-        puis laissez la page construire un plan de batch cooking autour de ce point de depart.
-      </p>
-
-      <section class="batch-hero">
-        <div class="batch-hero-main">
-          <div class="batch-kicker">Assistant cuisine</div>
-          <h2>Choisissez votre point de depart, puis construisez la semaine autour.</h2>
-          <p>
-            Ce prototype est pense autour de deux vrais points d'entree : "je sais deja quel plat
-            je veux manger cette semaine" ou "je dois utiliser ces ingredients avant qu'ils ne s'abiment".
-            A partir de la, le planificateur construit les composants, les repas, les courses, les substitutions et le stockage.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary batch-btn-primary" href="#weekly-planner">Construire la semaine</a>
-            <a class="btn btn-outline batch-btn-secondary" href="../index.html#projets">Retour aux projets</a>
-          </div>
-        </div>
-
-        <aside class="batch-hero-side">
-          <div class="batch-side-card">
-            <h3>Ce que cherche a faire le planificateur</h3>
-            <ul class="fact-list">
-              <li><strong>Ancrer la semaine :</strong> autour d'un plat souhaite ou de trois ingredients deja disponibles.</li>
-              <li><strong>Reutiliser intelligemment :</strong> un petit ensemble de proteines, feculents, legumes et sauces.</li>
-              <li><strong>Reduire la friction :</strong> une liste de courses, une session du dimanche, plusieurs resultats.</li>
-              <li><strong>Garder le controle :</strong> substitutions, fraicheur et stockage restent visibles.</li>
-            </ul>
-          </div>
-        </aside>
-      </section>
-
-      <section id="weekly-planner" class="batch-section">
-        <div class="batch-section-head">
-          <div>
-            <p class="eyebrow">01 / Planificateur hebdomadaire</p>
-            <h2>Commencer par la vraie logique utilisateur</h2>
-          </div>
-          <p class="section-meta">Soit on ancre la semaine autour d'un plat, soit on sauve des ingredients deja presents dans la cuisine.</p>
-        </div>
-
-        <div class="batch-planner-card">
-          <div class="toggle-row entry-mode-row">
-            <button class="batch-toggle is-active" data-entry-mode="meal" type="button">Partir d'un plat</button>
-            <button class="batch-toggle" data-entry-mode="ingredients" type="button">Partir de 3 ingredients</button>
-          </div>
-
-          <div id="entry-mode-copy" class="entry-mode-copy"></div>
-
-          <div class="batch-controls">
-            <label class="planner-field">
-              <span>Taille du foyer</span>
-              <select id="household-size">
-                <option value="1">1 personne</option>
-                <option value="2" selected>2 personnes</option>
-                <option value="4">4 personnes</option>
-              </select>
-            </label>
-
-            <label class="planner-field">
-              <span>Repas a couvrir</span>
-              <select id="meals-covered">
-                <option value="8">8 repas</option>
-                <option value="10" selected>10 repas</option>
-                <option value="12">12 repas</option>
-                <option value="15">15 repas</option>
-              </select>
-            </label>
-
-            <label class="planner-field">
-              <span>Profil alimentaire</span>
-              <select id="dietary-profile">
-                <option value="balanced" selected>Equilibre</option>
-                <option value="high-protein">Hyperproteine</option>
-                <option value="vegetarian">Vegetarien</option>
-                <option value="low-carb">Faible en glucides</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="entry-pane" data-entry-pane="meal">
-            <label class="planner-field">
-              <span>Plat souhaite cette semaine</span>
-              <select id="anchor-meal"></select>
-            </label>
-            <p class="entry-note">
-              The planner will treat this as the anchor meal, then suggest other meals
-              that fit naturally with the same component system.
-            </p>
-          </div>
-
-          <div class="entry-pane is-hidden" data-entry-pane="ingredients">
-            <div class="batch-controls">
-              <label class="planner-field">
-                <span>Ingredient 1</span>
-                <select id="ingredient-1"></select>
-              </label>
-              <label class="planner-field">
-                <span>Ingredient 2</span>
-                <select id="ingredient-2"></select>
-              </label>
-              <label class="planner-field">
-                <span>Ingredient 3</span>
-                <select id="ingredient-3"></select>
-              </label>
-            </div>
-            <p class="entry-note">
-              Le planificateur va orienter le batch cooking vers des composants qui utilisent
-              deja ces ingredients, puis completer la semaine avec ce qu'il manque.
-            </p>
-          </div>
-
-          <div id="planner-summary" class="batch-summary-grid"></div>
-          <div id="component-grid" class="component-grid"></div>
-
-          <div class="batch-output-card">
-            <div class="batch-output-head">
-              <h3>Repas de la semaine</h3>
-              <p>Construits a partir de votre point de depart, puis elargis en ensemble coherent pour la semaine.</p>
-            </div>
-            <div id="meal-combos" class="meal-combo-grid"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="batch-section">
-        <div class="batch-section-head">
-          <div>
-            <p class="eyebrow">02 / Session de batch cooking</p>
-            <h2>Organiser le dimanche comme une petite ligne de production</h2>
-          </div>
-          <p class="section-meta">Les taches actives, les cuissons passives et les zones de chaleur restent visibles d'un coup d'oeil.</p>
-        </div>
-
-        <div class="batch-output-card">
-          <div class="batch-output-head">
-            <h3>Chronologie parallele</h3>
-            <p>Code couleur entre temps actif et passif, reparti entre plan de prep, plaques et four.</p>
-          </div>
-          <div class="timeline-legend">
-            <span class="legend-chip legend-active">Actif</span>
-            <span class="legend-chip legend-passive">Passif</span>
-            <span class="legend-chip legend-hot">Forte chaleur</span>
-            <span class="legend-chip legend-cool">Froid / assemblage</span>
-          </div>
-          <div id="session-tracks" class="session-tracks"></div>
-        </div>
-      </section>
-
-      <section class="batch-section">
-        <div class="batch-section-head">
-          <div>
-            <p class="eyebrow">03 / Agrégateur d ingredients</p>
-            <h2>Faire les courses une fois, avec une liste organisee de maniere intuitive</h2>
-          </div>
-          <p class="section-meta">Basculer entre une vue par rayon et une vue par composant.</p>
-        </div>
-
-        <div class="batch-output-card">
-          <div class="toggle-row">
-            <button class="batch-toggle is-active" data-shop-mode="aisle" type="button">Par rayon</button>
-            <button class="batch-toggle" data-shop-mode="component" type="button">Par composant</button>
-          </div>
-          <div id="shopping-view" class="shopping-view"></div>
-        </div>
-      </section>
-
-      <section class="batch-section">
-        <div class="batch-section-head">
-          <div>
-            <p class="eyebrow">04 / Moteur de substitutions</p>
-            <h2>Des substitutions qui conservent une vraie logique nutritionnelle</h2>
-          </div>
-          <p class="section-meta">Les substitutions mettent a jour les quantites et les macros, pas seulement les noms des ingredients.</p>
-        </div>
-
-        <div class="batch-swap-layout">
-          <div class="batch-output-card">
-            <div class="batch-controls batch-controls-tight">
-              <label class="planner-field">
-                <span>Substituer ce composant</span>
-                <select id="swap-component"></select>
-              </label>
-            </div>
-            <div id="swap-panel" class="swap-panel"></div>
-          </div>
-
-          <aside class="batch-output-card">
-            <div class="batch-output-head">
-              <h3>Note nutritionnelle</h3>
-              <p>Ce prototype utilise des equivalences simples pour montrer le comportement attendu.</p>
-            </div>
-            <ul class="fact-list">
-              <li><strong>Substitutions de proteines :</strong> viser un apport proteique proche par portion.</li>
-              <li><strong>Substitutions de glucides :</strong> garder la structure du repas tout en ajustant les calories.</li>
-              <li><strong>Substitutions de richesse :</strong> conserver la sensation du plat, pas seulement le nom de l ingredient.</li>
-            </ul>
-          </aside>
-        </div>
-      </section>
-
-      <section class="batch-section">
-        <div class="batch-section-head">
-          <div>
-            <p class="eyebrow">05 / Stockage &amp; securite</p>
-            <h2>Savoir quoi manger d abord et quoi congeler</h2>
-          </div>
-          <p class="section-meta">La fraicheur depend de la vraie fin de session, pas d un compte a rebours fictif.</p>
-        </div>
-
-        <div class="batch-output-card">
-          <div class="storage-controls">
-            <label class="planner-field">
-              <span>Session terminee le</span>
-              <input id="session-complete" class="batch-input" type="datetime-local" />
-            </label>
-          </div>
-          <div id="storage-dashboard" class="storage-dashboard"></div>
-        </div>
-      </section>
+    <section class="hero">
+      <div class="grid-bg" aria-hidden="true"></div>
+      <div class="inner">
+        <p class="eyebrow">./projets/batch-cooking</p>
+        <h1>Organisez votre semaine <span class="text-gradient">en un clic</span>.</h1>
+        <p class="lead">Choisissez votre point de départ, nous nous occupons du reste.</p>
+      </div>
     </section>
+
+    <div class="batch-container">
+      <div class="selector-box">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="setMode('meal')">Partir d'un plat</button>
+        <button class="tab-btn" onclick="setMode('ingredient')">Partir d'un ingrédient</button>
+      </div>
+
+      <div class="input-group">
+        <label id="select-label">Quel plat vous fait envie ?</label>
+        <div id="selectors-container" class="input-group">
+          <select id="main-select"></select>
+        </div>
+      </div>
+
+      <button class="generate-btn" onclick="generatePlan()">Générer ma semaine</button>
+    </div>
+
+    <div id="plan-result" class="plan-grid">
+      <!-- Resultats ici -->
+    </div>
   </main>
 
   <div id="site-footer"></div>
 
   <script src="../shared-layout.js"></script>
   <script>
-    const dataFiles = {
-      components: './data/components.csv',
-      ingredients: './data/ingredients.csv',
-      swaps: './data/swaps.csv',
-      sessionTracks: './data/session_tracks.csv',
-      meals: './data/meals.csv'
-    };
+    const MEALS = [
+      // Hiver
+      { id: 101, title: "Raclette", ingredients: ["fromage à raclette", "pommes de terre", "charcuterie", "oignons"] },
+      { id: 102, title: "Fondue savoyarde", ingredients: ["fromage", "pain", "ail", "vin blanc"] },
+      { id: 103, title: "Pot-au-feu", ingredients: ["bœuf", "carottes", "poireaux", "pommes de terre"] },
+      { id: 104, title: "Tartiflette", ingredients: ["reblochon", "pommes de terre", "lardons", "oignons"] },
+      { id: 105, title: "Bœuf bourguignon", ingredients: ["bœuf", "vin rouge", "carottes", "champignons"] },
+      { id: 106, title: "Soupe à l’oignon", ingredients: ["oignons", "pain", "fromage", "bouillon"] },
+      { id: 107, title: "Cassoulet", ingredients: ["haricots blancs", "saucisses", "confit de canard", "tomates"] },
+      { id: 108, title: "Gratin dauphinois", ingredients: ["pommes de terre", "crème", "ail", "lait"] },
+      { id: 109, title: "Chili con carne", ingredients: ["bœuf haché", "haricots rouges", "tomates concassées", "oignons"] },
+      { id: 110, title: "Blanquette de veau", ingredients: ["veau", "carottes", "champignons", "crème"] },
 
-    const householdEl = document.getElementById('household-size');
-    const mealsEl = document.getElementById('meals-covered');
-    const dietEl = document.getElementById('dietary-profile');
-    const anchorMealEl = document.getElementById('anchor-meal');
-    const ingredientEls = [
-      document.getElementById('ingredient-1'),
-      document.getElementById('ingredient-2'),
-      document.getElementById('ingredient-3')
+      // Été
+      { id: 201, title: "Salade niçoise", ingredients: ["thon", "œufs", "tomates", "haricots verts"] },
+      { id: 202, title: "Gazpacho", ingredients: ["tomates", "concombre", "poivrons", "oignons"] },
+      { id: 203, title: "Taboulé", ingredients: ["semoule", "tomates", "concombre", "menthe"] },
+      { id: 204, title: "Tian de légumes", ingredients: ["courgette", "aubergine", "tomates", "oignons"] },
+      { id: 205, title: "Brochettes de poulet", ingredients: ["blanc de poulet", "poivrons", "oignons", "tomates"] },
+      { id: 206, title: "Poke bowl", ingredients: ["riz", "saumon", "avocat", "concombre"] },
+      { id: 207, title: "Melon-jambon cru", ingredients: ["melon", "jambon cru", "roquette", "mozzarella"] },
+      { id: 208, title: "Ratatouille", ingredients: ["courgette", "aubergine", "poivrons", "tomates"] },
+      { id: 209, title: "Wraps au saumon", ingredients: ["saumon fumé", "tortillas", "crème", "concombre"] },
+      { id: 210, title: "Carpaccio de bœuf", ingredients: ["bœuf", "parmesan", "roquette", "citron"] },
+
+      // Automne
+      { id: 301, title: "Velouté de potimarron", ingredients: ["potimarron", "crème", "oignons", "châtaignes"] },
+      { id: 302, title: "Quiche aux champignons", ingredients: ["pâte brisée", "champignons", "œufs", "crème"] },
+      { id: 303, title: "Risotto aux cèpes", ingredients: ["riz arborio", "champignons", "parmesan", "vin blanc"] },
+      { id: 304, title: "Parmentier de canard", ingredients: ["canard confit", "pommes de terre", "oignons", "crème"] },
+      { id: 305, title: "Poulet rôti aux légumes", ingredients: ["blanc de poulet", "carottes", "pommes de terre", "oignons"] },
+      { id: 306, title: "Tarte aux poireaux", ingredients: ["pâte brisée", "poireaux", "œufs", "crème"] },
+      { id: 307, title: "Curry de lentilles", ingredients: ["lentilles", "lait de coco", "oignons", "carottes"] },
+      { id: 308, title: "Gratin de courge", ingredients: ["courge", "crème", "fromage", "chapelure"] },
+      { id: 309, title: "Pâtes aux champignons", ingredients: ["spaghetti", "champignons", "crème", "parmesan"] },
+      { id: 310, title: "Tourte forestière", ingredients: ["pâte feuilletée", "champignons", "blanc de poulet", "crème"] },
+
+      // Printemps
+      { id: 401, title: "Quiche aux asperges", ingredients: ["pâte brisée", "asperges", "œufs", "crème"] },
+      { id: 402, title: "Risotto aux petits pois", ingredients: ["riz arborio", "petits pois", "parmesan", "menthe"] },
+      { id: 403, title: "Salade de chèvre chaud", ingredients: ["chèvre", "pain", "laitue", "miel"] },
+      { id: 404, title: "Omelette aux herbes", ingredients: ["œufs", "ciboulette", "persil", "fromage"] },
+      { id: 405, title: "Tarte aux légumes printaniers", ingredients: ["pâte brisée", "petits pois", "asperges", "courgette"] },
+      { id: 406, title: "Poulet citron-romarin", ingredients: ["blanc de poulet", "citron", "romarin", "pommes de terre"] },
+      { id: 407, title: "Pâtes au pesto", ingredients: ["spaghetti", "basilic", "parmesan", "pignons de pin"] },
+      { id: 408, title: "Bowl de légumes verts", ingredients: ["quinoa", "brocoli", "petits pois", "avocat"] },
+      { id: 409, title: "Clafoutis salé", ingredients: ["œufs", "lait", "tomates cerises", "fromage de chèvre"] },
+      { id: 410, title: "Poisson en papillote", ingredients: ["filets de saumon", "courgette", "citron", "tomates"] },
+
+      // Fêtes
+      { id: 501, title: "Foie gras", ingredients: ["foie gras", "pain brioché", "confit d'oignons"] },
+      { id: 502, title: "Dinde aux marrons", ingredients: ["dinde", "châtaignes", "carottes", "oignons"] },
+      { id: 503, title: "Saumon en croûte", ingredients: ["filets de saumon", "pâte feuilletée", "épinards", "crème"] },
+      { id: 504, title: "Chapon rôti", ingredients: ["dinde", "pommes de terre", "châtaignes", "carottes"] },
+      { id: 505, title: "Bouchées à la reine", ingredients: ["pâte feuilletée", "blanc de poulet", "champignons", "crème"] },
+      { id: 506, title: "Coquilles Saint-Jacques", ingredients: ["noix de saint-jacques", "poireaux", "crème", "vin blanc"] },
+      { id: 507, title: "Magret de canard", ingredients: ["canard", "miel", "pommes de terre", "carottes"] },
+      { id: 508, title: "Gratin de pommes de terre truffé", ingredients: ["pommes de terre", "crème", "truffe", "parmesan"] },
+      { id: 509, title: "Vol-au-vent", ingredients: ["pâte feuilletée", "veau", "champignons", "crème"] },
+      { id: 510, title: "Homard rôti", ingredients: ["homard", "beurre", "ail", "citron"] },
+
+      // Rapides
+      { id: 601, title: "Croque-monsieur", ingredients: ["pain", "jambon", "fromage", "béchamel"] },
+      { id: 602, title: "Pâtes carbonara", ingredients: ["spaghetti", "lardons", "œufs", "parmesan"] },
+      { id: 603, title: "Omelette", ingredients: ["œufs", "fromage", "fines herbes"] },
+      { id: 604, title: "Quesadillas", ingredients: ["tortillas", "fromage", "blanc de poulet", "poivrons"] },
+      { id: 605, title: "Nouilles sautées", ingredients: ["spaghetti", "blanc de poulet", "carottes", "brocoli"] },
+      { id: 606, title: "Salade César", ingredients: ["laitue", "blanc de poulet", "croûtons", "parmesan"] },
+      { id: 607, title: "Burger maison", ingredients: ["bœuf haché", "pain burger", "fromage", "tomates"] },
+      { id: 608, title: "Tacos", ingredients: ["bœuf haché", "tortillas", "laitue", "tomates"] },
+      { id: 609, title: "Pizza tortilla", ingredients: ["tortillas", "tomates concassées", "fromage", "basilic"] },
+      { id: 610, title: "Sandwich club", ingredients: ["pain", "blanc de poulet", "laitue", "œufs"] }
     ];
-    const plannerSummaryEl = document.getElementById('planner-summary');
-    const componentGridEl = document.getElementById('component-grid');
-    const mealCombosEl = document.getElementById('meal-combos');
-    const sessionTracksEl = document.getElementById('session-tracks');
-    const shoppingViewEl = document.getElementById('shopping-view');
-    const swapComponentEl = document.getElementById('swap-component');
-    const swapPanelEl = document.getElementById('swap-panel');
-    const sessionCompleteEl = document.getElementById('session-complete');
-    const storageDashboardEl = document.getElementById('storage-dashboard');
-    const shopModeButtons = Array.from(document.querySelectorAll('[data-shop-mode]'));
-    const entryModeButtons = Array.from(document.querySelectorAll('[data-entry-mode]'));
-    const entryPanes = Array.from(document.querySelectorAll('[data-entry-pane]'));
-    const entryModeCopyEl = document.getElementById('entry-mode-copy');
 
-    let batchData = null;
-    let currentPlan = null;
-    let shopMode = 'aisle';
-    let entryMode = 'meal';
+    let currentMode = 'meal';
+    const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 
-    const complementaryFormats = {
-      bowl: ['salad', 'wrap', 'plate', 'box'],
-      wrap: ['box', 'bowl', 'salad', 'plate'],
-      box: ['bowl', 'plate', 'salad', 'wrap'],
-      plate: ['bowl', 'box', 'salad', 'wrap'],
-      salad: ['bowl', 'wrap', 'plate', 'box'],
-      jar: ['salad', 'box', 'bowl', 'wrap'],
-      skillet: ['plate', 'bowl', 'box', 'wrap']
-    };
-
-    function parseCsv(text) {
-      const rows = [];
-      let row = [];
-      let value = '';
-      let inQuotes = false;
-
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const next = text[i + 1];
-
-        if (char === '"') {
-          if (inQuotes && next === '"') {
-            value += '"';
-            i += 1;
-          } else {
-            inQuotes = !inQuotes;
-          }
-          continue;
-        }
-
-        if (char === ',' && !inQuotes) {
-          row.push(value);
-          value = '';
-          continue;
-        }
-
-        if ((char === '\n' || char === '\r') && !inQuotes) {
-          if (char === '\r' && next === '\n') i += 1;
-          row.push(value);
-          if (row.some(cell => cell !== '')) rows.push(row);
-          row = [];
-          value = '';
-          continue;
-        }
-
-        value += char;
-      }
-
-      if (value !== '' || row.length) {
-        row.push(value);
-        if (row.some(cell => cell !== '')) rows.push(row);
-      }
-
-      return rows;
+    function init() {
+      const ingredients = new Set();
+      MEALS.forEach(m => m.ingredients.forEach(i => ingredients.add(i)));
+      window.allIngredients = Array.from(ingredients).sort();
+      setMode('meal');
     }
 
-    function csvToObjects(text) {
-      const [headers, ...rows] = parseCsv(text);
-      return rows.map(row => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
-    }
-
-    async function fetchCsv(path) {
-      const response = await fetch(path);
-      if (!response.ok) throw new Error(`Unable to load ${path}`);
-      return csvToObjects(await response.text());
-    }
-
-    function groupBy(rows, key) {
-      return rows.reduce((acc, row) => {
-        const value = row[key];
-        if (!acc[value]) acc[value] = [];
-        acc[value].push(row);
-        return acc;
-      }, {});
-    }
-
-    function roundValue(value) {
-      return Math.round(value * 10) / 10;
-    }
-
-    function scaleIngredient(ingredient, multiplier) {
-      return {
-        ...ingredient,
-        totalAmount: roundValue(ingredient.amountPerPerson * multiplier)
-      };
-    }
-
-    function safeList(list) {
-      return Array.from(new Set(list.filter(Boolean)));
-    }
-
-    function prettifyMealTemplate(text) {
-      return text
-        .replaceAll('{protein}', 'Protein')
-        .replaceAll('{grain}', 'Grain')
-        .replaceAll('{vegetable}', 'Vegetable')
-        .replaceAll('{sauce}', 'Sauce');
-    }
-
-    function replacePlaceholders(text, selected) {
-      return text
-        .replaceAll('{protein}', selected.protein.name)
-        .replaceAll('{grain}', selected.grain.name)
-        .replaceAll('{vegetable}', selected.vegetable.name)
-        .replaceAll('{sauce}', selected.sauce.name);
-    }
-
-    async function loadBatchData() {
-      const [componentsRaw, ingredientsRaw, swapsRaw, sessionTracksRaw, mealsRaw] = await Promise.all([
-        fetchCsv(dataFiles.components),
-        fetchCsv(dataFiles.ingredients),
-        fetchCsv(dataFiles.swaps),
-        fetchCsv(dataFiles.sessionTracks),
-        fetchCsv(dataFiles.meals)
-      ]);
-
-      const ingredientsByComponent = groupBy(ingredientsRaw, 'component_id');
-      const swapsByComponent = groupBy(swapsRaw, 'component_id');
-
-      const componentLibrary = componentsRaw.reduce((acc, item) => {
-        const component = {
-          id: item.id,
-          groupKey: item.group_key,
-          name: item.name,
-          type: item.type,
-          styles: item.styles.split('|'),
-          aisle: item.aisle,
-          quantityPerPerson: Number(item.quantity_per_person),
-          unit: item.unit,
-          macros: {
-            calories: Number(item.calories),
-            protein: Number(item.protein),
-            carbs: Number(item.carbs),
-            fat: Number(item.fat)
-          },
-          shelfDays: Number(item.shelf_days),
-          freezeAfter: Number(item.freeze_after),
-          notes: item.notes,
-          ingredients: (ingredientsByComponent[item.id] || []).map(ingredient => ({
-            aisle: ingredient.aisle,
-            item: ingredient.item,
-            amountPerPerson: Number(ingredient.amount_per_person),
-            unit: ingredient.unit
-          })),
-          swaps: (swapsByComponent[item.id] || []).map(swap => ({
-            label: swap.label,
-            quantity: swap.quantity,
-            macros: {
-              calories: Number(swap.calories),
-              protein: Number(swap.protein),
-              carbs: Number(swap.carbs),
-              fat: Number(swap.fat)
-            }
-          }))
-        };
-
-        if (!acc[item.group_key]) acc[item.group_key] = [];
-        acc[item.group_key].push(component);
-        return acc;
-      }, {});
-
-      const sessionTemplates = sessionTracksRaw.reduce((acc, item) => {
-        const slot = {
-          label: item.label,
-          start: Number(item.start),
-          duration: Number(item.duration),
-          intensity: item.intensity,
-          subtitle: item.subtitle
-        };
-        if (!acc[item.track]) acc[item.track] = [];
-        acc[item.track].push(slot);
-        return acc;
-      }, {});
-
-      const ingredientOptions = safeList(ingredientsRaw.map(item => item.item)).sort((a, b) => a.localeCompare(b));
-
-      return {
-        componentLibrary,
-        sessionTemplates,
-        meals: mealsRaw,
-        ingredientOptions
-      };
-    }
-
-    function populateEntryInputs() {
-      anchorMealEl.innerHTML = batchData.meals.map(meal => `
-        <option value="${meal.id}">${prettifyMealTemplate(meal.title)}</option>
-      `).join('');
-
-      const ingredientOptionsHtml = batchData.ingredientOptions.map(item => `
-        <option value="${item}">${item}</option>
-      `).join('');
-
-      ingredientEls.forEach(select => {
-        select.innerHTML = ingredientOptionsHtml;
-      });
-
-      const defaults = ['Broccoli', 'Chicken thighs', 'Brown rice'];
-      ingredientEls.forEach((select, index) => {
-        if (defaults[index] && batchData.ingredientOptions.includes(defaults[index])) {
-          select.value = defaults[index];
-        }
-      });
-    }
-
-    function renderEntryModeCopy() {
-      entryModeCopyEl.innerHTML = entryMode === 'meal'
-        ? `<p class="entry-note">Pick the meal you already want this week, and the planner will build a reusable component system plus other meals that fit naturally around it.</p>`
-        : `<p class="entry-note">Pick 3 ingredients already in your kitchen, and the planner will bias the week toward using them up while still building a complete batch plan.</p>`;
-    }
-
-    function setEntryMode(mode) {
-      entryMode = mode;
-      entryModeButtons.forEach(button => button.classList.toggle('is-active', button.dataset.entryMode === mode));
-      entryPanes.forEach(pane => pane.classList.toggle('is-hidden', pane.dataset.entryPane !== mode));
-      renderEntryModeCopy();
-      if (batchData) updatePlan();
-    }
-
-    function componentScore(component, profile, preferredIngredients) {
-      const profileScore = component.styles.includes(profile) ? 3 : 0;
-      const ingredientScore = component.ingredients.reduce((sum, ingredient) => {
-        return sum + (preferredIngredients.includes(ingredient.item.toLowerCase()) ? 10 : 0);
-      }, 0);
-      return profileScore + ingredientScore;
-    }
-
-    function pickComponentForGroup(items, profile, preferredIngredients) {
-      return [...items].sort((a, b) =>
-        componentScore(b, profile, preferredIngredients) - componentScore(a, profile, preferredIngredients)
-      )[0];
-    }
-
-    function getSelectedIngredients() {
-      return ingredientEls.map(select => select.value).filter(Boolean);
-    }
-
-    function getAnchorMeal() {
-      return batchData.meals.find(meal => meal.id === anchorMealEl.value) || batchData.meals[0];
-    }
-
-    function getMealKeywords(meal) {
-      return {
-        cluster: meal.cluster,
-        protein: meal.protein,
-        base: meal.base,
-        ingredients: meal.ingredients ? meal.ingredients.split('|').map(item => item.toLowerCase()) : []
-      };
-    }
-
-    function mealScoreForIngredients(meal, selectedIngredients) {
-      const keywords = getMealKeywords(meal);
-      const overlap = keywords.ingredients.filter(item => selectedIngredients.includes(item)).length;
-      const titleHit = selectedIngredients.some(item => meal.title.toLowerCase().includes(item)) ? 2 : 0;
-      return overlap * 5 + titleHit;
-    }
-
-    function mealScoreForAnchor(meal, anchorMeal) {
-      const anchor = getMealKeywords(anchorMeal);
-      const candidate = getMealKeywords(meal);
-      let score = 0;
-
-      if (candidate.cluster === anchor.cluster) score += 6;
-      if (candidate.protein === anchor.protein) score += 5;
-      if (candidate.base === anchor.base) score += 4;
-
-      const ingredientOverlap = candidate.ingredients.filter(item => anchor.ingredients.includes(item)).length;
-      score += ingredientOverlap * 2;
-
-      const targetFormats = complementaryFormats[anchorMeal.format] || [];
-      if (targetFormats.includes(meal.format)) score += 2;
-      if (meal.format !== anchorMeal.format) score += 1;
-
-      return score;
-    }
-
-    function buildMealSuggestions(entryContext, selectedComponents, requestedMeals) {
-      const desiredCount = Math.min(requestedMeals, batchData.meals.length);
-
-      if (entryContext.mode === 'meal') {
-        const anchor = entryContext.anchorMeal;
-        const ranked = batchData.meals
-          .filter(meal => meal.id !== anchor.id)
-          .map(meal => ({ meal, score: mealScoreForAnchor(meal, anchor) }))
-          .sort((a, b) => b.score - a.score)
-          .map(entry => entry.meal);
-
-        return [anchor, ...ranked].slice(0, desiredCount).map(meal => ({
-          id: meal.id,
-          title: meal.title,
-          format: meal.format,
-          text: meal.description
-        }));
-      }
-
-      const selectedIngredients = entryContext.ingredients.map(item => item.toLowerCase());
-      const ranked = batchData.meals
-        .map(meal => ({ meal, score: mealScoreForIngredients(meal, selectedIngredients) }))
-        .sort((a, b) => b.score - a.score)
-        .map(entry => entry.meal);
-
-      return ranked.slice(0, desiredCount).map(meal => ({
-        id: meal.id,
-        title: meal.title,
-        format: meal.format,
-        text: meal.description
-      }));
-    }
-
-    function buildPlan(profile, household, meals) {
-      const preferredIngredients = entryMode === 'ingredients'
-        ? getSelectedIngredients().map(item => item.toLowerCase())
-        : getMealKeywords(getAnchorMeal()).ingredients;
-
-      const multipliers = meals / 2 * household;
-      const selected = {
-        protein: pickComponentForGroup(batchData.componentLibrary.proteins, profile, preferredIngredients),
-        grain: pickComponentForGroup(batchData.componentLibrary.grains, profile, preferredIngredients),
-        vegetable: pickComponentForGroup(batchData.componentLibrary.vegetables, profile, preferredIngredients),
-        sauce: pickComponentForGroup(batchData.componentLibrary.sauces, profile, preferredIngredients)
-      };
-
-      const components = Object.values(selected).map(component => ({
-        ...component,
-        scaledQuantity: roundValue(component.quantityPerPerson * multipliers),
-        scaledIngredients: component.ingredients.map(ingredient => scaleIngredient(ingredient, multipliers))
-      }));
-
-      if (meals >= 12) {
-        const extraVegetable = batchData.componentLibrary.vegetables.find(item => item.id !== selected.vegetable.id);
-        if (extraVegetable) {
-          components.push({
-            ...extraVegetable,
-            scaledQuantity: roundValue(extraVegetable.quantityPerPerson * multipliers * 0.75),
-            scaledIngredients: extraVegetable.ingredients.map(ingredient => scaleIngredient(ingredient, multipliers * 0.75))
-          });
-        }
-      }
-
-      const macros = components.reduce((acc, component) => {
-        acc.calories += component.macros.calories;
-        acc.protein += component.macros.protein;
-        acc.carbs += component.macros.carbs;
-        acc.fat += component.macros.fat;
-        return acc;
-      }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
-
-      const entryContext = entryMode === 'meal'
-        ? { mode: 'meal', anchorMeal: getAnchorMeal() }
-        : { mode: 'ingredients', ingredients: getSelectedIngredients() };
-
-      const combos = buildMealSuggestions(entryContext, selected, meals);
-
-      return {
-        profile,
-        household,
-        meals,
-        selected,
-        components,
-        combos,
-        macros,
-        estimatedComponents: meals >= 12 ? 5 : 4,
-        entryContext
-      };
-    }
-
-    function renderPlannerSummary(plan) {
-      const startPoint = plan.entryContext.mode === 'meal'
-        ? `Point de depart : ${prettifyMealTemplate(plan.entryContext.anchorMeal.title)}`
-        : `Point de depart : ${plan.entryContext.ingredients.join(', ')}`;
-
-      plannerSummaryEl.innerHTML = `
-        <article class="batch-stat-card">
-          <h3>Point de depart</h3>
-          <p>${startPoint}</p>
-        </article>
-        <article class="batch-stat-card">
-          <h3>Couverture hebdomadaire</h3>
-          <p>${plan.meals} repas pour ${plan.household} ${plan.household === 1 ? 'personne' : 'personnes'}.</p>
-        </article>
-        <article class="batch-stat-card">
-          <h3>Systeme de production</h3>
-          <p>${plan.estimatedComponents} composants de base pour alimenter toute la semaine.</p>
-        </article>
-        <article class="batch-stat-card">
-          <h3>Base macros</h3>
-          <p>${Math.round(plan.macros.protein)} g de proteines · ${Math.round(plan.macros.calories)} kcal par repas assemble.</p>
-        </article>
-      `;
-    }
-
-    function renderComponents(plan) {
-      componentGridEl.innerHTML = plan.components.map(component => `
-        <article class="component-card">
-          <div class="component-card-top">
-            <div>
-              <p class="component-type">${component.type}</p>
-              <h3>${component.name}</h3>
-            </div>
-            <span class="component-qty">${component.scaledQuantity} ${component.unit}</span>
-          </div>
-          <p class="component-note">${component.notes}</p>
-          <div class="pill-list batch-pills">
-            <span>${Math.round(component.macros.protein)} g proteines</span>
-            <span>${Math.round(component.macros.calories)} kcal</span>
-            <span>${component.shelfDays} days fridge</span>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function renderCombos(plan) {
-      mealCombosEl.innerHTML = plan.combos.map(combo => `
-        <article class="combo-card">
-          <span>${combo.id.split('-')[1]}</span>
-          <div>
-            <strong>${combo.title}</strong>
-            <p>${combo.text}</p>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function renderSessionTracks() {
-      const totalMinutes = 90;
-      const tracks = [
-        { name: 'Plan de prep', key: 'prep' },
-        { name: 'Plaques', key: 'stovetop' },
-        { name: 'Four', key: 'oven' }
-      ];
-
-      sessionTracksEl.innerHTML = tracks.map(track => `
-        <section class="track-card">
-          <div class="track-head">
-            <h3>${track.name}</h3>
-            <p>${track.key === 'oven' ? 'Zone de chaleur' : track.key === 'stovetop' ? 'Cuisson parallele' : 'Decoupe + assemblage'}</p>
-          </div>
-          <div class="track-lane">
-            ${(batchData.sessionTemplates[track.key] || []).map(slot => {
-              const left = slot.start / totalMinutes * 100;
-              const width = slot.duration / totalMinutes * 100;
-              return `
-                <div class="track-slot ${slot.intensity.split(' ').join(' ')}" style="left:${left}%; width:${width}%;">
-                  <strong>${slot.label}</strong>
-                  <span>${slot.start}-${slot.start + slot.duration} min</span>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </section>
-      `).join('');
-    }
-
-    function aggregateIngredients(plan) {
-      const byAisle = {};
-      const byComponent = {};
-
-      plan.components.forEach(component => {
-        byComponent[component.name] = component.scaledIngredients.map(ingredient => `${ingredient.item} - ${ingredient.totalAmount} ${ingredient.unit}`.trim());
-        component.scaledIngredients.forEach(ingredient => {
-          if (!byAisle[ingredient.aisle]) byAisle[ingredient.aisle] = [];
-          byAisle[ingredient.aisle].push(`${ingredient.item} - ${ingredient.totalAmount} ${ingredient.unit}`.trim());
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(mode === 'meal' ? 'plat' : 'ingrédient')));
+      
+      const container = document.getElementById('selectors-container');
+      const label = document.getElementById('select-label');
+      container.innerHTML = '';
+      
+      if (mode === 'meal') {
+        label.innerText = "Quel plat vous fait envie ?";
+        const select = document.createElement('select');
+        select.id = 'main-select';
+        MEALS.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.innerText = m.title;
+          select.appendChild(opt);
         });
-      });
+        container.appendChild(select);
+      } else {
+        label.innerText = "De quels ingrédients disposez-vous ? (choisissez-en 3)";
+        for (let i = 0; i < 3; i++) {
+          const select = document.createElement('select');
+          select.className = 'ingredient-select';
+          
+          // Option vide par défaut
+          const emptyOpt = document.createElement('option');
+          emptyOpt.value = "";
+          emptyOpt.innerText = "-- Choisir un ingrédient --";
+          select.appendChild(emptyOpt);
 
-      return { byAisle, byComponent };
-    }
-
-    function renderShopping(plan) {
-      const groups = aggregateIngredients(plan);
-      const selectedGroups = shopMode === 'aisle' ? groups.byAisle : groups.byComponent;
-
-      shoppingViewEl.innerHTML = Object.entries(selectedGroups).map(([group, items]) => `
-        <section class="shopping-card">
-          <h3>${group}</h3>
-          <ul class="check-list">
-            ${items.map(item => `<li>${item}</li>`).join('')}
-          </ul>
-        </section>
-      `).join('');
-    }
-
-    function populateSwapSelect(plan) {
-      swapComponentEl.innerHTML = plan.components.map(component => `
-        <option value="${component.id}">${component.name}</option>
-      `).join('');
-    }
-
-    function renderSwapPanel(plan) {
-      const selectedId = swapComponentEl.value || plan.components[0].id;
-      const component = plan.components.find(item => item.id === selectedId) || plan.components[0];
-
-      swapPanelEl.innerHTML = `
-        <div class="swap-current">
-          <h3>${component.name}</h3>
-          <p>${Math.round(component.macros.calories)} kcal · ${Math.round(component.macros.protein)} g proteines · ${Math.round(component.macros.carbs)} g glucides · ${Math.round(component.macros.fat)} g lipides</p>
-        </div>
-        <div class="swap-options">
-          ${component.swaps.map(swap => `
-            <article class="swap-option">
-              <div>
-                <h4>${swap.label}</h4>
-                <p>${swap.quantity}</p>
-              </div>
-              <div class="swap-macros">
-                <span>${swap.macros.calories} kcal</span>
-                <span>${swap.macros.protein} g proteines</span>
-              </div>
-            </article>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function freshnessStatus(hoursLeft) {
-      if (hoursLeft <= 0) return { label: 'A utiliser / congeler', tone: 'danger' };
-      if (hoursLeft <= 24) return { label: 'A manger vite', tone: 'warn' };
-      return { label: 'Frais', tone: 'ok' };
-    }
-
-    function renderStorage(plan) {
-      const completedAt = sessionCompleteEl.value ? new Date(sessionCompleteEl.value) : new Date();
-      const now = new Date();
-
-      storageDashboardEl.innerHTML = plan.components.map(component => {
-        const useBy = new Date(completedAt.getTime() + component.shelfDays * 24 * 60 * 60 * 1000);
-        const freezeBy = component.freezeAfter > 0
-          ? new Date(completedAt.getTime() + component.freezeAfter * 24 * 60 * 60 * 1000)
-          : null;
-        const status = freshnessStatus((useBy - now) / (1000 * 60 * 60));
-
-        return `
-          <article class="storage-card">
-            <div class="storage-card-top">
-              <div>
-                <h3>${component.name}</h3>
-                <p>Prepare le ${completedAt.toLocaleDateString('fr-FR')}</p>
-              </div>
-              <span class="freshness-badge ${status.tone}">${status.label}</span>
-            </div>
-            <div class="storage-meta">
-              <span>A consommer avant le ${useBy.toLocaleDateString('fr-FR')}</span>
-              <span>${freezeBy ? `A congeler apres le ${freezeBy.toLocaleDateString('fr-FR')}` : 'Ne pas congeler'}</span>
-            </div>
-          </article>
-        `;
-      }).join('');
-    }
-
-    function updatePlan() {
-      if (!batchData) return;
-
-      const household = Number(householdEl.value);
-      const meals = Number(mealsEl.value);
-      const profile = dietEl.value;
-
-      currentPlan = buildPlan(profile, household, meals);
-      renderPlannerSummary(currentPlan);
-      renderComponents(currentPlan);
-      renderCombos(currentPlan);
-      renderSessionTracks();
-      renderShopping(currentPlan);
-      populateSwapSelect(currentPlan);
-      renderSwapPanel(currentPlan);
-      renderStorage(currentPlan);
-    }
-
-    function setDefaultSessionDate() {
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      sessionCompleteEl.value = now.toISOString().slice(0, 16);
-    }
-
-    async function initBatchPage() {
-      try {
-        batchData = await loadBatchData();
-        populateEntryInputs();
-        renderEntryModeCopy();
-        setDefaultSessionDate();
-        updatePlan();
-      } catch (error) {
-        plannerSummaryEl.innerHTML = `
-          <article class="batch-stat-card">
-            <h3>Erreur de chargement</h3>
-            <p>${error.message}</p>
-          </article>
-        `;
+          window.allIngredients.forEach(ing => {
+            const opt = document.createElement('option');
+            opt.value = ing;
+            opt.innerText = ing.charAt(0).toUpperCase() + ing.slice(1);
+            select.appendChild(opt);
+          });
+          container.appendChild(select);
+        }
       }
     }
 
-    [householdEl, mealsEl, dietEl, anchorMealEl, ...ingredientEls].forEach(element => {
-      element.addEventListener('change', updatePlan);
-    });
+    function generatePlan() {
+      let plan = [];
 
-    entryModeButtons.forEach(button => {
-      button.addEventListener('click', () => setEntryMode(button.dataset.entryMode));
-    });
+      if (currentMode === 'meal') {
+        const select = document.getElementById('main-select');
+        const value = select.value;
+        const anchor = MEALS.find(m => m.id == value);
+        plan.push(anchor);
+        
+        // Trouver les plats qui partagent le plus d'ingrédients
+        const others = MEALS.filter(m => m.id != anchor.id)
+          .map(m => {
+            const common = m.ingredients.filter(i => anchor.ingredients.includes(i)).length;
+            return { ...m, score: common };
+          })
+          .sort((a, b) => b.score - a.score);
+        
+        plan.push(...others.slice(0, 4));
+      } else {
+        const selects = document.querySelectorAll('.ingredient-select');
+        const selectedIngredients = Array.from(selects).map(s => s.value).filter(v => v !== "");
+        
+        if (selectedIngredients.length === 0) {
+          alert("Veuillez choisir au moins un ingrédient.");
+          return;
+        }
 
-    shopModeButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        shopMode = button.dataset.shopMode;
-        shopModeButtons.forEach(item => item.classList.toggle('is-active', item === button));
-        if (currentPlan) renderShopping(currentPlan);
+        // Marquer chaque plat avec un score basé sur les ingrédients choisis
+        const scored = MEALS.map(m => {
+          const score = selectedIngredients.filter(si => m.ingredients.includes(si)).length;
+          return { ...m, score };
+        }).sort((a, b) => b.score - a.score);
+
+        // On prend les meilleurs matchs
+        plan = scored.slice(0, 5);
+      }
+
+      renderPlan(plan);
+    }
+
+    function renderPlan(plan) {
+      const container = document.getElementById('plan-result');
+      container.innerHTML = '';
+      
+      plan.forEach((meal, i) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.innerHTML = `
+          <div class="day-label">${DAYS[i]}</div>
+          <div class="meal-info">
+            <h3>${meal.title}</h3>
+            <p class="meal-ingredients">${meal.ingredients.join(' · ')}</p>
+          </div>
+        `;
+        container.appendChild(card);
       });
-    });
+      
+      container.scrollIntoView({ behavior: 'smooth' });
+    }
 
-    swapComponentEl.addEventListener('change', () => {
-      if (currentPlan) renderSwapPanel(currentPlan);
-    });
-
-    sessionCompleteEl.addEventListener('change', () => {
-      if (currentPlan) renderStorage(currentPlan);
-    });
-
-    initBatchPage();
+    init();
   </script>
 </body>
 </html>

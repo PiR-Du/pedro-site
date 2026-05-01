@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contribuer - Pedro Site</title>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <style>
+    .contribute-shell {
+      max-width: 900px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 3rem;
+    }
+    @media (max-width: 850px) {
+        .contribute-shell { grid-template-columns: 1fr; }
+    }
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .type-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+    .type-btn {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+    .type-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--muted-foreground);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: var(--surface-soft);
+      color: var(--foreground);
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .hidden { display: none; }
+
+    /* Queue Styles */
+    .queue-card {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        height: fit-content;
+    }
+    .queue-title {
+        font-family: var(--font-serif);
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .queue-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.8rem;
+        position: relative;
+    }
+    .queue-item .tag {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        font-weight: 800;
+        padding: 2px 4px;
+        border-radius: 3px;
+        background: var(--primary);
+        color: white;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    .queue-item code {
+        display: block;
+        white-space: pre-wrap;
+        font-family: 'JetBrains Mono', monospace;
+        margin-top: 0.5rem;
+        color: var(--muted-foreground);
+        font-size: 0.7rem;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+    .copy-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.6rem;
+        cursor: pointer;
+    }
+    .empty-queue {
+        color: var(--muted-foreground);
+        font-style: italic;
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 2rem 0;
+    }
+  </style>
+</head>
+<body data-root=".." data-page="contribute">
+  <div id="site-header"></div>
+
+  <main class="contribute-shell">
+    <div class="main-content">
+        <div class="section-head">
+            <p class="eyebrow">./laboratoire</p>
+            <h1 class="serif">Générateur de Contributions</h1>
+            <p class="lead">Remplissez le formulaire pour générer une entrée formatée. Elle sera stockée dans votre file d'attente pour un ajout manuel ultérieur au code source.</p>
+        </div>
+
+        <div class="form-card">
+            <div class="type-selector">
+                <button class="type-btn active" onclick="setTool('encyclopedia')">🧠 Encyclopédie</button>
+                <button class="type-btn" onclick="setTool('recommendation')">🎬 Muse (Recs)</button>
+                <button class="type-btn" onclick="setTool('batchcooking')">🍳 Batch Cooking</button>
+            </div>
+
+            <form id="unified-form">
+                <!-- Encyclopedia Fields -->
+                <div id="fields-encyclopedia">
+                    <div class="form-group">
+                        <label>Titre du savoir</label>
+                        <input type="text" id="enc-title" placeholder="ex: Effet Dunning-Kruger">
+                    </div>
+                    <div class="form-group">
+                        <label>Contenu / Explication</label>
+                        <textarea id="enc-text" rows="4" placeholder="Expliquez ce savoir..."></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Catégorie</label>
+                            <input type="text" id="enc-category" placeholder="ex: Psychologie">
+                        </div>
+                        <div class="form-group">
+                            <label>Source (Sachant)</label>
+                            <input type="text" id="enc-source" placeholder="ex: David Dunning">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendation Fields -->
+                <div id="fields-recommendation" class="hidden">
+                    <div class="form-group">
+                        <label>Titre de l'œuvre</label>
+                        <input type="text" id="rec-title" placeholder="ex: Inception">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select id="rec-type">
+                                <option value="movie">Film</option>
+                                <option value="series">Série</option>
+                                <option value="music">Musique</option>
+                                <option value="videogame">Jeu Vidéo</option>
+                                <option value="boardgame">Jeu de Société</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Année</label>
+                            <input type="number" id="rec-year" value="2024">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Créateur / Artiste / Studio</label>
+                        <input type="text" id="rec-creator" placeholder="ex: Christopher Nolan">
+                    </div>
+                    <div class="form-group">
+                        <label>Pitch</label>
+                        <textarea id="rec-pitch" rows="2" placeholder="En une phrase..."></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Moods (comma separated)</label>
+                            <input type="text" id="rec-moods" placeholder="ex: cerebral, tendu">
+                        </div>
+                        <div class="form-group">
+                            <label>Thèmes</label>
+                            <input type="text" id="rec-themes" placeholder="ex: tech, identité">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Intensité (1-5)</label><input type="range" id="rec-intensity" min="1" max="5" value="3"></div>
+                        <div class="form-group"><label>Engagement (1-5)</label><input type="range" id="rec-engagement" min="1" max="5" value="3"></div>
+                    </div>
+                </div>
+
+                <!-- Batch Cooking Fields -->
+                <div id="fields-batchcooking" class="hidden">
+                    <div class="form-group">
+                        <label>Nom du plat</label>
+                        <input type="text" id="bc-title" placeholder="ex: Lasagnes">
+                    </div>
+                    <div class="form-group">
+                        <label>Ingrédients (séparés par virgules)</label>
+                        <textarea id="bc-ingredients" rows="3" placeholder="ex: pâtes, tomates, boeuf..."></textarea>
+                    </div>
+                </div>
+
+                <button type="button" class="submit-btn" onclick="generateContribution()">Générer et stocker</button>
+            </form>
+        </div>
+    </div>
+
+    <aside class="queue-card">
+        <div class="queue-title">
+            <span>File d'attente</span>
+            <button class="btn btn-ghost btn-sm" onclick="clearQueue()" style="font-size: 0.6rem;">Vider</button>
+        </div>
+        <div id="contribution-queue">
+            <!-- Items will appear here -->
+        </div>
+    </aside>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../shared-layout.js"></script>
+  <script>
+    let currentTool = 'encyclopedia';
+    let queue = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
+
+    function setTool(tool) {
+      currentTool = tool;
+      document.querySelectorAll('.type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase().includes(tool === 'batchcooking' ? 'cooking' : tool === 'recommendation' ? 'muse' : tool));
+      });
+      document.getElementById('fields-encyclopedia').classList.toggle('hidden', tool !== 'encyclopedia');
+      document.getElementById('fields-recommendation').classList.toggle('hidden', tool !== 'recommendation');
+      document.getElementById('fields-batchcooking').classList.toggle('hidden', tool !== 'batchcooking');
+    }
+
+    function generateContribution() {
+      let item = { timestamp: new Date().toISOString(), tool: currentTool, data: {} };
+      
+      if (currentTool === 'encyclopedia') {
+        item.data = {
+            title: document.getElementById('enc-title').value,
+            text: document.getElementById('enc-text').value,
+            category: document.getElementById('enc-category').value,
+            source: document.getElementById('enc-source').value
+        };
+      } else if (currentTool === 'recommendation') {
+        item.data = {
+            id: "u" + Date.now().toString().slice(-6),
+            title: document.getElementById('rec-title').value,
+            type: document.getElementById('rec-type').value,
+            year: parseInt(document.getElementById('rec-year').value),
+            creator: document.getElementById('rec-creator').value,
+            pitch: document.getElementById('rec-pitch').value,
+            moods: document.getElementById('rec-moods').value.split(',').map(s => s.trim()).filter(Boolean),
+            themes: document.getElementById('rec-themes').value.split(',').map(s => s.trim()).filter(Boolean),
+            intensity: parseInt(document.getElementById('rec-intensity').value),
+            engagement: parseInt(document.getElementById('rec-engagement').value),
+            duration: "N/A",
+            rating: 8.0
+        };
+      } else {
+        item.data = {
+            id: Math.floor(Math.random() * 1000) + 1000,
+            title: document.getElementById('bc-title').value,
+            ingredients: document.getElementById('bc-ingredients').value.split(',').map(s => s.trim()).filter(Boolean)
+        };
+      }
+
+      if (!item.data.title) return alert("Le titre est obligatoire !");
+
+      queue.push(item);
+      localStorage.setItem('pending_contributions', JSON.stringify(queue));
+      renderQueue();
+      
+      // Reset current form
+      document.getElementById('unified-form').reset();
+    }
+
+    function renderQueue() {
+        const container = document.getElementById('contribution-queue');
+        if (queue.length === 0) {
+            container.innerHTML = '<div class="empty-queue">Aucune contribution en attente.</div>';
+            return;
+        }
+
+        container.innerHTML = queue.map((item, index) => `
+            <div class="queue-item">
+                <span class="tag">${item.tool}</span>
+                <strong>${item.data.title}</strong>
+                <button class="copy-btn" onclick="copyItem(${index})">Copier JSON</button>
+                <code>${JSON.stringify(item.data, null, 2)}</code>
+            </div>
+        `).reverse().join('');
+    }
+
+    function copyItem(index) {
+        const text = JSON.stringify(queue[index].data, null, 2);
+        navigator.clipboard.writeText(text).then(() => {
+            alert("JSON copié ! Vous pouvez maintenant le coller dans votre fichier data.js");
+        });
+    }
+
+    function clearQueue() {
+        if (confirm("Voulez-vous vraiment vider la file d'attente ?")) {
+            queue = [];
+            localStorage.setItem('pending_contributions', '[]');
+            renderQueue();
+        }
+    }
+
+    renderQueue();
+  </script>
+</body>
+</html>
