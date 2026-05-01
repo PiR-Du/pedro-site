@@ -115,8 +115,8 @@ function renderGraph() {
             const groupNodes = nodesByCategory[d];
             const points = groupNodes.map(n => [n.x, n.y]);
             if (points.length < 3) {
-                points.push([points[0][0]+1, points[0][1]+1]);
-                points.push([points[0][0]-1, points[0][1]-1]);
+                points.push([points[0][0] + 1, points[0][1] + 1]);
+                points.push([points[0][0] - 1, points[0][1] - 1]);
             }
             const hull = d3.polygonHull(points);
             return hull ? "M" + hull.join("L") + "Z" : null;
@@ -126,7 +126,7 @@ function renderGraph() {
             .attr("x", d => d3.mean(nodesByCategory[d], n => n.x))
             .attr("y", d => {
                 const minY = d3.min(nodesByCategory[d], node => node.y);
-                return minY - 15; 
+                return minY - 15;
             });
     });
 
@@ -147,7 +147,7 @@ function showTooltip(event, d) {
     tooltip.style.opacity = '1';
     tooltip.style.left = (event.pageX + 10) + 'px';
     tooltip.style.top = (event.pageY - 10) + 'px';
-    
+
     tooltip.innerHTML = `
         <h4 style="color:${colorScale(d.source)}">${d.title}</h4>
         <p style="font-size:0.8rem; margin-top:0.25rem;">${d.text}</p>
@@ -169,7 +169,7 @@ function highlightSource(name) {
         .transition().duration(500)
         .attr("opacity", 1)
         .attr("r", 15);
-    
+
     setTimeout(() => {
         d3.selectAll(".node circle").transition().duration(500).attr("opacity", 1).attr("r", 7);
         d3.selectAll(".node text").transition().duration(500).attr("opacity", 1);

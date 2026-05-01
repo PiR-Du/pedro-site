@@ -2,22 +2,11 @@
 let data = { infos: [] };
 
 function initApp() {
-    // 1. Try to load from localStorage first
-    const localData = localStorage.getItem('encyclopedia_data');
-    
-    if (localData) {
-        data = JSON.parse(localData);
-        if (typeof INITIAL_DATA !== 'undefined') {
-            INITIAL_DATA.infos.forEach(initialInfo => {
-                const exists = data.infos.some(info => 
-                    info.title === initialInfo.title && 
-                    info.source === initialInfo.source
-                );
-                if (!exists) data.infos.push(initialInfo);
-            });
-        }
-    } else if (typeof INITIAL_DATA !== 'undefined') {
+    // 1. Use ONLY data from data.js
+    if (typeof INITIAL_DATA !== 'undefined') {
         data = JSON.parse(JSON.stringify(INITIAL_DATA));
+    } else {
+        data = { infos: [] };
     }
     
     // CRITICAL: Initialize colorScale domain with ALL sorted sources before rendering anything
@@ -26,12 +15,7 @@ function initApp() {
         colorScale.domain(allSources);
     }
     
-    saveData();
     onDataLoaded();
-}
-
-function saveData() {
-    localStorage.setItem('encyclopedia_data', JSON.stringify(data));
 }
 
 function onDataLoaded() {
