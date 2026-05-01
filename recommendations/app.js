@@ -65,12 +65,12 @@ function renderGrid() {
 }
 
 function createCard(item) {
-    const icons = { 'Film': '🎬', 'Série': '📺', 'Livre': '📖', 'Musique': '🎵', 'Jeu Vidéo': '🎮', 'Jeu de Société': '🎲' };
+    const icons = { 'Film': '', 'Série': '', 'Livre': '', 'Musique': '', 'Jeu Vidéo': '', 'Jeu de Société': '' };
     return `
         <div class="media-card" onclick="showDetail('${item.id}')">
             <div class="card-content">
                 <div class="card-header">
-                    <span class="type-badge">${icons[item.type] || '📦'} ${item.type}</span>
+                    <span class="type-badge">${item.type}</span>
                 </div>
                 <h2 class="media-title">${item.title}</h2>
                 ${item.creator ? `<div class="media-meta">${item.creator}</div>` : ''}

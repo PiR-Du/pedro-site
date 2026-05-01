@@ -9,6 +9,7 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 </head>
+
 <body data-page="contribute" data-root="..">
     <div id="site-header"></div>
 
@@ -19,18 +20,21 @@
                 <h1 class="serif">Générateur de Contributions</h1>
                 <p class="lead">Remplissez le formulaire pour générer une entrée formatée. Elle sera stockée dans votre
                     file d'attente pour un ajout manuel ultérieur au code source.</p>
+                <p class="lead">Vous pouvez générer plusieurs entrées avant de me transmettre tout en une seule fois.
+                </p>
             </div>
 
             <div class="form-card">
                 <div class="type-selector">
-                    <button class="type-btn active" onclick="setTool('encyclopedia')">🧠 Encyclopédie</button>
-                    <button class="type-btn" onclick="setTool('recommendation')">🎬 Médiathèque</button>
-                    <button class="type-btn" onclick="setTool('batchcooking')">🍳 Batch Cooking</button>
+                    <button class="type-btn active" onclick="setTool('encyclopedia')">Encyclopédie</button>
+                    <button class="type-btn" onclick="setTool('recommendation')">Médiathèque</button>
+                    <button class="type-btn" onclick="setTool('batchcooking')">Batch Cooking</button>
                 </div>
 
                 <form id="unified-form">
                     <!-- Global Identity -->
-                    <div class="form-group" style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+                    <div class="form-group"
+                        style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem;">
                         <label>Votre Nom / Pseudo</label>
                         <input type="text" id="contributor-name" placeholder="Qui envoie cette info ?">
                     </div>
@@ -58,12 +62,12 @@
                         <div class="form-group">
                             <label>Quel type de média ?</label>
                             <select id="rec-type" onchange="adaptMuseForm()">
-                                <option value="Film">🎬 Film</option>
-                                <option value="Série">📺 Série</option>
-                                <option value="Livre">📖 Livre</option>
-                                <option value="Musique">🎵 Musique</option>
-                                <option value="Jeu Vidéo">🎮 Jeu Vidéo</option>
-                                <option value="Jeu de Société">🎲 Jeu de Société</option>
+                                <option value="Film">Film</option>
+                                <option value="Série">Série</option>
+                                <option value="Livre">Livre</option>
+                                <option value="Musique">Musique</option>
+                                <option value="Jeu Vidéo">Jeu Vidéo</option>
+                                <option value="Jeu de Société">Jeu de Société</option>
                             </select>
                         </div>
 
@@ -153,14 +157,14 @@
                 <span>Boîte d'envoi</span>
                 <div style="display:flex; gap: 0.5rem;">
                     <button class="btn btn-ghost btn-sm" onclick="downloadQueue()"
-                        style="font-size: 0.6rem; border: 1px solid var(--border);">⬇ Export</button>
+                        style="font-size: 0.6rem; border: 1px solid var(--border);">Export</button>
                     <button class="btn btn-ghost btn-sm" onclick="clearQueue()"
                         style="font-size: 0.6rem; border: 1px solid var(--border);">Vider</button>
                 </div>
             </div>
             <button id="formspree-btn" class="submit-btn" onclick="sendViaFormspree()"
                 style="background: #6366f1; margin-bottom: 1rem; font-size: 0.85rem;">
-                🚀 Transmettre à Pierre (Formspree)
+                Transmettre à Pierre
             </button>
 
             <div id="contribution-queue">
@@ -181,8 +185,8 @@
             document.querySelectorAll('.type-btn').forEach(btn => {
                 const text = btn.innerText.toLowerCase();
                 const isActive = (tool === 'batchcooking' && text.includes('cooking')) ||
-                                 (tool === 'recommendation' && text.includes('média')) ||
-                                 (tool === 'encyclopedia' && text.includes('encyclo'));
+                    (tool === 'recommendation' && text.includes('média')) ||
+                    (tool === 'encyclopedia' && text.includes('encyclo'));
                 btn.classList.toggle('active', isActive);
             });
             document.getElementById('fields-encyclopedia').classList.toggle('hidden', tool !== 'encyclopedia');
@@ -197,7 +201,7 @@
             const creatorGroup = document.getElementById('label-rec-creator').parentElement;
             const creatorInput = document.getElementById('rec-creator');
             const durationInput = document.getElementById('rec-duration');
-            
+
             const config = {
                 'Film': { title: "Titre du film", creator: "Réalisateur", placeholder: "ex: Christopher Nolan", dur: "Durée", durPh: "ex: 2h 15m" },
                 'Série': { title: "Titre de la série", creator: "Showrunner / Chaîne", placeholder: "ex: HBO", dur: "Saisons / Éps", durPh: "ex: 5 saisons" },

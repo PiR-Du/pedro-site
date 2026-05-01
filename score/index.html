@@ -17,19 +17,19 @@
 <!-- WELCOME -->
 <div id="view-welcome" class="view active">
     <div class="welcome-hero">
-      <span class="welcome-icon">🎲</span>
+      <span class="welcome-icon"></span>
       <div class="eyebrow">Soirée Jeux de Société</div>
       <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
       <p>Compagnon de suivi de score et statistiques pour vos soirées jeux. Saisie rapide, graphiques élégants et trophées épiques.</p>
     </div>
     <div class="welcome-cards">
       <div class="welcome-card" onclick="showView('setup')">
-        <div class="welcome-card-icon">✨</div>
+        <div class="welcome-card-icon"></div>
         <h3>Nouvelle Partie</h3>
         <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
       </div>
       <div class="welcome-card" onclick="showView('history')">
-        <div class="welcome-card-icon">📚</div>
+        <div class="welcome-card-icon"></div>
         <h3>Historique</h3>
         <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
       </div>
@@ -74,7 +74,7 @@
         <h2 id="game-display-name">Jeu</h2>
         <div class="round-info mono" id="round-info">Manche 1 en cours · 0 manches jouées</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="endGame()">🏆 Fin & Résultats</button>
+      <button class="btn btn-outline btn-sm" onclick="endGame()">Fin & Résultats</button>
       <button class="btn btn-danger btn-sm" onclick="abandonGame()">Abandonner</button>
     </div>
 
@@ -84,7 +84,7 @@
         <!-- Leaderboard -->
         <div class="leaderboard-panel">
           <div class="panel-head">
-            <h3>🏆 Classement</h3>
+            <h3>Classement</h3>
             <div class="badge"><span class="dot"></span>Direct</div>
           </div>
           <div id="leaderboard"></div>
@@ -136,19 +136,19 @@
 <!-- AWARDS -->
 <div id="view-awards" class="view">
   <div class="ceremony-header">
-    <span class="trophy">🏆</span>
+    <span class="trophy"></span>
     <div class="eyebrow">Partie Terminée</div>
     <h2>Résultats Finaux</h2>
     <p id="awards-game-name"></p>
   </div>
   <div class="podium" id="podium"></div>
   <div class="awards-section">
-    <div class="eyebrow awards-eyebrow">🎉 Cérémonie des Trophées</div>
+    <div class="eyebrow awards-eyebrow">Cérémonie des Trophées</div>
     <div class="awards-grid" id="awards-grid"></div>
   </div>
   <div class="awards-footer">
-    <button class="btn btn-outline" onclick="showView('history')">📚 Voir l'Historique</button>
-    <button class="btn btn-primary" onclick="showView('setup')">✨ Nouvelle Partie</button>
+    <button class="btn btn-outline" onclick="showView('history')">Voir l'Historique</button>
+    <button class="btn btn-primary" onclick="showView('setup')">Nouvelle Partie</button>
   </div>
 </div>
 

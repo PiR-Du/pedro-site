@@ -104,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     port = 8765
     server = HTTPServer(("localhost", port), Handler)
-    print(f"🎲 Board Game Score Tracker running at http://localhost:{port}")
+    print(f"Board Game Score Tracker running at http://localhost:{port}")
     print("   Press Ctrl+C to stop.")
     try:
         server.serve_forever()

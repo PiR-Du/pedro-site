@@ -1,7 +1,7 @@
 // ============================================================
 // STATE
 // ============================================================
-const AVATARS = ['😀','😎','🤓','🥸','😈','👻','🐸','🐼','🦊','🐯','🦁','🐲','🚀','⚡','🌟','🎯','🎲','🃏','🏆','🎸'];
+const AVATARS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'];
 const COLORS = ['#7c3aed','#2563eb','#059669','#dc2626','#d97706','#db2777','#0891b2','#65a30d'];
 const COLOR_NAMES = ['Violet','Bleu','Vert','Rouge','Ambre','Rose','Cyan','Citron'];
 
@@ -58,7 +58,7 @@ function renderWelcome() {
   list.innerHTML = `<div class="eyebrow recent-title">Parties Récentes</div>` +
     state.history.slice(-5).reverse().map((g,i) => `
       <div class="history-item" onclick="reviewGame(${state.history.length-1-i})">
-        <div class="history-avatar">${g.players[0]?.avatar||'🎲'}</div>
+        <div class="history-avatar">${g.players[0]?.avatar||''}</div>
         <div class="history-item-info">
           <strong>${g.name}</strong>
           <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString()}</span>
@@ -72,8 +72,8 @@ function renderWelcome() {
 // ============================================================
 function initSetup() {
   state.setupPlayers = [
-    {name:'Joueur 1',avatar:'😀',color:COLORS[0]},
-    {name:'Joueur 2',avatar:'😎',color:COLORS[1]},
+    {name:'Joueur 1',avatar:'A',color:COLORS[0]},
+    {name:'Joueur 2',avatar:'B',color:COLORS[1]},
   ];
   renderSetupPlayers();
 }
@@ -460,7 +460,7 @@ function renderAwards() {
   // Podium
   const podium = document.getElementById('podium');
   const top = g.finalRanked.slice(0,3);
-  const medals = ['🥇','🥈','🥉'];
+  const medals = ['1.','2.','3.'];
   const ranks = ['1er','2ème','3ème'];
   podium.innerHTML = top.map((p,i) => `
     <div class="podium-slot${i===0?' p1':''}">
@@ -491,34 +491,34 @@ function generateAwards(g) {
 
   // L'Escargot - last place
   const snail = ranked[ranked.length-1];
-  awards.push({ emoji:'🐌', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
+  awards.push({ emoji:'', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
 
   // Le Tyran - led the most rounds
   if (stats.tyrant) {
-    awards.push({ emoji:'👑', title:'Le Tyran', player: stats.tyrant, desc: `A passé le plus de temps en tête. Le pouvoir est addictif.` });
+    awards.push({ emoji:'', title:'Le Tyran', player: stats.tyrant, desc: `A passé le plus de temps en tête. Le pouvoir est addictif.` });
   }
 
   // Le Flambeur - most volatile
   if (stats.gambler) {
-    awards.push({ emoji:'🎰', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles. Vit pour le chaos.` });
+    awards.push({ emoji:'', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles. Vit pour le chaos.` });
   }
 
   // Le Mur - most consistent (but not first)
   const wallPlayer = ranked.find(p => p.name === stats.wall?.name && p !== ranked[0]);
   if (wallPlayer) {
-    awards.push({ emoji:'🧱', title:'Le Mur', player: stats.wall.name, desc: `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
+    awards.push({ emoji:'', title:'Le Mur', player: stats.wall.name, desc: `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
   }
 
   // La Fusée - biggest comeback
   if (stats.comeback && g.rounds.length > 2) {
-    awards.push({ emoji:'🚀', title:'La Fusée', player: stats.comeback.name, desc: `Plus grosse remontée en fin de partie. Pas de panique, juste du talent.` });
+    awards.push({ emoji:'', title:'La Fusée', player: stats.comeback.name, desc: `Plus grosse remontée en fin de partie. Pas de panique, juste du talent.` });
   }
 
   // Le Sniper - won on last round
   if (stats.sniper) {
-    awards.push({ emoji:'🎯', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure performance à la dernière manche. Le timing est tout.` });
+    awards.push({ emoji:'', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure performance à la dernière manche. Le timing est tout.` });
   }
-  // 💥 BIG BANG — highest single round
+  // BIG BANG — highest single round
   let bigBang = { val: -Infinity, player: null };
   totals.forEach(p => {
     p.perRound.forEach(score => {
@@ -531,14 +531,14 @@ function generateAwards(g) {
 
   if (bigBang.player) {
     awards.push({
-      emoji: '💥',
+      emoji: '',
       title: 'Le Big Bang',
       player: bigBang.player.name,
       desc: 'Un tour explosif.'
     });
   }
 
-  // 🕳️ COLLAPSE — biggest drop between rounds
+  // COLLAPSE — biggest drop between rounds
   let collapse = { val: -Infinity, player: null };
   totals.forEach(p => {
     for (let i = 1; i < p.perRound.length; i++) {
@@ -552,14 +552,14 @@ function generateAwards(g) {
 
   if (collapse.player) {
     awards.push({
-      emoji: '🕳️',
+      emoji: '',
       title: 'L\'Effondrement',
       player: collapse.player.name,
       desc: 'Tout s\'est écroulé.'
     });
   }
 
-  // 🔄 REVERSAL — beat someone who was ahead most of the game
+  // REVERSAL — beat someone who was ahead most of the game
   let reversal = null;
   totals.forEach(p => {
     let behindCount = 0;
@@ -582,14 +582,14 @@ function generateAwards(g) {
 
   if (reversal) {
     awards.push({
-      emoji: '🔄',
+      emoji: '',
       title: 'Le Retournement',
       player: reversal.name,
       desc: 'Les rôles sont inversés.'
     });
   }
 
-  // ⏳ CLUTCH — best last 2 rounds combined
+  // CLUTCH — best last 2 rounds combined
   let clutch = { val: -Infinity, player: null };
   totals.forEach(p => {
     const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
@@ -601,14 +601,14 @@ function generateAwards(g) {
 
   if (clutch.player) {
     awards.push({
-      emoji: '⏳',
+      emoji: '',
       title: 'Le Sang-Froid',
       player: clutch.player.name,
       desc: 'La pression fait les diamants.'
     });
   }
 
-  // 🐢 TOURIST — always behind
+  // TOURIST — always behind
   let tourist = null;
   totals.forEach(p => {
     const alwaysLow = p.perRound.every(score => score < (Math.max(...p.perRound) * 0.6));
@@ -617,14 +617,14 @@ function generateAwards(g) {
 
   if (tourist) {
     awards.push({
-      emoji: '🐢',
+      emoji: '',
       title: 'Le Touriste',
       player: tourist.name,
       desc: 'Juste content d\'être là.'
     });
   }
 
-  // 🧮 ACCOUNTANT — steady gains
+  // ACCOUNTANT — steady gains
   let accountant = { val: Infinity, player: null };
   totals.forEach(p => {
     const v = variance(p.perRound);
@@ -636,14 +636,14 @@ function generateAwards(g) {
 
   if (accountant.player) {
     awards.push({
-      emoji: '🧮',
+      emoji: '',
       title: 'Le Comptable',
       player: accountant.player.name,
       desc: 'Lent, monotone… mais efficace.'
     });
   }
 
-  // 🎢 ROLLERCOASTER — high variance
+  // ROLLERCOASTER — high variance
   let roller = { val: -Infinity, player: null };
   totals.forEach(p => {
     const v = variance(p.perRound);
@@ -655,14 +655,14 @@ function generateAwards(g) {
 
   if (roller.player) {
     awards.push({
-      emoji: '🎢',
+      emoji: '',
       title: 'Le Grand Huit',
       player: roller.player.name,
       desc: 'En haut, en bas… un vrai manège.'
     });
   }
 
-  // 💤 SLEEPER — late game spike
+  // SLEEPER — late game spike
   let sleeper = null;
   totals.forEach(p => {
     const first = p.perRound.slice(0, Math.floor(p.perRound.length/2)).reduce((a,b)=>a+b,0);
@@ -672,7 +672,7 @@ function generateAwards(g) {
 
   if (sleeper) {
     awards.push({
-      emoji: '💤',
+      emoji: '',
       title: 'La Menace Fantôme',
       player: sleeper.name,
       desc: 'On n\'aurait pas dû les ignorer.'
@@ -680,11 +680,11 @@ function generateAwards(g) {
   }
 
   // Le Champion - winner
-  awards.push({ emoji:'🏆', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté. À la prochaine.` });
+  awards.push({ emoji:'', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté. À la prochaine.` });
 
   // Bonus: The Tortoise - if scoring direction is low and someone barely scored
   if (g.direction === 'low') {
-    awards.push({ emoji:'🐢', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Plus bas score, plus grande victoire.` });
+    awards.push({ emoji:'', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Plus bas score, plus grande victoire.` });
   }
 
   return awards.slice(0, 9); // max 9 awards
@@ -730,11 +730,11 @@ function renderHistory() {
     return `
       <div class="history-game-card" onclick="reviewGame(${realIdx})">
         <div class="hgc-head">
-          <span class="hgc-avatar">${g.players?.[0]?.avatar||'🎲'}</span>
+          <span class="hgc-avatar">${g.players?.[0]?.avatar||''}</span>
           <span class="hgc-name">${g.name}</span>
           <span class="hgc-date">${new Date(g.date).toLocaleDateString()} · ${g.rounds?.length||0} manches</span>
           <span class="history-item-badge">
-            🏆 ${g.winner||'?'}
+            ${g.winner||'?'}
           </span>
         </div>
         <div class="hgc-players">
