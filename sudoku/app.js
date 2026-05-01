@@ -75,12 +75,12 @@
       solved.clear();
       selected = null;
       render();
-      if (pyodide) setStatus('ready', 'Pret - saisissez votre grille');
+      if (pyodide) setStatus('ready', 'Prêt - saisissez votre grille');
     }
 
     async function solveGrid() {
       if (!pyodide) return;
-      setStatus('solving', 'Resolution en cours...');
+      setStatus('solving', 'Résolution en cours...');
       btnSolve.disabled = true;
       try {
         pyodide.globals.set('input_grid', pyodide.toPy(grid));
@@ -90,7 +90,7 @@ result = solve_sudoku(list(input_grid))
 result
         `);
         if (result === null || result === undefined) {
-          setStatus('error', 'Aucune solution trouvee pour cette grille');
+          setStatus('error', 'Aucune solution trouvée pour cette grille');
         } else {
           const arr = result.toJs();
           const newSolved = new Set();
@@ -100,7 +100,7 @@ result
           }
           solved = newSolved;
           render();
-          setStatus('solved', 'Grille resolue');
+          setStatus('solved', 'Grille résolue');
         }
       } catch (e) {
         setStatus('error', 'Erreur : ' + e.message);
@@ -129,7 +129,7 @@ result
         const code = await (await fetch('solver.py')).text();
         pyodide.FS.writeFile('/home/pyodide/solver.py', code);
         pyodide.runPython(`import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')`);
-        setStatus('ready', 'Pret - saisissez votre grille');
+        setStatus('ready', 'Prêt - saisissez votre grille');
         btnSolve.disabled = false;
       } catch (e) {
         setStatus('error', 'Erreur de chargement : ' + e.message);

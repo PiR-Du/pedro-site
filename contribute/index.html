@@ -24,7 +24,7 @@
             <div class="form-card">
                 <div class="type-selector">
                     <button class="type-btn active" onclick="setTool('encyclopedia')">🧠 Encyclopédie</button>
-                    <button class="type-btn" onclick="setTool('recommendation')">🎬 Muse (Recs)</button>
+                    <button class="type-btn" onclick="setTool('recommendation')">🎬 Médiathèque</button>
                     <button class="type-btn" onclick="setTool('batchcooking')">🍳 Batch Cooking</button>
                 </div>
 
@@ -58,12 +58,12 @@
                         <div class="form-group">
                             <label>Quel type de média ?</label>
                             <select id="rec-type" onchange="adaptMuseForm()">
-                                <option value="movie">🎬 Film</option>
-                                <option value="series">📺 Série</option>
-                                <option value="book">📖 Livre</option>
-                                <option value="music">🎵 Musique</option>
-                                <option value="videogame">🎮 Jeu Vidéo</option>
-                                <option value="boardgame">🎲 Jeu de Société</option>
+                                <option value="Film">🎬 Film</option>
+                                <option value="Série">📺 Série</option>
+                                <option value="Livre">📖 Livre</option>
+                                <option value="Musique">🎵 Musique</option>
+                                <option value="Jeu Vidéo">🎮 Jeu Vidéo</option>
+                                <option value="Jeu de Société">🎲 Jeu de Société</option>
                             </select>
                         </div>
 
@@ -82,9 +82,9 @@
                             <div class="form-group">
                                 <label>Public</label>
                                 <select id="rec-public">
-                                    <option value="solo">Solo</option>
-                                    <option value="group">Groupe / Amis</option>
-                                    <option value="family">Famille</option>
+                                    <option value="Solo">Solo</option>
+                                    <option value="Groupe">Groupe / Amis</option>
+                                    <option value="Famille">Famille</option>
                                 </select>
                             </div>
                         </div>
@@ -179,7 +179,11 @@
         function setTool(tool) {
             currentTool = tool;
             document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(tool === 'batchcooking' ? 'cooking' : tool === 'recommendation' ? 'muse' : tool));
+                const text = btn.innerText.toLowerCase();
+                const isActive = (tool === 'batchcooking' && text.includes('cooking')) ||
+                                 (tool === 'recommendation' && text.includes('média')) ||
+                                 (tool === 'encyclopedia' && text.includes('encyclo'));
+                btn.classList.toggle('active', isActive);
             });
             document.getElementById('fields-encyclopedia').classList.toggle('hidden', tool !== 'encyclopedia');
             document.getElementById('fields-recommendation').classList.toggle('hidden', tool !== 'recommendation');
@@ -195,12 +199,12 @@
             const durationInput = document.getElementById('rec-duration');
             
             const config = {
-                movie: { title: "Titre du film", creator: "Réalisateur", placeholder: "ex: Christopher Nolan", dur: "Durée", durPh: "ex: 2h 15m" },
-                series: { title: "Titre de la série", creator: "Showrunner / Chaîne", placeholder: "ex: HBO", dur: "Saisons / Éps", durPh: "ex: 5 saisons" },
-                book: { title: "Titre du livre", creator: "Auteur / Écrivain", placeholder: "ex: Albert Camus", dur: "Pages", durPh: "ex: 350p" },
-                music: { title: "Titre de l'album / morceau", creator: "Artiste / Groupe", placeholder: "ex: Pink Floyd", dur: "Format", durPh: "ex: Album, EP, Single" },
-                videogame: { title: "Nom du jeu", creator: "Studio / Développeur", placeholder: "ex: FromSoftware", dur: "Temps de jeu", durPh: "ex: 40h" },
-                boardgame: { title: "Nom du jeu de société", creator: "Auteur / Éditeur", placeholder: "ex: Antoine Bauza", dur: "Partie moyenne", durPh: "ex: 45m" }
+                'Film': { title: "Titre du film", creator: "Réalisateur", placeholder: "ex: Christopher Nolan", dur: "Durée", durPh: "ex: 2h 15m" },
+                'Série': { title: "Titre de la série", creator: "Showrunner / Chaîne", placeholder: "ex: HBO", dur: "Saisons / Éps", durPh: "ex: 5 saisons" },
+                'Livre': { title: "Titre du livre", creator: "Auteur / Écrivain", placeholder: "ex: Albert Camus", dur: "Pages", durPh: "ex: 350p" },
+                'Musique': { title: "Titre de l'album / morceau", creator: "Artiste / Groupe", placeholder: "ex: Pink Floyd", dur: "Format", durPh: "ex: Album, EP, Single" },
+                'Jeu Vidéo': { title: "Nom du jeu", creator: "Studio / Développeur", placeholder: "ex: FromSoftware", dur: "Temps de jeu", durPh: "ex: 40h" },
+                'Jeu de Société': { title: "Nom du jeu de société", creator: "Auteur / Éditeur", placeholder: "ex: Antoine Bauza", dur: "Partie moyenne", durPh: "ex: 45m" }
             };
 
             const c = config[type];
@@ -208,7 +212,7 @@
             labelDuration.innerText = c.dur;
             durationInput.placeholder = c.durPh;
 
-            if (type === 'book' || type === 'music') {
+            if (type === 'Livre' || type === 'Musique') {
                 creatorGroup.classList.remove('hidden');
                 document.getElementById('label-rec-creator').innerText = c.creator;
                 creatorInput.placeholder = c.placeholder;

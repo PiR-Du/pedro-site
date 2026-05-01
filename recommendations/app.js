@@ -65,7 +65,7 @@ function renderGrid() {
 }
 
 function createCard(item) {
-    const icons = { movie: '🎬', series: '📺', book: '📖', music: '🎵', videogame: '🎮', boardgame: '🎲' };
+    const icons = { 'Film': '🎬', 'Série': '📺', 'Livre': '📖', 'Musique': '🎵', 'Jeu Vidéo': '🎮', 'Jeu de Société': '🎲' };
     return `
         <div class="media-card" onclick="showDetail('${item.id}')">
             <div class="card-content">

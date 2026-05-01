@@ -3,7 +3,7 @@
 // ============================================================
 const AVATARS = ['😀','😎','🤓','🥸','😈','👻','🐸','🐼','🦊','🐯','🦁','🐲','🚀','⚡','🌟','🎯','🎲','🃏','🏆','🎸'];
 const COLORS = ['#7c3aed','#2563eb','#059669','#dc2626','#d97706','#db2777','#0891b2','#65a30d'];
-const COLOR_NAMES = ['Violet','Blue','Green','Red','Amber','Pink','Cyan','Lime'];
+const COLOR_NAMES = ['Violet','Bleu','Vert','Rouge','Ambre','Rose','Cyan','Citron'];
 
 let state = {
   currentGame: null,
@@ -55,13 +55,13 @@ function variance(arr) {
 function renderWelcome() {
   const list = document.getElementById('recent-games-list');
   if (!state.history.length) { list.innerHTML = ''; return; }
-  list.innerHTML = `<div class="eyebrow recent-title">Recent Games</div>` +
+  list.innerHTML = `<div class="eyebrow recent-title">Parties Récentes</div>` +
     state.history.slice(-5).reverse().map((g,i) => `
       <div class="history-item" onclick="reviewGame(${state.history.length-1-i})">
         <div class="history-avatar">${g.players[0]?.avatar||'🎲'}</div>
         <div class="history-item-info">
           <strong>${g.name}</strong>
-          <span>${g.players.length} players · ${g.rounds.length} rounds · ${new Date(g.date).toLocaleDateString()}</span>
+          <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString()}</span>
         </div>
         <span class="history-item-badge">${g.winner}</span>
       </div>`).join('');
@@ -72,8 +72,8 @@ function renderWelcome() {
 // ============================================================
 function initSetup() {
   state.setupPlayers = [
-    {name:'Player 1',avatar:'😀',color:COLORS[0]},
-    {name:'Player 2',avatar:'😎',color:COLORS[1]},
+    {name:'Joueur 1',avatar:'😀',color:COLORS[0]},
+    {name:'Joueur 2',avatar:'😎',color:COLORS[1]},
   ];
   renderSetupPlayers();
 }
@@ -82,11 +82,11 @@ function renderSetupPlayers() {
   const list = document.getElementById('player-list');
   list.innerHTML = state.setupPlayers.map((p,i) => `
     <div class="player-row" id="player-row-${i}">
-      <div class="player-avatar-btn" onclick="openAvatarModal(${i})" title="Change avatar">${p.avatar}</div>
+      <div class="player-avatar-btn" onclick="openAvatarModal(${i})" title="Changer l'avatar">${p.avatar}</div>
       <div class="player-color-dot" style="background:${p.color}"></div>
-      <input class="player-name-input" type="text" value="${p.name}" placeholder="Player name"
+      <input class="player-name-input" type="text" value="${p.name}" placeholder="Nom du joueur"
         oninput="state.setupPlayers[${i}].name=this.value">
-      <button class="btn btn-icon btn-danger" onclick="removePlayer(${i})" title="Remove">✕</button>
+      <button class="btn btn-icon btn-danger" onclick="removePlayer(${i})" title="Supprimer">✕</button>
     </div>`).join('');
   document.getElementById('add-player-btn').style.display = state.setupPlayers.length >= 8 ? 'none' : '';
 }
@@ -94,20 +94,20 @@ function renderSetupPlayers() {
 function addPlayerRow() {
   if (state.setupPlayers.length >= 8) return;
   const i = state.setupPlayers.length;
-  state.setupPlayers.push({name:`Player ${i+1}`, avatar: AVATARS[i % AVATARS.length], color: COLORS[i % COLORS.length]});
+  state.setupPlayers.push({name:`Joueur ${i+1}`, avatar: AVATARS[i % AVATARS.length], color: COLORS[i % COLORS.length]});
   renderSetupPlayers();
 }
 
 function removePlayer(i) {
-  if (state.setupPlayers.length <= 2) { toast('Need at least 2 players'); return; }
+  if (state.setupPlayers.length <= 2) { toast('Il faut au moins 2 joueurs'); return; }
   state.setupPlayers.splice(i, 1);
   renderSetupPlayers();
 }
 
 function startGame() {
   const names = state.setupPlayers.map(p => p.name.trim()).filter(Boolean);
-  if (names.length < 2) { toast('Add at least 2 players'); return; }
-  const gameName = document.getElementById('game-name-input').value.trim() || 'Board Game Night';
+  if (names.length < 2) { toast('Ajoutez au moins 2 joueurs'); return; }
+  const gameName = document.getElementById('game-name-input').value.trim() || 'Soirée Jeux';
   const direction = document.getElementById('score-direction').value;
 
   state.currentGame = {
@@ -175,7 +175,7 @@ document.getElementById('avatar-modal').addEventListener('click', function(e) {
 // ============================================================
 function updateRoundInfo() {
   const g = state.currentGame;
-  document.getElementById('round-info').textContent = `Round ${g.currentRound} · ${g.rounds.length} rounds completed`;
+  document.getElementById('round-info').textContent = `Manche ${g.currentRound} · ${g.rounds.length} manches terminées`;
   document.getElementById('current-round-num').textContent = g.currentRound;
 }
 
@@ -261,22 +261,22 @@ function submitRound() {
   renderChart();
   // Reset inputs
   g.players.forEach((_,i) => { document.getElementById('score-'+i).value = 0; });
-  toast(`Round ${g.currentRound-1} recorded! ✓`);
+  toast(`Manche ${g.currentRound-1} enregistrée ! ✓`);
 }
 
 function renderRoundHistory() {
   const g = state.currentGame; if(!g) return;
   const wrap = document.getElementById('round-history-wrap');
   if (!g.rounds.length) {
-    wrap.innerHTML = '<p class="empty-message">No rounds yet</p>';
+    wrap.innerHTML = '<p class="empty-message">Aucune manche pour le moment</p>';
     return;
   }
   const totals = getTotals(g);
   wrap.innerHTML = `<table class="history-table">
     <thead>
       <tr>
-        <th>Player</th>
-        ${g.rounds.map((_,i)=>`<th>R${i+1}</th>`).join('')}
+        <th>Joueur</th>
+        ${g.rounds.map((_,i)=>`<th>M${i+1}</th>`).join('')}
         <th>Total</th>
       </tr>
     </thead>
@@ -284,7 +284,7 @@ function renderRoundHistory() {
       ${g.players.map((p,pi)=>`
         <tr>
           <td><span style="color:${p.color}">${p.avatar} ${p.name}</span></td>
-          ${g.rounds.map((r,ri)=>`<td class="editable-cell mono" onclick="editCell(${pi},${ri})" title="Click to edit">${r[pi]??0}</td>`).join('')}
+          ${g.rounds.map((r,ri)=>`<td class="editable-cell mono" onclick="editCell(${pi},${ri})" title="Cliquer pour éditer">${r[pi]??0}</td>`).join('')}
           <td class="mono total-row">${totals.find(t=>t.idx===pi)?.total??0}</td>
         </tr>`).join('')}
     </tbody>
@@ -329,7 +329,7 @@ function renderChart() {
 
   if (state.activeChart) { state.activeChart.destroy(); state.activeChart = null; }
 
-  const labels = g.rounds.map((_,i) => `R${i+1}`);
+  const labels = g.rounds.map((_,i) => `M${i+1}`);
 
   if (state.chartMode === 'line') {
     // Cumulative
@@ -377,7 +377,7 @@ function switchChart(mode, el) {
 function endGame() {
   const g = state.currentGame;
   if (!g) return;
-  if (!g.rounds.length) { toast('Play at least one round first!'); return; }
+  if (!g.rounds.length) { toast('Jouez au moins une manche d\'abord !'); return; }
 
   const ranked = getRanked(g);
   g.winner = ranked[0].name;
@@ -393,7 +393,7 @@ function endGame() {
 }
 
 function abandonGame() {
-  if (!confirm('Abandon this game? Progress will be lost.')) return;
+  if (!confirm('Abandonner la partie ? Votre progression sera perdue.')) return;
   state.currentGame = null;
   showView('welcome');
 }
@@ -461,7 +461,7 @@ function renderAwards() {
   const podium = document.getElementById('podium');
   const top = g.finalRanked.slice(0,3);
   const medals = ['🥇','🥈','🥉'];
-  const ranks = ['1st','2nd','3rd'];
+  const ranks = ['1er','2ème','3ème'];
   podium.innerHTML = top.map((p,i) => `
     <div class="podium-slot${i===0?' p1':''}">
       <span class="podium-avatar">${p.avatar}</span>
@@ -489,34 +489,34 @@ function generateAwards(g) {
   const totals = getTotals(g);
   const awards = [];
 
-  // The Snail - last place
+  // L'Escargot - last place
   const snail = ranked[ranked.length-1];
-  awards.push({ emoji:'🐌', title:'The Snail', player: snail.name, desc: `Dead last with ${snail.total} pts. The journey matters, not the destination.` });
+  awards.push({ emoji:'🐌', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
 
-  // The Tyrant - led the most rounds
+  // Le Tyran - led the most rounds
   if (stats.tyrant) {
-    awards.push({ emoji:'👑', title:'The Tyrant', player: stats.tyrant, desc: `Spent the most time at the top. Power is addictive.` });
+    awards.push({ emoji:'👑', title:'Le Tyran', player: stats.tyrant, desc: `A passé le plus de temps en tête. Le pouvoir est addictif.` });
   }
 
-  // The Gambler - most volatile
+  // Le Flambeur - most volatile
   if (stats.gambler) {
-    awards.push({ emoji:'🎰', title:'The Gambler', player: stats.gambler.name, desc: `Wildly unpredictable scores. Living for the chaos.` });
+    awards.push({ emoji:'🎰', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles. Vit pour le chaos.` });
   }
 
-  // The Wall - most consistent (but not first)
+  // Le Mur - most consistent (but not first)
   const wallPlayer = ranked.find(p => p.name === stats.wall?.name && p !== ranked[0]);
   if (wallPlayer) {
-    awards.push({ emoji:'🧱', title:'The Wall', player: stats.wall.name, desc: `Laser-consistent rounds. Not first, but unshakeable.` });
+    awards.push({ emoji:'🧱', title:'Le Mur', player: stats.wall.name, desc: `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
   }
 
-  // The Rocket - biggest comeback
+  // La Fusée - biggest comeback
   if (stats.comeback && g.rounds.length > 2) {
-    awards.push({ emoji:'🚀', title:'The Rocket', player: stats.comeback.name, desc: `Biggest second-half surge. They didn't panic, they planned.` });
+    awards.push({ emoji:'🚀', title:'La Fusée', player: stats.comeback.name, desc: `Plus grosse remontée en fin de partie. Pas de panique, juste du talent.` });
   }
 
-  // The Sniper - won on last round
+  // Le Sniper - won on last round
   if (stats.sniper) {
-    awards.push({ emoji:'🎯', title:'The Sniper', player: stats.sniper.name, desc: `Best performance in the final round. Timing is everything.` });
+    awards.push({ emoji:'🎯', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure performance à la dernière manche. Le timing est tout.` });
   }
   // 💥 BIG BANG — highest single round
   let bigBang = { val: -Infinity, player: null };
@@ -532,9 +532,9 @@ function generateAwards(g) {
   if (bigBang.player) {
     awards.push({
       emoji: '💥',
-      title: 'The Big Bang',
+      title: 'Le Big Bang',
       player: bigBang.player.name,
-      desc: 'One explosive turn.'
+      desc: 'Un tour explosif.'
     });
   }
 
@@ -553,9 +553,9 @@ function generateAwards(g) {
   if (collapse.player) {
     awards.push({
       emoji: '🕳️',
-      title: 'The Collapse',
+      title: 'L\'Effondrement',
       player: collapse.player.name,
-      desc: 'It all fell apart.'
+      desc: 'Tout s\'est écroulé.'
     });
   }
 
@@ -583,9 +583,9 @@ function generateAwards(g) {
   if (reversal) {
     awards.push({
       emoji: '🔄',
-      title: 'The Reversal',
+      title: 'Le Retournement',
       player: reversal.name,
-      desc: 'Tables: turned.'
+      desc: 'Les rôles sont inversés.'
     });
   }
 
@@ -602,9 +602,9 @@ function generateAwards(g) {
   if (clutch.player) {
     awards.push({
       emoji: '⏳',
-      title: 'The Clutch',
+      title: 'Le Sang-Froid',
       player: clutch.player.name,
-      desc: 'Pressure makes diamonds.'
+      desc: 'La pression fait les diamants.'
     });
   }
 
@@ -618,9 +618,9 @@ function generateAwards(g) {
   if (tourist) {
     awards.push({
       emoji: '🐢',
-      title: 'The Tourist',
+      title: 'Le Touriste',
       player: tourist.name,
-      desc: 'Just happy to be here.'
+      desc: 'Juste content d\'être là.'
     });
   }
 
@@ -637,9 +637,9 @@ function generateAwards(g) {
   if (accountant.player) {
     awards.push({
       emoji: '🧮',
-      title: 'The Accountant',
+      title: 'Le Comptable',
       player: accountant.player.name,
-      desc: 'Slow, boring… effective.'
+      desc: 'Lent, monotone… mais efficace.'
     });
   }
 
@@ -656,9 +656,9 @@ function generateAwards(g) {
   if (roller.player) {
     awards.push({
       emoji: '🎢',
-      title: 'The Rollercoaster',
+      title: 'Le Grand Huit',
       player: roller.player.name,
-      desc: 'Up, down, up, down…'
+      desc: 'En haut, en bas… un vrai manège.'
     });
   }
 
@@ -673,18 +673,18 @@ function generateAwards(g) {
   if (sleeper) {
     awards.push({
       emoji: '💤',
-      title: 'The Sleeper',
+      title: 'La Menace Fantôme',
       player: sleeper.name,
-      desc: 'We should’ve watched them.'
+      desc: 'On n\'aurait pas dû les ignorer.'
     });
   }
 
-  // The Champion - winner
-  awards.push({ emoji:'🏆', title:'The Champion', player: ranked[0].name, desc: `Winner, winner, chicken dinner. Until next time.` });
+  // Le Champion - winner
+  awards.push({ emoji:'🏆', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté. À la prochaine.` });
 
   // Bonus: The Tortoise - if scoring direction is low and someone barely scored
   if (g.direction === 'low') {
-    awards.push({ emoji:'🐢', title:'The Minimalist', player: ranked[0].name, desc: `Less is more. Scored the least, won the most.` });
+    awards.push({ emoji:'🐢', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Plus bas score, plus grande victoire.` });
   }
 
   return awards.slice(0, 9); // max 9 awards
@@ -715,13 +715,13 @@ function renderHistory() {
   const uniquePlayers = Object.keys(allPlayers).length;
 
   gstats.innerHTML = `
-    <div class="gstat"><div class="num">${total}</div><div class="lbl">Games played</div></div>
-    <div class="gstat"><div class="num">${totalRounds}</div><div class="lbl">Total rounds</div></div>
-    <div class="gstat"><div class="num">${uniquePlayers}</div><div class="lbl">Unique players</div></div>
-    <div class="gstat"><div class="num">${topPlayer?topPlayer[0].slice(0,8):'—'}</div><div class="lbl">Most wins${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
+    <div class="gstat"><div class="num">${total}</div><div class="lbl">Parties jouées</div></div>
+    <div class="gstat"><div class="num">${totalRounds}</div><div class="lbl">Manches totales</div></div>
+    <div class="gstat"><div class="num">${uniquePlayers}</div><div class="lbl">Joueurs uniques</div></div>
+    <div class="gstat"><div class="num">${topPlayer?topPlayer[0].slice(0,8):'—'}</div><div class="lbl">Plus de victoires${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
 
   if (!state.history.length) {
-    container.innerHTML = '<p class="empty-message empty-message-xl">No games played yet. Start your first game!</p>';
+    container.innerHTML = '<p class="empty-message empty-message-xl">Aucune partie jouée. Lancez votre première partie !</p>';
     return;
   }
 
@@ -732,7 +732,7 @@ function renderHistory() {
         <div class="hgc-head">
           <span class="hgc-avatar">${g.players?.[0]?.avatar||'🎲'}</span>
           <span class="hgc-name">${g.name}</span>
-          <span class="hgc-date">${new Date(g.date).toLocaleDateString()} · ${g.rounds?.length||0} rounds</span>
+          <span class="hgc-date">${new Date(g.date).toLocaleDateString()} · ${g.rounds?.length||0} manches</span>
           <span class="history-item-badge">
             🏆 ${g.winner||'?'}
           </span>

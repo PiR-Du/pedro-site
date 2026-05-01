@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoardNight - Score Tracker</title>
+<title>BoardNight - Suivi de Scores</title>
 <link rel="stylesheet" href="../style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -18,20 +18,20 @@
 <div id="view-welcome" class="view active">
     <div class="welcome-hero">
       <span class="welcome-icon">🎲</span>
-      <div class="eyebrow">Board Game Night</div>
-      <h1>Track every round,<br>celebrate every win</h1>
-      <p>Score tracker & stats companion for your board game nights. Fast input, beautiful charts, epic awards.</p>
+      <div class="eyebrow">Soirée Jeux de Société</div>
+      <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
+      <p>Compagnon de suivi de score et statistiques pour vos soirées jeux. Saisie rapide, graphiques élégants et trophées épiques.</p>
     </div>
     <div class="welcome-cards">
       <div class="welcome-card" onclick="showView('setup')">
         <div class="welcome-card-icon">✨</div>
-        <h3>New Game</h3>
-        <p>Set up players, pick a game and start tracking scores round by round.</p>
+        <h3>Nouvelle Partie</h3>
+        <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
       </div>
       <div class="welcome-card" onclick="showView('history')">
         <div class="welcome-card-icon">📚</div>
-        <h3>Game History</h3>
-        <p>Review past sessions, player rankings, win rates and rivalries.</p>
+        <h3>Historique</h3>
+        <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
       </div>
     </div>
     <div class="history-list" id="recent-games-list"></div>
@@ -40,30 +40,30 @@
 <!-- SETUP -->
 <div id="view-setup" class="view">
     <div class="setup-header">
-      <div class="eyebrow">New Session</div>
-      <h2>Set up your game</h2>
+      <div class="eyebrow">Nouvelle Session</div>
+      <h2>Configurez votre partie</h2>
     </div>
     <div class="field">
-      <label>Game Name</label>
-      <input id="game-name-input" type="text" placeholder="e.g. Catan, Wingspan, Ticket to Ride…" value="Board Game Night">
+      <label>Nom du Jeu</label>
+      <input id="game-name-input" type="text" placeholder="ex: Catan, Wingspan, Les Aventuriers du Rail…" value="Soirée Jeux">
     </div>
     <div class="field">
-      <label>Scoring Direction</label>
+      <label>Sens du Score</label>
       <select id="score-direction">
-        <option value="high">Highest score wins</option>
-        <option value="low">Lowest score wins</option>
+        <option value="high">Le plus haut score gagne</option>
+        <option value="low">Le plus bas score gagne</option>
       </select>
     </div>
     <div class="players-section">
-      <h3>Players <span class="player-count-note">(2–8)</span></h3>
+      <h3>Joueurs <span class="player-count-note">(2–8)</span></h3>
       <div id="player-list"></div>
       <button class="add-player-btn" id="add-player-btn" onclick="addPlayerRow()">
-        <span>+</span> Add player
+        <span>+</span> Ajouter un joueur
       </button>
     </div>
     <div class="setup-footer">
-      <button class="btn btn-outline" onclick="showView('welcome')">← Back</button>
-      <button class="btn btn-primary" onclick="startGame()">Start Game →</button>
+      <button class="btn btn-outline" onclick="showView('welcome')">← Retour</button>
+      <button class="btn btn-primary" onclick="startGame()">Lancer la partie →</button>
     </div>
 </div>
 
@@ -71,11 +71,11 @@
 <div id="view-game" class="view">
     <div class="game-header">
       <div class="game-title">
-        <h2 id="game-display-name">Game</h2>
-        <div class="round-info mono" id="round-info">Round 1 of ongoing · 0 rounds played</div>
+        <h2 id="game-display-name">Jeu</h2>
+        <div class="round-info mono" id="round-info">Manche 1 en cours · 0 manches jouées</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="endGame()">🏆 End & Awards</button>
-      <button class="btn btn-danger btn-sm" onclick="abandonGame()">Abandon</button>
+      <button class="btn btn-outline btn-sm" onclick="endGame()">🏆 Fin & Résultats</button>
+      <button class="btn btn-danger btn-sm" onclick="abandonGame()">Abandonner</button>
     </div>
 
     <div class="game-layout">
@@ -84,8 +84,8 @@
         <!-- Leaderboard -->
         <div class="leaderboard-panel">
           <div class="panel-head">
-            <h3>🏆 Leaderboard</h3>
-            <div class="badge"><span class="dot"></span>Live</div>
+            <h3>🏆 Classement</h3>
+            <div class="badge"><span class="dot"></span>Direct</div>
           </div>
           <div id="leaderboard"></div>
         </div>
@@ -93,25 +93,25 @@
         <!-- Charts -->
         <div class="chart-panel">
           <div class="chart-panel-head">
-            <h3 class="panel-title">Score Progression</h3>
+            <h3 class="panel-title">Progression des Scores</h3>
             <div class="chart-tabs">
-              <button class="chart-tab active" onclick="switchChart('line',this)">Line</button>
+              <button class="chart-tab active" onclick="switchChart('line',this)">Lignes</button>
             </div>
           </div>
           <canvas id="main-chart"></canvas>
           <div id="chart-no-data" class="empty-message empty-message-large">
-            Submit round scores to see the chart
+            Validez les scores d'une manche pour voir le graphique
           </div>
         </div>
 
         <!-- Round history -->
         <div class="round-history">
           <div class="panel-head">
-            <h3 class="panel-title">Round History</h3>
-            <span class="panel-note">Click a score to edit</span>
+            <h3 class="panel-title">Historique des Manches</h3>
+            <span class="panel-note">Cliquez sur un score pour éditer</span>
           </div>
           <div id="round-history-wrap">
-            <p class="empty-message">No rounds yet</p>
+            <p class="empty-message">Aucune manche pour le moment</p>
           </div>
         </div>
       </div>
@@ -121,11 +121,11 @@
         <!-- Score Input -->
         <div class="score-input-panel">
           <div class="panel-head">
-            <h3>Round <span id="current-round-num">1</span> Scores</h3>
+            <h3>Scores Manche <span id="current-round-num">1</span></h3>
           </div>
           <div id="score-inputs"></div>
           <button class="submit-round-btn" onclick="submitRound()">
-            ✓ Submit Round
+            ✓ Valider la Manche
           </button>
         </div>
 
@@ -137,18 +137,18 @@
 <div id="view-awards" class="view">
   <div class="ceremony-header">
     <span class="trophy">🏆</span>
-    <div class="eyebrow">Game Over</div>
-    <h2>Final Results</h2>
+    <div class="eyebrow">Partie Terminée</div>
+    <h2>Résultats Finaux</h2>
     <p id="awards-game-name"></p>
   </div>
   <div class="podium" id="podium"></div>
   <div class="awards-section">
-    <div class="eyebrow awards-eyebrow">🎉 Awards Ceremony</div>
+    <div class="eyebrow awards-eyebrow">🎉 Cérémonie des Trophées</div>
     <div class="awards-grid" id="awards-grid"></div>
   </div>
   <div class="awards-footer">
-    <button class="btn btn-outline" onclick="showView('history')">📚 View History</button>
-    <button class="btn btn-primary" onclick="showView('setup')">✨ New Game</button>
+    <button class="btn btn-outline" onclick="showView('history')">📚 Voir l'Historique</button>
+    <button class="btn btn-primary" onclick="showView('setup')">✨ Nouvelle Partie</button>
   </div>
 </div>
 
@@ -156,28 +156,28 @@
 <div id="view-history" class="view">
     <div class="history-page-head">
       <div class="flex-fill">
-        <div class="eyebrow">All Time</div>
-        <h2>Game History</h2>
+        <div class="eyebrow">Tout temps</div>
+        <h2>Historique des Parties</h2>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="showView('welcome')">← Home</button>
+      <button class="btn btn-outline btn-sm" onclick="showView('welcome')">← Accueil</button>
     </div>
     <div class="global-stats" id="global-stats"></div>
     <div id="history-games-list">
-      <p class="empty-message empty-message-xl">No games played yet. Start your first game!</p>
+      <p class="empty-message empty-message-xl">Aucune partie jouée. Lancez votre première partie !</p>
     </div>
 </div>
 
 <!-- Avatar Modal -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="modal">
-    <h3>Pick Avatar & Color</h3>
+    <h3>Choisir Avatar & Couleur</h3>
     <div class="eyebrow modal-eyebrow">Avatar</div>
     <div class="avatar-grid" id="avatar-grid"></div>
-    <div class="eyebrow modal-eyebrow">Color</div>
+    <div class="eyebrow modal-eyebrow">Couleur</div>
     <div class="color-picker" id="color-picker"></div>
     <div class="modal-actions">
-      <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirm</button>
-      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirmer</button>
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
     </div>
   </div>
 </div>
