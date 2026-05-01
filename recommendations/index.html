@@ -1,21 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Muse — Le moteur de recommandations pour tout ce que vous aimez</title>
-  <meta name="description" content="Un moteur de recommandation intelligent base sur le swipe pour films, series, musique, jeux video et jeux de societe." />
-  <meta property="og:title" content="Muse — moteur de recommandations" />
-  <meta property="og:description" content="Faites defiler les cartes, creez votre profil et obtenez trois choix personnalises." />
-  <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="../style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommandations - Médiathèque</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
 </head>
-<body data-root=".." data-page="recommendations">
+
+<body data-page="recommendations" data-root="..">
   <div id="site-header"></div>
-  <div id="app"></div>
+
+  <main>
+    <div class="section-head">
+      <p class="eyebrow">./recommandations</p>
+      <h1 class="serif" style="font-size: 4.5rem; line-height: 1.1;">La Médiathèque</h1>
+    </div>
+
+    <div class="muse-container">
+      <!-- Sidebar -->
+      <aside class="muse-sidebar">
+        <div class="filter-group">
+          <label>Type de média</label>
+          <select class="filter-select" id="filter-type">
+            <option value="all">Tout voir</option>
+            <option value="movie">🎬 Films</option>
+            <option value="series">📺 Séries</option>
+            <option value="book">📖 Livres</option>
+            <option value="music">🎵 Musique</option>
+            <option value="videogame">🎮 Jeux Vidéo</option>
+            <option value="boardgame">🎲 Jeux de Société</option>
+          </select>
+        </div>
+
+
+        <div class="filter-group">
+          <label>Recommandé par</label>
+          <select class="filter-select" id="filter-contributor">
+            <option value="all">Tout le monde</option>
+          </select>
+        </div>
+
+        <!-- Contextual Filters -->
+        <div id="contextual-filters" class="hidden-filter">
+          <div class="filter-group" style="margin-bottom:1.5rem;">
+            <label>Genre</label>
+            <select class="filter-select" id="filter-genre">
+              <option value="all">Tous les genres</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Ambiance</label>
+            <select class="filter-select" id="filter-ambiance">
+              <option value="all">Toutes les ambiances</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Grid Content -->
+      <div class="grid-content">
+        <div style="margin-bottom: 2rem;">
+          <input type="text" id="media-search"
+            style="width:100%; padding: 1rem 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 2rem; color: var(--foreground);"
+            placeholder="Rechercher un titre, un artiste, un auteur...">
+        </div>
+
+        <div class="media-grid" id="main-grid">
+          <!-- Cards injected by app.js -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Detail Drawer -->
+  <div id="detail-drawer">
+    <div class="close-drawer" onclick="closeDrawer()">×</div>
+    <div id="drawer-content"></div>
+  </div>
+
   <div id="site-footer"></div>
+
   <script src="../shared-layout.js"></script>
+  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>

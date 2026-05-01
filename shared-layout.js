@@ -11,8 +11,8 @@ const TEMPLATES = {
       <a data-nav-link="sudoku" href="{{root}}/sudoku/sudoku.html">Sudoku</a>
       <a data-nav-link="score" href="{{root}}/score/index.html">Score</a>
       <a data-nav-link="batch-cooking" href="{{root}}/batch-cooking/index.html">Batch cooking</a>
-      <a data-nav-link="recommendations" href="{{root}}/recommendations/index.html">Recommandations</a>
-      <a data-nav-link="encyclopedia" href="{{root}}/encyclopedia/index.html">Encyclopedie</a>
+      <a data-nav-link="recommendations" href="{{root}}/recommandations/index.html">Recommandations</a>
+      <a data-nav-link="encyclopedia" href="{{root}}/encyclopedia/index.html">Encyclopédie</a>
       <a data-nav-link="contribute" href="{{root}}/contribute/index.html">Contribuer</a>
     </nav>
   </div>
