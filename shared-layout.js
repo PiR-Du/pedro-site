@@ -7,7 +7,6 @@ const TEMPLATES = {
       <span>Pierre Duchesne</span>
     </a>
     <nav class="nav">
-      <a data-nav-link="home" href="{{root}}/index.html">Accueil</a>
       <a data-nav-link="sudoku" href="{{root}}/sudoku/sudoku.html">Sudoku</a>
       <a data-nav-link="score" href="{{root}}/score/index.html">Score</a>
       <a data-nav-link="batch-cooking" href="{{root}}/batch-cooking/index.html">Batch cooking</a>
