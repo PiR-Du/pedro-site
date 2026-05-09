@@ -63,12 +63,17 @@ function renderGraph() {
         .data(nodes)
         .enter().append("g")
         .attr("class", "node")
+        .style("cursor", "pointer")
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended))
         .on("mouseover", showTooltip)
-        .on("mouseout", hideTooltip);
+        .on("mouseout", hideTooltip)
+        .on("click", (event, d) => {
+            if (event.defaultPrevented) return; // dragged
+            if (typeof showNodeDetail === 'function') showNodeDetail(d);
+        });
 
     node.append("circle")
         .attr("r", 7)

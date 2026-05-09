@@ -75,6 +75,28 @@ function showProfile(name) {
     if (typeof highlightSource === 'function') highlightSource(name);
 }
 
+function showNodeDetail(d) {
+    const shell = document.querySelector('.encyclopedia-shell');
+    const profileName = document.getElementById('profile-name');
+    const profileNotes = document.getElementById('profile-notes');
+    const color = typeof colorScale !== 'undefined' ? colorScale(d.source) : 'inherit';
+
+    shell.classList.add('has-profile');
+    
+    profileName.innerText = d.title;
+    profileName.style.color = color;
+    
+    profileNotes.innerHTML = `
+        <div class="note-card" style="border-bottom: none;">
+            <span class="note-cat" style="color: ${color}">[${d.category}]</span>
+            <div style="font-size: 0.8rem; color: var(--muted-foreground); margin-bottom: 0.5rem; font-family: var(--font-mono); text-transform: uppercase;">Source : ${d.source}</div>
+            <p class="note-text" style="font-size: 1rem; color: var(--foreground);">${d.text}</p>
+        </div>
+    `;
+
+    if (typeof highlightSource === 'function') highlightSource(d.source);
+}
+
 function closeProfile() {
     const shell = document.querySelector('.encyclopedia-shell');
     shell.classList.remove('has-profile');
