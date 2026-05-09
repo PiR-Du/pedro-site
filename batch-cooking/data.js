@@ -1,15 +1,15 @@
 const MEALS = [
     // Hiver
-    { id: 101, title: "Raclette", ingredients: ["fromage à raclette", "pommes de terre", "charcuterie", "oignons"] },
+    { id: 101, title: "Cassoulet", ingredients: ["haricots blancs", "saucisses", "confit de canard", "tomates"] },
     { id: 102, title: "Fondue savoyarde", ingredients: ["fromage", "pain", "ail", "vin blanc"] },
     { id: 103, title: "Pot-au-feu", ingredients: ["bœuf", "carottes", "poireaux", "pommes de terre"] },
     { id: 104, title: "Tartiflette", ingredients: ["reblochon", "pommes de terre", "lardons", "oignons"] },
     { id: 105, title: "Bœuf bourguignon", ingredients: ["bœuf", "vin rouge", "carottes", "champignons"] },
     { id: 106, title: "Soupe à l’oignon", ingredients: ["oignons", "pain", "fromage", "bouillon"] },
-    { id: 107, title: "Cassoulet", ingredients: ["haricots blancs", "saucisses", "confit de canard", "tomates"] },
     { id: 108, title: "Gratin dauphinois", ingredients: ["pommes de terre", "crème", "ail", "lait"] },
     { id: 109, title: "Chili con carne", ingredients: ["bœuf haché", "haricots rouges", "tomates concassées", "oignons"] },
     { id: 110, title: "Blanquette de veau", ingredients: ["veau", "carottes", "champignons", "crème"] },
+    { id: 107, title: "Raclette", ingredients: ["fromage à raclette", "pommes de terre", "charcuterie", "oignons"] },
 
     // Été
     { id: 201, title: "Salade niçoise", ingredients: ["thon", "œufs", "tomates", "haricots verts"] },
