@@ -115,6 +115,11 @@
                             </div>
                         </div>
 
+                        <div class="form-group" id="group-rec-platform" style="display: none;">
+                            <label>Plateforme (Netflix, Prime, etc.)</label>
+                            <input type="text" id="rec-platform" placeholder="Où peut-on le trouver ?">
+                        </div>
+
                         <div class="form-group">
                             <label>Pitch / Pitch court</label>
                             <textarea id="rec-pitch" rows="2" placeholder="De quoi s'agit-il ?"></textarea>
@@ -201,6 +206,7 @@
             const creatorGroup = document.getElementById('label-rec-creator').parentElement;
             const creatorInput = document.getElementById('rec-creator');
             const durationInput = document.getElementById('rec-duration');
+            const labelDuration = document.getElementById('label-rec-duration');
 
             const config = {
                 'Film': { title: "Titre du film", creator: "Réalisateur", placeholder: "ex: Christopher Nolan", dur: "Durée", durPh: "ex: 2h 15m" },
@@ -223,6 +229,14 @@
             } else {
                 creatorGroup.classList.add('hidden');
                 creatorInput.value = ''; // On vide pour la cohérence
+            }
+
+            const platformGroup = document.getElementById('group-rec-platform');
+            if (type === 'Film' || type === 'Série') {
+                platformGroup.style.display = 'block';
+            } else {
+                platformGroup.style.display = 'none';
+                document.getElementById('rec-platform').value = '';
             }
         }
 
@@ -252,6 +266,9 @@
                     public: document.getElementById('rec-public').value,
                     pitch: document.getElementById('rec-pitch').value
                 });
+                
+                const platform = document.getElementById('rec-platform').value;
+                if (platform) item.data.platform = platform;
             } else {
                 Object.assign(item.data, {
                     id: Math.floor(Math.random() * 1000) + 1000,

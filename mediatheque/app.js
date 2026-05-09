@@ -1,4 +1,4 @@
-let activeFilters = { type: 'all', contributor: 'all', genre: 'all', ambiance: 'all', search: '' };
+let activeFilters = { type: 'all', contributor: 'all', genre: 'all', ambiance: 'all', platform: 'all', search: '' };
 
 function initMuse() {
     const allItems = getAllItems();
@@ -28,10 +28,22 @@ function populateFilters(items) {
         fillSelect('filter-genre', genres);
         fillSelect('filter-ambiance', ambiances);
         document.getElementById('contextual-filters').classList.add('active');
+        
+        const isPlatformType = activeFilters.type === 'Film' || activeFilters.type === 'Série';
+        if (isPlatformType) {
+            const platforms = [...new Set(typeFilteredItems.map(i => i.platform).filter(Boolean))].sort();
+            fillSelect('filter-platform', platforms);
+            document.getElementById('filter-group-platform').classList.remove('hidden-filter');
+        } else {
+            document.getElementById('filter-group-platform').classList.add('hidden-filter');
+            activeFilters.platform = 'all';
+        }
     } else {
         document.getElementById('contextual-filters').classList.remove('active');
+        document.getElementById('filter-group-platform').classList.add('hidden-filter');
         activeFilters.genre = 'all';
         activeFilters.ambiance = 'all';
+        activeFilters.platform = 'all';
     }
 }
 
@@ -54,11 +66,12 @@ function renderGrid() {
         const matchContributor = activeFilters.contributor === 'all' || item.contributor === activeFilters.contributor;
         const matchGenre = activeFilters.genre === 'all' || item.main_genre === activeFilters.genre;
         const matchAmbiance = activeFilters.ambiance === 'all' || item.ambiance === activeFilters.ambiance;
+        const matchPlatform = activeFilters.platform === 'all' || item.platform === activeFilters.platform;
         const matchSearch = !activeFilters.search || 
                            item.title.toLowerCase().includes(activeFilters.search.toLowerCase()) ||
                            (item.creator && item.creator.toLowerCase().includes(activeFilters.search.toLowerCase()));
         
-        return matchType && matchContributor && matchGenre && matchAmbiance && matchSearch;
+        return matchType && matchContributor && matchGenre && matchAmbiance && matchPlatform && matchSearch;
     });
 
     grid.innerHTML = filtered.map(item => createCard(item)).join('');
@@ -96,7 +109,7 @@ function setupEventListeners() {
 
 
     // Others
-    ['contributor', 'genre', 'ambiance'].forEach(key => {
+    ['contributor', 'genre', 'ambiance', 'platform'].forEach(key => {
         const el = document.getElementById(`filter-${key}`);
         if (el) el.onchange = (e) => {
             activeFilters[key] = e.target.value;
@@ -127,6 +140,7 @@ window.showDetail = function(id) {
         <div class="detail-section">
             <h3>Informations</h3>
             ${item.creator ? `<p><strong>Créateur/Artiste :</strong> ${item.creator}</p>` : ''}
+            ${item.platform ? `<p><strong>Plateforme :</strong> ${item.platform}</p>` : ''}
             <p><strong>Recommandé par :</strong> ${item.contributor || 'Anonyme'}</p>
         </div>
 

@@ -4,18 +4,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recommandations - Médiathèque</title>
+  <title>Médiathèque</title>
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
 </head>
 
-<body data-page="recommendations" data-root="..">
+<body data-page="mediatheque" data-root="..">
   <div id="site-header"></div>
 
   <main>
     <div class="section-head">
-      <p class="eyebrow">./recommandations</p>
+      <p class="eyebrow">./mediatheque</p>
       <h1 class="serif" style="font-size: 4.5rem; line-height: 1.1;">La Médiathèque</h1>
     </div>
 
@@ -40,6 +40,13 @@
           <label>Recommandé par</label>
           <select class="filter-select" id="filter-contributor">
             <option value="all">Tout le monde</option>
+          </select>
+        </div>
+
+        <div class="filter-group hidden-filter" id="filter-group-platform">
+          <label>Plateforme</label>
+          <select class="filter-select" id="filter-platform">
+            <option value="all">Toutes les plateformes</option>
           </select>
         </div>
 
