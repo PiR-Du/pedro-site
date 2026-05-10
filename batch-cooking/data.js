@@ -1,4 +1,7 @@
 const MEALS = [
+    //Added by people
+    { id: 1, title: "Guacamole", ingredients: ["avocat", "oignon rouge", "tomate", "citron", "tabasco", "cumin", "coriandre"], chef: "Crepu" },
+
     // Hiver
     { id: 101, title: "Cassoulet", ingredients: ["haricots blancs", "saucisses", "confit de canard", "tomates"] },
     { id: 102, title: "Fondue savoyarde", ingredients: ["fromage", "pain", "ail", "vin blanc"] },

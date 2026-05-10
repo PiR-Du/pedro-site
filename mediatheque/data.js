@@ -2,9 +2,11 @@ const MEDIA = [
     // FILMS
     { id: "m1", title: "Everything Everywhere All At Once", type: "Film", contributor: "Pedro", main_genre: "Action", sub_genres: ["Fantastique", "Aventure", "Comédie"], main_emotion: "Altruisme", complexity: 3, ambiance: "Chaotique", public: "Famille", favorite: true, pitch: "Une jeune femme se retrouve entraînée dans une aventure folle à travers le multivers pour sauver le monde.", platform: "Amazon Prime" },
     { id: "m2", title: "The Man From Earth", type: "Film", contributor: "Enola", main_genre: "SF", sub_genres: ["Drame", "Philosophique"], main_emotion: "Cérébral", complexity: 5, ambiance: "Tendu", public: "Solo", favorite: true, pitch: "Un professeur d'université annonce à ses collègues qu'il est immortel.", platform: "Youtube" },
-    { id: "m3", title: "Arco", type: "Film", contributor: "Elise", main_genre: "Fantastique", sub_genres: ["Aventure"], main_emotion: "Altruisme", complexity: 3, ambiance: "Poétique", public: "Famille", favorite: true, pitch: "Une aventure onirique et visuellement splendide.", platform: "Amazon Prime" },
+    { id: "m3", title: "Arco", type: "Film", contributor: "Crepu", main_genre: "Fantastique", sub_genres: ["Aventure"], main_emotion: "Altruisme", complexity: 3, ambiance: "Poétique", public: "Famille", favorite: true, pitch: "Une aventure onirique et visuellement splendide.", platform: "Amazon Prime" },
 
     // SÉRIES
+    { id: "s1", title: "The Bear", type: "Série", contributor: "Crepu", main_genre: "Comédie dramatique", sub_genres: ["Cuisine", "Tranche de vie"], main_emotion: "Intense", complexity: 4, ambiance: "Bruyante", public: "Solo", favorite: true, pitch: " Un gars reprend le restaurant de son frère décédé.", platform: "Disney +" },
+
 
     // LIVRES
     { id: "b1", title: "Les Thanatonautes", type: "Livre", creator: "Bernard Werber", contributor: "Pedro", main_genre: "Aventure", sub_genres: ["Philosophie", "Voyage", "SF"], main_emotion: "Philosophique", complexity: 5, ambiance: "Mystérieux", public: "Solo", favorite: true, pitch: "Des explorateurs de l'au-delà cartographiant le monde des morts" },
