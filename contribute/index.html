@@ -28,7 +28,8 @@
                 <div class="type-selector">
                     <button class="type-btn active" onclick="setTool('encyclopedia')">Encyclopédie</button>
                     <button class="type-btn" onclick="setTool('recommendation')">Médiathèque</button>
-                    <button class="type-btn" onclick="setTool('batchcooking')">Batch Cooking</button>
+                    <button class="type-btn" onclick="setTool('city-guide')">Que faire en ville</button>
+                    <button class="type-btn" onclick="setTool('batch-cooking')">Batch Cooking</button>
                 </div>
 
                 <form id="unified-form">
@@ -135,11 +136,65 @@
                                 <input type="text" id="rec-ambiance" placeholder="Cozy, dark, épique...">
                             </div>
                         </div>
+                    </div>
 
+                    <!-- City Guide Fields -->
+                    <div id="fields-city-guide" class="hidden">
+                        <div class="form-group">
+                            <label>Type de lieu</label>
+                            <select id="city-type">
+                                <option value="Restaurant">Restaurant</option>
+                                <option value="Bar">Bar</option>
+                                <option value="Lieu culturel">Lieu culturel</option>
+                            </select>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Nom du lieu</label>
+                                <input type="text" id="city-title" placeholder="ex: Le Perchoir">
+                            </div>
+                            <div class="form-group">
+                                <label>Adresse</label>
+                                <input type="text" id="city-address" placeholder="ex: 14 Rue Crespin du Gast, 75011 Paris">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Genre / Style</label>
+                                <input type="text" id="city-genre" placeholder="ex: Rooftop, Gastronomique...">
+                            </div>
+                            <div class="form-group">
+                                <label>Ambiance</label>
+                                <input type="text" id="city-ambiance" placeholder="ex: Chill, Épuré, Animé...">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Émotion</label>
+                                <input type="text" id="city-emotion" placeholder="ex: Détente, Émerveillement...">
+                            </div>
+                            <div class="form-group">
+                                <label>Public conseillé</label>
+                                <select id="city-public">
+                                    <option value="Amis">Amis</option>
+                                    <option value="Couple">Couple</option>
+                                    <option value="Famille">Famille</option>
+                                    <option value="Solo">Solo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description / Pourquoi y aller ?</label>
+                            <textarea id="city-pitch" rows="2" placeholder="Un court texte sur ce qui rend ce lieu spécial..."></textarea>
+                        </div>
                     </div>
 
                     <!-- Batch Cooking Fields -->
-                    <div id="fields-batchcooking" class="hidden">
+                    <div id="fields-batch-cooking" class="hidden">
                         <div class="form-group">
                             <label>Nom du plat</label>
                             <input type="text" id="bc-title" placeholder="ex: Lasagnes">
@@ -189,14 +244,16 @@
             currentTool = tool;
             document.querySelectorAll('.type-btn').forEach(btn => {
                 const text = btn.innerText.toLowerCase();
-                const isActive = (tool === 'batchcooking' && text.includes('cooking')) ||
+                const isActive = (tool === 'batch-cooking' && text.includes('cooking')) ||
                     (tool === 'recommendation' && text.includes('média')) ||
+                    (tool === 'city-guide' && text.includes('ville')) ||
                     (tool === 'encyclopedia' && text.includes('encyclo'));
                 btn.classList.toggle('active', isActive);
             });
             document.getElementById('fields-encyclopedia').classList.toggle('hidden', tool !== 'encyclopedia');
             document.getElementById('fields-recommendation').classList.toggle('hidden', tool !== 'recommendation');
-            document.getElementById('fields-batchcooking').classList.toggle('hidden', tool !== 'batchcooking');
+            document.getElementById('fields-city-guide').classList.toggle('hidden', tool !== 'city-guide');
+            document.getElementById('fields-batch-cooking').classList.toggle('hidden', tool !== 'batch-cooking');
             if (tool === 'recommendation') adaptMuseForm();
         }
 
@@ -269,6 +326,19 @@
                 
                 const platform = document.getElementById('rec-platform').value;
                 if (platform) item.data.platform = platform;
+            } else if (currentTool === 'city-guide') {
+                Object.assign(item.data, {
+                    id: "v" + Date.now().toString().slice(-6),
+                    type: document.getElementById('city-type').value,
+                    title: document.getElementById('city-title').value,
+                    address: document.getElementById('city-address').value,
+                    main_genre: document.getElementById('city-genre').value,
+                    sub_genres: [], // On pourra ajouter des sous-genres si besoin
+                    main_emotion: document.getElementById('city-emotion').value,
+                    ambiance: document.getElementById('city-ambiance').value,
+                    public: document.getElementById('city-public').value,
+                    pitch: document.getElementById('city-pitch').value
+                });
             } else {
                 Object.assign(item.data, {
                     id: Math.floor(Math.random() * 1000) + 1000,
