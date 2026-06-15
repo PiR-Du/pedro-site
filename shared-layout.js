@@ -12,6 +12,7 @@ const TEMPLATES = {
       <a data-nav-link="mediatheque" href="{{root}}/mediatheque/index.html">Médiathèque</a>
       <a data-nav-link="encyclopedia" href="{{root}}/encyclopedia/index.html">Encyclopédie</a>
       <a data-nav-link="batch-cooking" href="{{root}}/batch-cooking/index.html">Batch cooking</a>
+      <a data-nav-link="ville" href="{{root}}/ville/index.html">Ville</a>
       <a data-nav-link="contribute" href="{{root}}/contribute/index.html">Contribuer</a>
     </nav>
   </div>

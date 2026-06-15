@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Que faire en ville ce soir ?</title>
+  <link rel="stylesheet" href="../style.css?v=3">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+
+<body data-page="ville" data-root="..">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- Hero -->
+    <div class="section-head">
+      <p class="eyebrow">./ville</p>
+      <h1 style="font-family:var(--font-serif);font-size:clamp(2.5rem,6vw,4.25rem);line-height:1.1;letter-spacing:-0.01em;">
+        Que faire ce soir ?
+      </h1>
+      <p style="color:var(--muted-foreground);max-width:38rem;margin:0.75rem auto 0;line-height:1.65;font-size:1.05rem;">
+        Restaurants, bars, cafés et lieux de vie — testés et approuvés.
+      </p>
+    </div>
+
+    <!-- Mood bar -->
+    <div class="mood-bar">
+      <button class="mood-pill active" data-mood="all">Tout voir</button>
+      <button class="mood-pill" data-mood="Entre amis">🍻 Entre amis</button>
+      <button class="mood-pill" data-mood="Date">🕯️ Date</button>
+      <button class="mood-pill" data-mood="Festif">🎉 Festif</button>
+      <button class="mood-pill" data-mood="Tranquille">☕ Tranquille</button>
+      <button class="mood-pill" data-mood="Brunch">🥐 Brunch</button>
+      <button class="mood-pill" data-mood="Culture">🎭 Culture</button>
+    </div>
+
+    <!-- Main layout -->
+    <div class="muse-container" style="min-height:auto;align-items:start;">
+
+      <!-- Sidebar -->
+      <aside class="muse-sidebar">
+        <div class="filter-group">
+          <input type="text" id="ville-search" class="ville-search-input" placeholder="Rechercher un lieu...">
+        </div>
+
+        <div class="filter-group">
+          <label>Ville</label>
+          <select class="filter-select" id="filter-city">
+            <option value="all">Toutes les villes</option>
+            <option value="Toulouse">Toulouse</option>
+            <option value="Madrid">Madrid</option>
+            <option value="Paris">Paris</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Type de lieu</label>
+          <div class="type-pills" id="type-filter"></div>
+        </div>
+
+        <div class="ville-count" id="ville-count">— lieux</div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="ville-main">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+          <div class="ville-view-toggle">
+            <button class="view-btn active" id="btn-map" onclick="setView('map')">🗺 Carte</button>
+            <button class="view-btn" id="btn-list" onclick="setView('list')">☰ Liste</button>
+          </div>
+          <p style="font-size:0.8rem;color:var(--muted-foreground);">Cliquer sur un lieu pour les détails</p>
+        </div>
+
+        <div id="ville-map" class="ville-map"></div>
+        <div id="ville-grid" class="ville-grid hidden"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Detail Drawer -->
+  <div id="detail-drawer">
+    <div class="close-drawer" onclick="closeDrawer()">×</div>
+    <div id="drawer-content"></div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../shared-layout.js?v=3"></script>
+  <script src="data.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+
+</html>
