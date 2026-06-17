@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoardNight - Suivi de Scores</title>
+<title>BoardNight — Suivi de Scores</title>
+<meta name="description" content="Compagnon de soirée jeux : suivez les scores en temps réel, visualisez la progression et célébrez les victoires." />
+<meta property="og:title" content="BoardNight — Suivi de Scores" />
+<meta property="og:description" content="Saisie rapide, graphiques élégants et trophées épiques pour vos soirées jeux de société." />
+<meta property="og:type" content="website" />
 <link rel="stylesheet" href="../style.css?v=3">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -17,16 +21,16 @@
 <!-- WELCOME -->
 <div id="view-welcome" class="view active">
     <div class="welcome-hero">
-      <span class="welcome-icon">🎲</span>
+      <span class="welcome-icon" aria-hidden="true">🎲</span>
       <div class="eyebrow">Soirée Jeux de Société</div>
       <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
       <p>Compagnon de suivi de score et statistiques pour vos soirées jeux. Saisie rapide, graphiques élégants et trophées épiques.</p>
     </div>
 
     <!-- Resume banner (shown if mid-game save exists) -->
-    <div id="resume-banner" class="resume-banner" style="display:none">
+    <div id="resume-banner" class="resume-banner" style="display:none" role="status">
       <div class="resume-info">
-        <span class="resume-icon">▶</span>
+        <span class="resume-icon" aria-hidden="true">▶</span>
         <div>
           <div class="resume-game-name"></div>
           <div class="resume-round mono"></div>
@@ -37,18 +41,20 @@
     </div>
 
     <div class="welcome-cards">
-      <div class="welcome-card" onclick="showView('setup'); initSetup()">
-        <div class="welcome-card-icon">🎮</div>
+      <div class="welcome-card" onclick="showView('setup'); initSetup()" role="button" tabindex="0"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('setup');initSetup()}">
+        <div class="welcome-card-icon" aria-hidden="true">🎮</div>
         <h3>Nouvelle Partie</h3>
         <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
       </div>
-      <div class="welcome-card" onclick="showView('history')">
-        <div class="welcome-card-icon">📊</div>
+      <div class="welcome-card" onclick="showView('history')" role="button" tabindex="0"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('history')}">
+        <div class="welcome-card-icon" aria-hidden="true">📊</div>
         <h3>Historique</h3>
         <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
       </div>
     </div>
-    <div class="history-list" id="recent-games-list"></div>
+    <div class="history-list" id="recent-games-list" aria-label="Parties récentes"></div>
 </div>
 
 <!-- SETUP -->
@@ -58,11 +64,11 @@
       <h2>Configurez votre partie</h2>
     </div>
     <div class="field">
-      <label>Nom du Jeu</label>
+      <label for="game-name-input">Nom du Jeu</label>
       <input id="game-name-input" type="text" placeholder="ex: Catan, Wingspan, Les Aventuriers du Rail…" value="Soirée Jeux">
     </div>
     <div class="field">
-      <label>Sens du Score</label>
+      <label for="score-direction">Sens du Score</label>
       <select id="score-direction">
         <option value="high">Le plus haut score gagne</option>
         <option value="low">Le plus bas score gagne</option>
@@ -72,7 +78,7 @@
       <h3>Joueurs <span class="player-count-note">(2–8)</span></h3>
       <div id="player-list"></div>
       <button class="add-player-btn" id="add-player-btn" onclick="addPlayerRow()">
-        <span>+</span> Ajouter un joueur
+        <span aria-hidden="true">+</span> Ajouter un joueur
       </button>
     </div>
     <div class="setup-footer">
@@ -88,9 +94,11 @@
         <h2 id="game-display-name">Jeu</h2>
         <div class="round-info mono" id="round-info">Manche 1 en cours · 0 manches jouées</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="undoLastRound()" title="Annuler la dernière manche">↩ Undo</button>
-      <button class="btn btn-primary btn-sm" onclick="endGame()">Fin & Résultats</button>
-      <button class="btn btn-danger btn-sm" onclick="abandonGame()">Abandonner</button>
+      <div class="game-header-actions">
+        <button class="btn btn-outline btn-sm" onclick="undoLastRound()" title="Annuler la dernière manche">↩ Undo</button>
+        <button class="btn btn-primary btn-sm" onclick="endGame()">Fin &amp; Résultats</button>
+      </div>
+      <button class="btn btn-danger btn-sm game-abandon-btn" onclick="abandonGame()">Abandonner</button>
     </div>
 
     <div class="game-layout">
@@ -100,9 +108,9 @@
         <div class="leaderboard-panel">
           <div class="panel-head">
             <h3>Classement</h3>
-            <div class="badge"><span class="dot"></span>Direct</div>
+            <div class="badge"><span class="dot" aria-hidden="true"></span>Direct</div>
           </div>
-          <div id="leaderboard"></div>
+          <div id="leaderboard" aria-live="polite" aria-label="Classement en direct"></div>
         </div>
 
         <!-- Live Stats -->
@@ -120,14 +128,14 @@
         <div class="chart-panel">
           <div class="chart-panel-head">
             <h3 class="panel-title">Graphique</h3>
-            <div class="chart-tabs">
-              <button class="chart-tab active" onclick="switchChart('line',this)">Cumulé</button>
-              <button class="chart-tab" onclick="switchChart('bar',this)">Manches</button>
-              <button class="chart-tab" onclick="switchChart('rank',this)">Rang</button>
-              <button class="chart-tab" onclick="switchChart('gap',this)">Écarts</button>
+            <div class="chart-tabs" role="tablist" aria-label="Type de graphique">
+              <button class="chart-tab active" role="tab" aria-selected="true" onclick="switchChart('line',this)">Cumulé</button>
+              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('bar',this)">Manches</button>
+              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('rank',this)">Rang</button>
+              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('gap',this)">Écarts</button>
             </div>
           </div>
-          <canvas id="main-chart"></canvas>
+          <canvas id="main-chart" aria-label="Graphique de progression des scores" role="img"></canvas>
           <div id="chart-no-data" class="empty-message empty-message-large">
             Validez les scores d'une manche pour voir le graphique
           </div>
@@ -154,14 +162,13 @@
           </div>
           <div id="score-inputs"></div>
           <button id="copy-last-round-btn" class="copy-round-btn" onclick="copyLastRound()" style="display:none">
-            📋 Copier la manche précédente
+            <span aria-hidden="true">📋</span> Copier la manche précédente
           </button>
           <button class="submit-round-btn" onclick="submitRound()">
-            ✓ Valider la Manche
+            <span aria-hidden="true">✓</span> Valider la Manche
           </button>
-          <div class="score-hint mono">Tab / ↑↓ pour naviguer · Enter pour valider</div>
+          <div class="score-hint mono" aria-hidden="true">Tab / ↑↓ pour naviguer · Enter pour valider</div>
         </div>
-
       </div>
     </div>
 </div>
@@ -169,16 +176,16 @@
 <!-- AWARDS -->
 <div id="view-awards" class="view">
   <div class="ceremony-header">
-    <span class="trophy">🏆</span>
+    <span class="trophy" aria-hidden="true">🏆</span>
     <div class="eyebrow">Partie Terminée</div>
     <h2>Résultats Finaux</h2>
     <p id="awards-game-name"></p>
   </div>
   <div class="awards-summary" id="awards-summary"></div>
-  <div class="podium" id="podium"></div>
+  <div class="podium" id="podium" aria-label="Podium final"></div>
   <div class="awards-section">
     <div class="eyebrow awards-eyebrow">Cérémonie des Trophées</div>
-    <div class="awards-grid" id="awards-grid"></div>
+    <div class="awards-grid" id="awards-grid" aria-live="polite"></div>
   </div>
   <div class="awards-footer">
     <button class="btn btn-outline" onclick="showView('history')">Voir l'Historique</button>
@@ -202,13 +209,13 @@
 </div>
 
 <!-- Avatar Modal -->
-<div class="modal-overlay" id="avatar-modal">
+<div class="modal-overlay" id="avatar-modal" role="dialog" aria-modal="true" aria-label="Choisir un avatar et une couleur">
   <div class="modal">
-    <h3>Choisir Avatar & Couleur</h3>
+    <h3>Choisir Avatar &amp; Couleur</h3>
     <div class="eyebrow modal-eyebrow">Avatar</div>
-    <div class="avatar-grid" id="avatar-grid"></div>
+    <div class="avatar-grid" id="avatar-grid" role="listbox" aria-label="Avatars disponibles"></div>
     <div class="eyebrow modal-eyebrow">Couleur</div>
-    <div class="color-picker" id="color-picker"></div>
+    <div class="color-picker" id="color-picker" role="listbox" aria-label="Couleurs disponibles"></div>
     <div class="modal-actions">
       <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirmer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
@@ -217,7 +224,7 @@
 </div>
 
 <!-- Confirm Dialog -->
-<div class="modal-overlay" id="confirm-overlay">
+<div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
   <div class="modal modal-sm">
     <p id="confirm-msg" class="confirm-msg"></p>
     <div class="modal-actions">
@@ -228,11 +235,11 @@
 </div>
 
 <!-- Toast container -->
-<div class="toast-container" id="toasts"></div>
+<div class="toast-container" id="toasts" aria-live="polite" aria-atomic="false"></div>
 <!-- Confetti -->
-<div class="confetti-container" id="confetti"></div>
+<div class="confetti-container" id="confetti" aria-hidden="true"></div>
 
 <script src="app.js"></script>
-<script src="../shared-layout.js?v=2"></script>
+<script src="../shared-layout.js?v=3"></script>
 </body>
 </html>

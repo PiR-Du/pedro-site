@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Encyclopédie - Mind Map - Pierre Duchesne</title>
-  <link rel="stylesheet" href="../style.css?v=2" />
+  <title>Encyclopédie — Pierre Duchesne</title>
+  <meta name="description" content="Carte mentale de connaissances personnelles — explorez les savoirs par profil, catégorie et source." />
+  <meta property="og:title" content="Encyclopédie — Carte mentale" />
+  <meta property="og:description" content="Structuration de connaissances personnelles, à mi-chemin entre wiki, carnet et carte mentale." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="../style.css?v=3" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -13,24 +17,30 @@
   <div id="site-header"></div>
 
   <main class="encyclopedia-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Profils et filtres">
       <div class="sources-list" style="margin-top: 0;">
-        <h2>Sachants & Profils</h2>
+        <h2>Sachants &amp; Profils</h2>
         <div id="sachants-container">
           <!-- Dynamically filled -->
         </div>
       </div>
     </aside>
 
-    <div class="graph-container">
-      <div id="mindmap"></div>
-      <div id="tooltip" class="graph-tooltip"></div>
+    <div class="graph-container"
+         role="img"
+         aria-label="Carte mentale des connaissances — cliquez sur un nœud pour voir le profil associé"
+         aria-describedby="graph-desc">
+      <p id="graph-desc" class="sr-only">
+        Graphe interactif : les nœuds représentent des sources de connaissances. Cliquez sur un nœud pour afficher ses notes dans le panneau latéral. Utilisez la molette pour zoomer, cliquez-glissez pour naviguer.
+      </p>
+      <div id="mindmap" aria-hidden="true"></div>
+      <div id="tooltip" class="graph-tooltip" role="tooltip"></div>
     </div>
 
-    <aside id="profile-detail" class="right-panel">
+    <aside id="profile-detail" class="right-panel" role="dialog" aria-modal="true" aria-label="Détail du profil">
       <div class="panel-header">
         <h3 id="profile-name"></h3>
-        <button class="close-btn" onclick="closeProfile()">&times;</button>
+        <button class="close-btn" onclick="closeProfile()" aria-label="Fermer le profil">&times;</button>
       </div>
       <div id="profile-notes" class="panel-content"></div>
     </aside>
@@ -39,7 +49,7 @@
   <div id="site-footer"></div>
 
   <!-- Scripts -->
-  <script src="../shared-layout.js?v=2"></script>
+  <script src="../shared-layout.js?v=3"></script>
   <script src="data.js?v=2"></script>
   <script src="mindmap.js?v=2"></script>
   <script src="app.js?v=2"></script>

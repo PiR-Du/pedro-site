@@ -6,14 +6,15 @@ const TEMPLATES = {
       <span class="brand-dot" aria-hidden="true"></span>
       <span>Pierre Duchesne</span>
     </a>
-    <nav class="nav">
-      <a data-nav-link="sudoku" href="{{root}}/sudoku/sudoku.html">Sudoku</a>
-      <a data-nav-link="score" href="{{root}}/score/index.html">Score</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a data-nav-link="home" href="{{root}}/index.html">Accueil</a>
       <a data-nav-link="mediatheque" href="{{root}}/mediatheque/index.html">Médiathèque</a>
-      <a data-nav-link="encyclopedia" href="{{root}}/encyclopedia/index.html">Encyclopédie</a>
-      <a data-nav-link="batch-cooking" href="{{root}}/batch-cooking/index.html">Batch cooking</a>
       <a data-nav-link="ville" href="{{root}}/ville/index.html">Ville</a>
-      <a data-nav-link="contribute" href="{{root}}/contribute/index.html">Contribuer</a>
+      <a data-nav-link="score" href="{{root}}/score/index.html">Score</a>
+      <a data-nav-link="encyclopedia" href="{{root}}/encyclopedia/index.html">Encyclopédie</a>
+      <a data-nav-link="batch-cooking" href="{{root}}/batch-cooking/index.html">Batch Cooking</a>
+      <a data-nav-link="sudoku" href="{{root}}/sudoku/sudoku.html">Sudoku</a>
+      <a data-nav-link="contribute" href="{{root}}/contribute/index.html" class="nav-contribute">Contribuer</a>
     </nav>
   </div>
 </header>`,

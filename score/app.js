@@ -57,13 +57,22 @@ function variance(arr) {
 // ============================================================
 function showConfirm(msg, onConfirm, confirmLabel='Confirmer', danger=false) {
   const overlay = document.getElementById('confirm-overlay');
+  state._confirmTrigger = document.activeElement;
   document.getElementById('confirm-msg').textContent = msg;
   const btn = document.getElementById('confirm-ok');
   btn.textContent = confirmLabel;
   btn.className = 'btn ' + (danger ? 'btn-danger-solid' : 'btn-primary');
   overlay.classList.add('open');
-  btn.onclick = () => { overlay.classList.remove('open'); onConfirm(); };
-  document.getElementById('confirm-cancel').onclick = () => overlay.classList.remove('open');
+  trapFocus('confirm-overlay');
+  btn.onclick = () => {
+    overlay.classList.remove('open');
+    releaseFocus('confirm-overlay', state._confirmTrigger);
+    onConfirm();
+  };
+  document.getElementById('confirm-cancel').onclick = () => {
+    overlay.classList.remove('open');
+    releaseFocus('confirm-overlay', state._confirmTrigger);
+  };
 }
 
 // ============================================================
@@ -156,30 +165,73 @@ function startGame() {
 // ============================================================
 // AVATAR MODAL
 // ============================================================
+// ============================================================
+// FOCUS TRAP UTILITY
+// ============================================================
+function trapFocus(overlayId) {
+  const overlay = document.getElementById(overlayId);
+  if (!overlay) return;
+  const focusable = Array.from(overlay.querySelectorAll(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  ));
+  if (!focusable.length) return;
+  focusable[0].focus();
+
+  overlay._trapHandler = (e) => {
+    if (e.key !== 'Tab') return;
+    if (!overlay.classList.contains('open')) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    }
+  };
+  document.addEventListener('keydown', overlay._trapHandler);
+}
+
+function releaseFocus(overlayId, returnTo) {
+  const overlay = document.getElementById(overlayId);
+  if (overlay && overlay._trapHandler) {
+    document.removeEventListener('keydown', overlay._trapHandler);
+    overlay._trapHandler = null;
+  }
+  if (returnTo) returnTo.focus();
+}
+
+// ============================================================
+// AVATAR MODAL
+// ============================================================
 function openAvatarModal(i) {
   state.avatarEditIdx = i;
   state.pendingAvatar = state.setupPlayers[i].avatar;
   state.pendingColor = state.setupPlayers[i].color;
+  state._modalTrigger = document.activeElement;
+
   const grid = document.getElementById('avatar-grid');
   grid.innerHTML = AVATARS.map(a => `
-    <div class="avatar-option${a===state.pendingAvatar?' selected':''}" onclick="selectAvatar('${a}',this)">${a}</div>`).join('');
+    <button class="avatar-option${a===state.pendingAvatar?' selected':''}" role="option" aria-selected="${a===state.pendingAvatar}"
+      onclick="selectAvatar('${a}',this)">${a}</button>`).join('');
   const cp = document.getElementById('color-picker');
   cp.innerHTML = COLORS.map((c,ci) => `
-    <div class="color-swatch${c===state.pendingColor?' selected':''}" style="background:${c}"
-      title="${COLOR_NAMES[ci]}" onclick="selectColor('${c}',this)"></div>`).join('');
-  document.getElementById('avatar-modal').classList.add('open');
+    <button class="color-swatch${c===state.pendingColor?' selected':''}" style="background:${c}"
+      role="option" aria-selected="${c===state.pendingColor}" aria-label="${COLOR_NAMES[ci]}"
+      onclick="selectColor('${c}',this)"></button>`).join('');
+
+  const overlay = document.getElementById('avatar-modal');
+  overlay.classList.add('open');
+  trapFocus('avatar-modal');
 }
 
 function selectAvatar(a, el) {
   state.pendingAvatar = a;
-  document.querySelectorAll('.avatar-option').forEach(e=>e.classList.remove('selected'));
-  el.classList.add('selected');
+  document.querySelectorAll('.avatar-option').forEach(e => { e.classList.remove('selected'); e.setAttribute('aria-selected', 'false'); });
+  el.classList.add('selected'); el.setAttribute('aria-selected', 'true');
 }
 
 function selectColor(c, el) {
   state.pendingColor = c;
-  document.querySelectorAll('.color-swatch').forEach(e=>e.classList.remove('selected'));
-  el.classList.add('selected');
+  document.querySelectorAll('.color-swatch').forEach(e => { e.classList.remove('selected'); e.setAttribute('aria-selected', 'false'); });
+  el.classList.add('selected'); el.setAttribute('aria-selected', 'true');
 }
 
 function confirmAvatar() {
@@ -191,11 +243,22 @@ function confirmAvatar() {
 }
 
 function closeModal() {
+  releaseFocus('avatar-modal', state._modalTrigger);
   document.getElementById('avatar-modal').classList.remove('open');
 }
 
 document.getElementById('avatar-modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+
+// Close modals on Escape
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('avatar-modal').classList.contains('open')) { closeModal(); return; }
+  if (document.getElementById('confirm-overlay').classList.contains('open')) {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    releaseFocus('confirm-overlay', state._confirmTrigger);
+  }
 });
 
 // ============================================================
@@ -665,8 +728,12 @@ function chartOptions(title) {
 
 function switchChart(mode, el) {
   state.chartMode = mode;
-  document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.chart-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   el.classList.add('active');
+  el.setAttribute('aria-selected', 'true');
   renderChart();
 }
 

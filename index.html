@@ -5,7 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pierre Duchesne - Data, Maths & Code</title>
-  <link rel="stylesheet" href="style.css?v=2" />
+  <meta name="description" content="Terrain d'expérimentation de Pierre Duchesne : solveur de sudoku, suivi de scores, médiathèque, city guide et encyclopédie personnelle." />
+  <meta property="og:title" content="Pierre Duchesne — Data, Maths & Code" />
+  <meta property="og:description" content="Expérimentations autour de la data, des maths et du code." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="style.css?v=3" />
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 </head>
@@ -19,10 +23,10 @@
       <div class="grid-bg" aria-hidden="true"></div>
       <div class="inner">
         <h1>
-          <span class="text-gradient">Data - Maths - Code</span>
+          <span class="text-gradient">Data · Maths · Code</span>
         </h1>
         <p class="lead">
-          Un coin du web où je rassemble mes expérimentations.
+          Un terrain d'expérimentation autour de la donnée, des algorithmes et des interfaces.
         </p>
         <div class="cta">
           <a href="#projets" class="btn btn-primary">Explorer les projets</a>
@@ -42,14 +46,6 @@
       </div>
     </section>
 
-    <section class="section-narrow" style="padding-top: 0;">
-      <a href="contribute/index.html" class="card interactive" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 2.5rem 2rem; border-color: var(--primary); background: color-mix(in oklab, var(--primary) 5%, transparent); text-decoration: none;">
-        <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: var(--foreground); margin-bottom: 0.5rem; margin-top: 0;">Envie de participer ?</h3>
-        <p style="color: var(--muted-foreground); margin-bottom: 1.5rem; max-width: 400px;">Ajoutez vos propres recommandations à la Médiathèque ou partagez vos connaissances dans l'Encyclopédie.</p>
-        <span class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">Accéder au formulaire</span>
-      </a>
-    </section>
-
     <section id="projets" class="section">
       <div class="section-head">
         <div>
@@ -62,90 +58,97 @@
       <div class="project-grid">
         <a class="card interactive" href="sudoku/sudoku.html">
           <div class="card-top">
-            <div class="card-icon">S</div>
+            <div class="card-icon" aria-hidden="true">S</div>
             <span class="card-status">Disponible</span>
           </div>
           <h3>Solveur de Sudoku</h3>
-          <p>Resolution automatique par backtracking, executee en Python dans le navigateur via Pyodide.</p>
+          <p>Résolution automatique par backtracking, exécutée en Python dans le navigateur via Pyodide.</p>
           <div class="card-bottom">
             <span class="tag">Algorithmes</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
 
         <a class="card interactive" href="encyclopedia/index.html">
           <div class="card-top">
-            <div class="card-icon">E</div>
+            <div class="card-icon" aria-hidden="true">E</div>
             <span class="card-status">Disponible</span>
           </div>
-          <h3>Encyclopedie</h3>
-          <p>Structuration de connaissances personnelles, a mi-chemin entre wiki, carnet et carte mentale.</p>
+          <h3>Encyclopédie</h3>
+          <p>Structuration de connaissances personnelles, à mi-chemin entre wiki, carnet et carte mentale.</p>
           <div class="card-bottom">
             <span class="tag">Savoirs</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
 
         <a class="card interactive" href="batch-cooking/index.html">
           <div class="card-top">
-            <div class="card-icon">B</div>
+            <div class="card-icon" aria-hidden="true">B</div>
             <span class="card-status">En cours de finalisation</span>
           </div>
-          <h3>Assistant batch cooking</h3>
-          <p>Planifier plusieurs repas, mutualiser les ingredients et organiser une session de cuisine efficace.</p>
+          <h3>Assistant Batch Cooking</h3>
+          <p>Planifier plusieurs repas, mutualiser les ingrédients et organiser une session de cuisine efficace.</p>
           <div class="card-bottom">
             <span class="tag">Cuisine</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
 
         <a class="card interactive" href="mediatheque/index.html">
           <div class="card-top">
-            <div class="card-icon">R</div>
+            <div class="card-icon" aria-hidden="true">M</div>
             <span class="card-status">Disponible</span>
           </div>
           <h3>Médiathèque</h3>
-          <p>Un espace pour recommander films, musiques, series et jeux avec du contexte et des filtres utiles.</p>
+          <p>Un espace pour recommander films, musiques, séries et jeux avec du contexte et des filtres utiles.</p>
           <div class="card-bottom">
             <span class="tag">Culture</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
 
         <a class="card interactive" href="ville/index.html">
           <div class="card-top">
-            <div class="card-icon">V</div>
+            <div class="card-icon" aria-hidden="true">V</div>
             <span class="card-status">Disponible</span>
           </div>
           <h3>Que faire en ville ?</h3>
           <p>Une sélection de bonnes adresses (restaurants, bars et lieux de vie) avec carte interactive et filtres par ambiance.</p>
           <div class="card-bottom">
             <span class="tag">Sorties</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
 
         <a class="card interactive" href="score/index.html">
           <div class="card-top">
-            <div class="card-icon">T</div>
+            <div class="card-icon" aria-hidden="true">🎲</div>
             <span class="card-status">Disponible</span>
           </div>
-          <h3>Suivi de scores</h3>
-          <p>Compagnon de soiree jeux pour suivre les scores, visualiser la progression et celebrer les victoires.</p>
+          <h3>Suivi de Scores</h3>
+          <p>Compagnon de soirée jeux pour suivre les scores, visualiser la progression et célébrer les victoires.</p>
           <div class="card-bottom">
             <span class="tag">Jeux / Stats</span>
-            <span class="arrow">Voir -></span>
+            <span class="arrow" aria-hidden="true">Voir →</span>
           </div>
         </a>
       </div>
     </section>
 
+    <section class="section-narrow" style="padding-top: 0;">
+      <a href="contribute/index.html" class="card interactive" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 2.5rem 2rem; border-color: var(--primary); background: color-mix(in oklab, var(--primary) 5%, transparent); text-decoration: none;">
+        <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: var(--foreground); margin-bottom: 0.5rem; margin-top: 0;">Envie de participer ?</h3>
+        <p style="color: var(--muted-foreground); margin-bottom: 1.5rem; max-width: 400px;">Ajoutez vos propres recommandations à la Médiathèque ou partagez vos connaissances dans l'Encyclopédie.</p>
+        <span class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">Accéder au formulaire</span>
+      </a>
+    </section>
 
   </main>
 
   <div id="site-footer"></div>
 
-  <script src="shared-layout.js?v=2"></script>
+  <script src="shared-layout.js?v=3"></script>
 </body>
 
 </html>

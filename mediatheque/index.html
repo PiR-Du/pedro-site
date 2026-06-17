@@ -4,8 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Médiathèque</title>
-  <link rel="stylesheet" href="../style.css?v=2">
+  <title>Médiathèque — Pierre Duchesne</title>
+  <meta name="description" content="Recommandations de films, séries, livres, musique et jeux — filtrées par ambiance, genre et contributeur." />
+  <meta property="og:title" content="La Médiathèque" />
+  <meta property="og:description" content="Des recommandations culturelles avec contexte et filtres utiles." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="../style.css?v=3">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
 </head>
@@ -16,14 +20,15 @@
   <main>
     <div class="section-head">
       <p class="eyebrow">./mediatheque</p>
-      <h1 class="serif" style="font-size: 4.5rem; line-height: 1.1;">La Médiathèque</h1>
+      <h1 class="serif" style="font-size: clamp(2.5rem, 8vw, 4.5rem); line-height: 1.1;">La Médiathèque</h1>
+      <p style="color: var(--muted-foreground); margin-top: 0.75rem; max-width: 36rem; text-align: center;">Films, séries, livres, musique et jeux — recommandés et filtrés.</p>
     </div>
 
     <div class="muse-container">
       <!-- Sidebar -->
-      <aside class="muse-sidebar">
+      <aside class="muse-sidebar" aria-label="Filtres">
         <div class="filter-group">
-          <label>Type de média</label>
+          <label for="filter-type">Type de média</label>
           <select class="filter-select" id="filter-type">
             <option value="all">Tout voir</option>
             <option value="Film">Films</option>
@@ -35,16 +40,15 @@
           </select>
         </div>
 
-
         <div class="filter-group">
-          <label>Recommandé par</label>
+          <label for="filter-contributor">Recommandé par</label>
           <select class="filter-select" id="filter-contributor">
             <option value="all">Tout le monde</option>
           </select>
         </div>
 
         <div class="filter-group hidden-filter" id="filter-group-platform">
-          <label>Plateforme</label>
+          <label for="filter-platform">Plateforme</label>
           <select class="filter-select" id="filter-platform">
             <option value="all">Toutes les plateformes</option>
           </select>
@@ -53,14 +57,14 @@
         <!-- Contextual Filters -->
         <div id="contextual-filters" class="hidden-filter">
           <div class="filter-group" style="margin-bottom:1.5rem;">
-            <label>Genre</label>
+            <label for="filter-genre">Genre</label>
             <select class="filter-select" id="filter-genre">
               <option value="all">Tous les genres</option>
             </select>
           </div>
 
           <div class="filter-group">
-            <label>Ambiance</label>
+            <label for="filter-ambiance">Ambiance</label>
             <select class="filter-select" id="filter-ambiance">
               <option value="all">Toutes les ambiances</option>
             </select>
@@ -71,12 +75,12 @@
       <!-- Grid Content -->
       <div class="grid-content">
         <div style="margin-bottom: 2rem;">
-          <input type="text" id="media-search"
-            style="width:100%; padding: 1rem 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 2rem; color: var(--foreground);"
+          <label for="media-search" class="sr-only">Rechercher dans la médiathèque</label>
+          <input type="search" id="media-search" class="mediatheque-search"
             placeholder="Rechercher un titre, un artiste, un auteur...">
         </div>
 
-        <div class="media-grid" id="main-grid">
+        <div class="media-grid" id="main-grid" aria-live="polite" aria-label="Résultats">
           <!-- Cards injected by app.js -->
         </div>
       </div>
@@ -84,14 +88,14 @@
   </main>
 
   <!-- Detail Drawer -->
-  <div id="detail-drawer">
-    <div class="close-drawer" onclick="closeDrawer()">×</div>
+  <div id="detail-drawer" role="dialog" aria-modal="true" aria-label="Détail" aria-hidden="true">
+    <button class="close-drawer" onclick="closeDrawer()" aria-label="Fermer le détail">×</button>
     <div id="drawer-content"></div>
   </div>
 
   <div id="site-footer"></div>
 
-  <script src="../shared-layout.js?v=2"></script>
+  <script src="../shared-layout.js?v=3"></script>
   <script src="data.js?v=2"></script>
   <script src="app.js?v=2"></script>
 </body>

@@ -80,7 +80,7 @@ function renderGrid() {
 function createCard(item) {
     const icons = { 'Film': '', 'Série': '', 'Livre': '', 'Musique': '', 'Jeu Vidéo': '', 'Jeu de Société': '' };
     return `
-        <div class="media-card" onclick="showDetail('${item.id}')">
+        <div class="media-card" role="button" tabindex="0" onclick="showDetail('${item.id}', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showDetail('${item.id}',this)}">
             <div class="card-content">
                 <div class="card-header">
                     <span class="type-badge">${item.type}</span>
@@ -124,13 +124,17 @@ function setupEventListeners() {
     };
 }
 
-window.showDetail = function(id) {
+let _drawerTrigger = null;
+
+window.showDetail = function(id, triggerEl) {
     const item = getAllItems().find(m => m.id === id);
     if (!item) return;
 
     const drawer = document.getElementById('detail-drawer');
     const content = document.getElementById('drawer-content');
-    
+
+    _drawerTrigger = triggerEl || document.activeElement;
+
     content.innerHTML = `
         <div class="section-head">
             <p class="eyebrow">${item.type.toUpperCase()}</p>
@@ -165,9 +169,42 @@ window.showDetail = function(id) {
         </div>
     `;
     drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    // Move focus to close button
+    setTimeout(() => {
+        const closeBtn = drawer.querySelector('.close-drawer');
+        if (closeBtn) closeBtn.focus();
+    }, 50);
 };
 
-window.closeDrawer = () => document.getElementById('detail-drawer').classList.remove('open');
+window.closeDrawer = function() {
+    const drawer = document.getElementById('detail-drawer');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    if (_drawerTrigger) { _drawerTrigger.focus(); _drawerTrigger = null; }
+};
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        const drawer = document.getElementById('detail-drawer');
+        if (drawer && drawer.getAttribute('aria-hidden') === 'false') closeDrawer();
+    }
+});
+
+// Trap focus inside the drawer while it's open
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const drawer = document.getElementById('detail-drawer');
+    if (!drawer || drawer.getAttribute('aria-hidden') !== 'false') return;
+    const focusable = Array.from(drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+    }
+});
 
 function startApp() { try { initMuse(); } catch (e) { console.error("Muse failed:", e); } }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startApp);
