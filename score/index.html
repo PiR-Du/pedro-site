@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BoardNight - Suivi de Scores</title>
-<link rel="stylesheet" href="../style.css?v=2">
+<link rel="stylesheet" href="../style.css?v=3">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -17,19 +17,33 @@
 <!-- WELCOME -->
 <div id="view-welcome" class="view active">
     <div class="welcome-hero">
-      <span class="welcome-icon"></span>
+      <span class="welcome-icon">🎲</span>
       <div class="eyebrow">Soirée Jeux de Société</div>
       <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
       <p>Compagnon de suivi de score et statistiques pour vos soirées jeux. Saisie rapide, graphiques élégants et trophées épiques.</p>
     </div>
+
+    <!-- Resume banner (shown if mid-game save exists) -->
+    <div id="resume-banner" class="resume-banner" style="display:none">
+      <div class="resume-info">
+        <span class="resume-icon">▶</span>
+        <div>
+          <div class="resume-game-name"></div>
+          <div class="resume-round mono"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="showView('game')">Reprendre</button>
+      <button class="btn btn-outline btn-sm" onclick="discardCurrentGame()">Ignorer</button>
+    </div>
+
     <div class="welcome-cards">
-      <div class="welcome-card" onclick="showView('setup')">
-        <div class="welcome-card-icon"></div>
+      <div class="welcome-card" onclick="showView('setup'); initSetup()">
+        <div class="welcome-card-icon">🎮</div>
         <h3>Nouvelle Partie</h3>
         <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
       </div>
       <div class="welcome-card" onclick="showView('history')">
-        <div class="welcome-card-icon"></div>
+        <div class="welcome-card-icon">📊</div>
         <h3>Historique</h3>
         <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
       </div>
@@ -74,7 +88,8 @@
         <h2 id="game-display-name">Jeu</h2>
         <div class="round-info mono" id="round-info">Manche 1 en cours · 0 manches jouées</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="endGame()">Fin & Résultats</button>
+      <button class="btn btn-outline btn-sm" onclick="undoLastRound()" title="Annuler la dernière manche">↩ Undo</button>
+      <button class="btn btn-primary btn-sm" onclick="endGame()">Fin & Résultats</button>
       <button class="btn btn-danger btn-sm" onclick="abandonGame()">Abandonner</button>
     </div>
 
@@ -90,12 +105,26 @@
           <div id="leaderboard"></div>
         </div>
 
+        <!-- Live Stats -->
+        <div class="stats-mini">
+          <div class="panel-head">
+            <h3 class="panel-title">Stats en Direct</h3>
+            <span class="panel-note">Actualisé après chaque manche</span>
+          </div>
+          <div class="stats-grid" id="live-stats-grid">
+            <p class="empty-message" style="grid-column:1/-1">Jouez une manche pour voir les stats</p>
+          </div>
+        </div>
+
         <!-- Charts -->
         <div class="chart-panel">
           <div class="chart-panel-head">
-            <h3 class="panel-title">Progression des Scores</h3>
+            <h3 class="panel-title">Graphique</h3>
             <div class="chart-tabs">
-              <button class="chart-tab active" onclick="switchChart('line',this)">Lignes</button>
+              <button class="chart-tab active" onclick="switchChart('line',this)">Cumulé</button>
+              <button class="chart-tab" onclick="switchChart('bar',this)">Manches</button>
+              <button class="chart-tab" onclick="switchChart('rank',this)">Rang</button>
+              <button class="chart-tab" onclick="switchChart('gap',this)">Écarts</button>
             </div>
           </div>
           <canvas id="main-chart"></canvas>
@@ -121,12 +150,16 @@
         <!-- Score Input -->
         <div class="score-input-panel">
           <div class="panel-head">
-            <h3>Scores Manche <span id="current-round-num">1</span></h3>
+            <h3>Scores — Manche <span id="current-round-num">1</span></h3>
           </div>
           <div id="score-inputs"></div>
+          <button id="copy-last-round-btn" class="copy-round-btn" onclick="copyLastRound()" style="display:none">
+            📋 Copier la manche précédente
+          </button>
           <button class="submit-round-btn" onclick="submitRound()">
             ✓ Valider la Manche
           </button>
+          <div class="score-hint mono">Tab / ↑↓ pour naviguer · Enter pour valider</div>
         </div>
 
       </div>
@@ -136,11 +169,12 @@
 <!-- AWARDS -->
 <div id="view-awards" class="view">
   <div class="ceremony-header">
-    <span class="trophy"></span>
+    <span class="trophy">🏆</span>
     <div class="eyebrow">Partie Terminée</div>
     <h2>Résultats Finaux</h2>
     <p id="awards-game-name"></p>
   </div>
+  <div class="awards-summary" id="awards-summary"></div>
   <div class="podium" id="podium"></div>
   <div class="awards-section">
     <div class="eyebrow awards-eyebrow">Cérémonie des Trophées</div>
@@ -148,7 +182,7 @@
   </div>
   <div class="awards-footer">
     <button class="btn btn-outline" onclick="showView('history')">Voir l'Historique</button>
-    <button class="btn btn-primary" onclick="showView('setup')">Nouvelle Partie</button>
+    <button class="btn btn-primary" onclick="showView('setup'); initSetup()">Nouvelle Partie</button>
   </div>
 </div>
 
@@ -178,6 +212,17 @@
     <div class="modal-actions">
       <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirmer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="modal modal-sm">
+    <p id="confirm-msg" class="confirm-msg"></p>
+    <div class="modal-actions">
+      <button id="confirm-ok" class="btn btn-primary">Confirmer</button>
+      <button id="confirm-cancel" class="btn btn-outline">Annuler</button>
     </div>
   </div>
 </div>

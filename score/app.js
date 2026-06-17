@@ -1,7 +1,7 @@
 // ============================================================
 // STATE
 // ============================================================
-const AVATARS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'];
+const AVATARS = ['🦊','🐻','🦁','🐼','🐯','🦄','🐸','🐙','🦋','🦖','🤖','👾','🎩','🎭','🔥','⭐','🌊','🍄','🎪','🎲'];
 const COLORS = ['#7c3aed','#2563eb','#059669','#dc2626','#d97706','#db2777','#0891b2','#65a30d'];
 const COLOR_NAMES = ['Violet','Bleu','Vert','Rouge','Ambre','Rose','Cyan','Citron'];
 
@@ -26,27 +26,44 @@ function showView(v) {
   if (statusBadge) statusBadge.style.display = state.currentGame ? '' : 'none';
   if (v === 'welcome') renderWelcome();
   if (v === 'history') renderHistory();
-  if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); }
+  if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); renderLiveStats(); }
   if (v === 'awards') renderAwards();
   window.scrollTo(0,0);
 }
 
-function toast(msg, dur=2500) {
+function toast(msg, type='default', dur=2800) {
   const c = document.getElementById('toasts');
   const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
+  t.className = 'toast' + (type !== 'default' ? ' toast-'+type : '');
+  t.textContent = msg;
   c.appendChild(t);
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, dur);
 }
 
 function saveHistory() { localStorage.setItem('boardnight_history', JSON.stringify(state.history)); }
-
-function getPlayerColor(color) { return color || '#7c3aed'; }
+function saveCurrentGame() {
+  if (state.currentGame) localStorage.setItem('boardnight_current', JSON.stringify(state.currentGame));
+  else localStorage.removeItem('boardnight_current');
+}
 
 function variance(arr) {
   if (arr.length < 2) return 0;
   const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
   return arr.reduce((s,x)=>s+(x-mean)**2,0)/arr.length;
+}
+
+// ============================================================
+// STYLED CONFIRM DIALOG
+// ============================================================
+function showConfirm(msg, onConfirm, confirmLabel='Confirmer', danger=false) {
+  const overlay = document.getElementById('confirm-overlay');
+  document.getElementById('confirm-msg').textContent = msg;
+  const btn = document.getElementById('confirm-ok');
+  btn.textContent = confirmLabel;
+  btn.className = 'btn ' + (danger ? 'btn-danger-solid' : 'btn-primary');
+  overlay.classList.add('open');
+  btn.onclick = () => { overlay.classList.remove('open'); onConfirm(); };
+  document.getElementById('confirm-cancel').onclick = () => overlay.classList.remove('open');
 }
 
 // ============================================================
@@ -56,25 +73,35 @@ function renderWelcome() {
   const list = document.getElementById('recent-games-list');
   if (!state.history.length) { list.innerHTML = ''; return; }
   list.innerHTML = `<div class="eyebrow recent-title">Parties Récentes</div>` +
-    state.history.slice(-5).reverse().map((g,i) => `
-      <div class="history-item" onclick="reviewGame(${state.history.length-1-i})">
-        <div class="history-avatar">${g.players[0]?.avatar||''}</div>
+    state.history.slice(-5).reverse().map((g,i) => {
+      const realIdx = state.history.length - 1 - i;
+      const top3 = (g.finalRanked || []).slice(0,3);
+      return `
+      <div class="history-item" onclick="reviewGame(${realIdx})">
+        <div class="history-mini-podium">${top3.map((p,r)=>`<span class="mini-pod-avatar" title="${p.name}">${p.avatar||'?'}</span>`).join('')}</div>
         <div class="history-item-info">
           <strong>${g.name}</strong>
-          <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString()}</span>
+          <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString('fr-FR')}</span>
         </div>
-        <span class="history-item-badge">${g.winner}</span>
-      </div>`).join('');
+        <span class="history-item-badge">🏆 ${g.winner}</span>
+      </div>`;
+    }).join('');
 }
 
 // ============================================================
 // SETUP
 // ============================================================
 function initSetup() {
-  state.setupPlayers = [
-    {name:'Joueur 1',avatar:'A',color:COLORS[0]},
-    {name:'Joueur 2',avatar:'B',color:COLORS[1]},
-  ];
+  // Suggest last used players
+  const last = state.history[state.history.length - 1];
+  if (last && last.players && last.players.length >= 2) {
+    state.setupPlayers = last.players.map(p => ({...p}));
+  } else {
+    state.setupPlayers = [
+      {name:'Joueur 1', avatar: AVATARS[0], color: COLORS[0]},
+      {name:'Joueur 2', avatar: AVATARS[1], color: COLORS[1]},
+    ];
+  }
   renderSetupPlayers();
 }
 
@@ -120,6 +147,7 @@ function startGame() {
     currentRound: 1,
   };
 
+  saveCurrentGame();
   showView('game');
   document.getElementById('game-display-name').textContent = gameName;
   updateRoundInfo();
@@ -137,7 +165,7 @@ function openAvatarModal(i) {
     <div class="avatar-option${a===state.pendingAvatar?' selected':''}" onclick="selectAvatar('${a}',this)">${a}</div>`).join('');
   const cp = document.getElementById('color-picker');
   cp.innerHTML = COLORS.map((c,ci) => `
-    <div class="color-swatch${c===state.pendingColor?' selected':''}" style="background:${c}" 
+    <div class="color-swatch${c===state.pendingColor?' selected':''}" style="background:${c}"
       title="${COLOR_NAMES[ci]}" onclick="selectColor('${c}',this)"></div>`).join('');
   document.getElementById('avatar-modal').classList.add('open');
 }
@@ -175,7 +203,7 @@ document.getElementById('avatar-modal').addEventListener('click', function(e) {
 // ============================================================
 function updateRoundInfo() {
   const g = state.currentGame;
-  document.getElementById('round-info').textContent = `Manche ${g.currentRound} · ${g.rounds.length} manches terminées`;
+  document.getElementById('round-info').textContent = `Manche ${g.currentRound} en cours · ${g.rounds.length} manches terminées`;
   document.getElementById('current-round-num').textContent = g.currentRound;
 }
 
@@ -189,13 +217,19 @@ function getTotals(g) {
 
 function getRanked(g) {
   const totals = getTotals(g);
-  return totals.sort((a,b) => g.direction==='high' ? b.total-a.total : a.total-b.total);
+  return totals.sort((a,b) => {
+    const diff = g.direction === 'high' ? b.total - a.total : a.total - b.total;
+    if (diff !== 0) return diff;
+    // Tie-break: player index (stable)
+    return a.idx - b.idx;
+  });
 }
 
 function renderLeaderboard() {
   const g = state.currentGame; if(!g) return;
   const ranked = getRanked(g);
   const leader = document.getElementById('leaderboard');
+  const leaderTotal = ranked[0].total;
   leader.innerHTML = ranked.map((p,rank) => {
     const prev = g.rounds.length > 1 ? getPrevRank(g, p.idx) : rank+1;
     const delta = prev - (rank+1);
@@ -205,29 +239,34 @@ function renderLeaderboard() {
       else if (delta < 0) deltaHtml = `<span class="standing-delta delta-down">▼${Math.abs(delta)}</span>`;
       else deltaHtml = `<span class="standing-delta delta-same">—</span>`;
     }
+    const gap = rank > 0 ? (g.direction === 'high' ? leaderTotal - p.total : p.total - leaderTotal) : 0;
+    const gapHtml = rank > 0 && g.rounds.length > 0 ? `<span class="standing-gap">-${gap}</span>` : '';
     return `
       <div class="player-standing${rank===0?' rank-1':''}">
-        <div class="rank-number">${rank+1}</div>
+        <div class="rank-number">${rank===0?'':''}${rank+1}</div>
         <div class="standing-avatar">${p.avatar}</div>
-        <div class="standing-name" style="color:${rank===0?p.color:''}">${p.name}</div>
+        <div class="standing-name" style="color:${p.color}">${p.name}</div>
+        ${gapHtml}
         ${deltaHtml}
         <div class="standing-score">${p.total}</div>
       </div>`;
   }).join('');
 }
 
+// Fixed: stable sort + compare by value not reference
 function getPrevRank(g, playerIdx) {
   if (g.rounds.length < 2) return 0;
-  const prevRounds = g.rounds.slice(0,-1);
+  const prevRounds = g.rounds.slice(0, -1);
   const totals = g.players.map((_,i) => prevRounds.reduce((s,r)=>s+(r[i]??0),0));
-  const sorted = [...totals].sort((a,b) => g.direction==='high'?b-a:a-b);
-  const rank = sorted.indexOf(totals[playerIdx]);
-  return rank + 1;
+  const sorted = g.players.map((_,i) => ({i, v: totals[i]}))
+    .sort((a,b) => g.direction==='high' ? b.v-a.v || a.i-b.i : a.v-b.v || a.i-b.i);
+  return sorted.findIndex(x => x.i === playerIdx) + 1;
 }
 
 function renderScoreInputs() {
   const g = state.currentGame; if(!g) return;
   const container = document.getElementById('score-inputs');
+  const prevRound = g.rounds.length > 0 ? g.rounds[g.rounds.length-1] : null;
   container.innerHTML = g.players.map((p,i) => `
     <div class="score-row">
       <div class="score-player-name">
@@ -235,33 +274,111 @@ function renderScoreInputs() {
         <span style="color:${p.color}">${p.name}</span>
       </div>
       <div class="score-stepper">
-        <button class="stepper-btn" onclick="stepScore(${i},-1)">−</button>
-        <button class="stepper-btn" onclick="stepScore(${i},1)">+</button>
+        <button class="stepper-btn" onpointerdown="startStep(${i},-1)" onpointerup="stopStep()" onpointerleave="stopStep()">−</button>
+        <button class="stepper-btn" onpointerdown="startStep(${i},1)" onpointerup="stopStep()" onpointerleave="stopStep()">+</button>
       </div>
-      <input class="score-input-field" type="number" id="score-${i}" value="0" placeholder="0">
+      <input class="score-input-field" type="number" inputmode="numeric" id="score-${i}" value="0" placeholder="0"
+        onkeydown="scoreKeyNav(event,${i},${g.players.length})">
     </div>`).join('');
+
+  // Show "copy last round" button if available
+  const copyBtn = document.getElementById('copy-last-round-btn');
+  if (copyBtn) copyBtn.style.display = prevRound ? 'flex' : 'none';
 }
+
+// Stepper with long-press acceleration
+let _stepInterval = null;
+let _stepCount = 0;
+function startStep(i, d) {
+  stepScore(i, d);
+  _stepCount = 0;
+  _stepInterval = setInterval(() => {
+    _stepCount++;
+    const step = _stepCount > 15 ? 10 : _stepCount > 8 ? 5 : 1;
+    stepScore(i, d * step);
+  }, 120);
+}
+function stopStep() { clearInterval(_stepInterval); _stepInterval = null; }
 
 function stepScore(i, d) {
   const input = document.getElementById('score-'+i);
   input.value = parseInt(input.value||0) + d;
 }
 
+function scoreKeyNav(e, i, total) {
+  if (e.key === 'Enter' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (i < total - 1) document.getElementById('score-'+(i+1))?.focus();
+    else submitRound();
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (i > 0) document.getElementById('score-'+(i-1))?.focus();
+  }
+}
+
+function copyLastRound() {
+  const g = state.currentGame; if(!g || !g.rounds.length) return;
+  const last = g.rounds[g.rounds.length-1];
+  g.players.forEach((_,i) => { document.getElementById('score-'+i).value = last[i] ?? 0; });
+  toast('Scores copiés depuis la manche précédente');
+}
+
 function submitRound() {
   const g = state.currentGame; if(!g) return;
-  const scores = g.players.map((_,i) => {
-    const v = parseInt(document.getElementById('score-'+i).value) || 0;
-    return v;
-  });
+  const scores = g.players.map((_,i) => parseInt(document.getElementById('score-'+i).value) || 0);
   g.rounds.push(scores);
   g.currentRound++;
+  saveCurrentGame();
   updateRoundInfo();
   renderLeaderboard();
   renderRoundHistory();
   renderChart();
-  // Reset inputs
+  renderLiveStats();
   g.players.forEach((_,i) => { document.getElementById('score-'+i).value = 0; });
-  toast(`Manche ${g.currentRound-1} enregistrée ! ✓`);
+  // Focus first input for fast next-round entry
+  document.getElementById('score-0')?.focus();
+
+  // Dramatic moment detection
+  checkDramaticMoments(g);
+  toast(`Manche ${g.currentRound-1} enregistrée ✓`, 'success');
+}
+
+function checkDramaticMoments(g) {
+  if (g.rounds.length < 2) return;
+  const ranked = getRanked(g);
+  const prev = getPrevRank(g, ranked[0].idx);
+  if (prev > 1) toast(`👑 ${ranked[0].name} prend la tête !`, 'event', 3500);
+  const lastRound = g.rounds[g.rounds.length-1];
+  const maxScore = Math.max(...lastRound);
+  if (maxScore > 0) {
+    const allPrev = g.rounds.slice(0,-1).flatMap(r => r);
+    const prevMax = allPrev.length ? Math.max(...allPrev) : 0;
+    if (maxScore > prevMax * 1.5 && maxScore > 20) {
+      const hero = g.players[lastRound.indexOf(maxScore)];
+      setTimeout(() => toast(`💥 ${hero.name} explose le record de manche !`, 'event', 3500), 1200);
+    }
+  }
+}
+
+function undoLastRound() {
+  const g = state.currentGame; if(!g || !g.rounds.length) return;
+  showConfirm(
+    `Annuler la manche ${g.rounds.length} ? Les scores seront perdus.`,
+    () => {
+      g.rounds.pop();
+      g.currentRound--;
+      saveCurrentGame();
+      updateRoundInfo();
+      renderLeaderboard();
+      renderRoundHistory();
+      renderChart();
+      renderLiveStats();
+      toast('Manche annulée');
+    },
+    'Annuler la manche',
+    true
+  );
 }
 
 function renderRoundHistory() {
@@ -272,6 +389,8 @@ function renderRoundHistory() {
     return;
   }
   const totals = getTotals(g);
+  // Highlight best score per round
+  const roundBests = g.rounds.map(r => g.direction === 'high' ? Math.max(...r) : Math.min(...r));
   wrap.innerHTML = `<table class="history-table">
     <thead>
       <tr>
@@ -284,7 +403,11 @@ function renderRoundHistory() {
       ${g.players.map((p,pi)=>`
         <tr>
           <td><span style="color:${p.color}">${p.avatar} ${p.name}</span></td>
-          ${g.rounds.map((r,ri)=>`<td class="editable-cell mono" onclick="editCell(${pi},${ri})" title="Cliquer pour éditer">${r[pi]??0}</td>`).join('')}
+          ${g.rounds.map((r,ri)=>{
+            const val = r[pi]??0;
+            const isBest = val === roundBests[ri];
+            return `<td class="editable-cell mono${isBest?' cell-best':''}" onclick="editCell(${pi},${ri})" title="Cliquer pour éditer">${val}</td>`;
+          }).join('')}
           <td class="mono total-row">${totals.find(t=>t.idx===pi)?.total??0}</td>
         </tr>`).join('')}
     </tbody>
@@ -297,8 +420,8 @@ function editCell(playerIdx, roundIdx) {
   if (!cells) return;
   const cell = cells[roundIdx + 1];
   const cur = g.rounds[roundIdx][playerIdx] ?? 0;
-  cell.innerHTML = `<input class="inline-edit" type="number" value="${cur}" 
-    onblur="commitEdit(${playerIdx},${roundIdx},this)" 
+  cell.innerHTML = `<input class="inline-edit" type="number" inputmode="numeric" value="${cur}"
+    onblur="commitEdit(${playerIdx},${roundIdx},this)"
     onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${cur}';this.blur();}" autofocus>`;
   cell.querySelector('input').select();
 }
@@ -306,9 +429,110 @@ function editCell(playerIdx, roundIdx) {
 function commitEdit(pi, ri, input) {
   const g = state.currentGame; if(!g) return;
   g.rounds[ri][pi] = parseInt(input.value) || 0;
+  saveCurrentGame();
   renderRoundHistory();
   renderLeaderboard();
   renderChart();
+  renderLiveStats();
+}
+
+// ============================================================
+// LIVE STATS
+// ============================================================
+function renderLiveStats() {
+  const g = state.currentGame; if(!g) return;
+  const panel = document.getElementById('live-stats-grid');
+  if (!panel) return;
+
+  if (!g.rounds.length) {
+    panel.innerHTML = '<p class="empty-message" style="grid-column:1/-1">Jouez une manche pour voir les stats</p>';
+    return;
+  }
+
+  const totals = getTotals(g);
+  const ranked = getRanked(g);
+  const n = g.players.length;
+  const nRounds = g.rounds.length;
+
+  // Leader
+  const leader = ranked[0];
+  // Gap leader vs 2nd
+  const second = ranked[1];
+  const gap = Math.abs(leader.total - second.total);
+
+  // Most wins (best score per round)
+  const roundWins = Array(n).fill(0);
+  g.rounds.forEach(r => {
+    const best = g.direction === 'high' ? Math.max(...r) : Math.min(...r);
+    r.forEach((v,i) => { if(v === best) roundWins[i]++; });
+  });
+  const topWinner = totals.reduce((a,b) => roundWins[a.idx] >= roundWins[b.idx] ? a : b);
+
+  // Most consistent (lowest variance, min 3 rounds)
+  const variances = totals.map(p => ({...p, v: variance(p.perRound)}));
+  const mostConsistent = variances.reduce((a,b) => a.v <= b.v ? a : b);
+
+  // Biggest momentum (last 2 rounds vs prev 2)
+  let momentum = null;
+  if (nRounds >= 4) {
+    const momScores = totals.map(p => {
+      const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
+      const prev2 = p.perRound.slice(-4,-2).reduce((a,b)=>a+b,0);
+      return {...p, mom: last2 - prev2};
+    });
+    momentum = momScores.reduce((a,b) => (g.direction==='high'?a.mom>=b.mom:a.mom<=b.mom) ? a : b);
+  }
+
+  // Current winning streak
+  let streak = 0; let streakPlayer = null;
+  for (let ri = nRounds-1; ri >= 0; ri--) {
+    const r = g.rounds[ri];
+    const best = g.direction==='high' ? Math.max(...r) : Math.min(...r);
+    const winnerIdx = r.indexOf(best);
+    if (streak === 0) { streak=1; streakPlayer=winnerIdx; }
+    else if (winnerIdx === streakPlayer) streak++;
+    else break;
+  }
+
+  // Comeback: who gained most ranks since round 1
+  let biggestClimber = null;
+  if (nRounds >= 2) {
+    const afterR1 = g.players.map((_,i) => g.rounds[0][i]);
+    const sortedR1 = [...afterR1].sort((a,b) => g.direction==='high'?b-a:a-b);
+    const initialRanks = afterR1.map(v => sortedR1.indexOf(v)+1);
+    const climbers = ranked.map((p,currentRank) => ({
+      ...p,
+      gain: initialRanks[p.idx] - (currentRank+1)
+    }));
+    biggestClimber = climbers.reduce((a,b) => a.gain >= b.gain ? a : b);
+  }
+
+  const stats = [
+    { label: '🥇 En tête', value: leader.avatar + ' ' + leader.name, sub: leader.total + ' pts' },
+    { label: '📏 Écart avec le 2ème', value: gap + ' pts', sub: second.name + ' à ' + second.total },
+    { label: '🎯 Manches remportées', value: topWinner.avatar + ' ' + topWinner.name, sub: roundWins[topWinner.idx] + ' / ' + nRounds },
+    { label: '⏱️ Plus régulier', value: mostConsistent.avatar + ' ' + mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
+  ];
+
+  if (streak >= 2 && streakPlayer !== null) {
+    stats.push({ label: '🔥 Série en cours', value: g.players[streakPlayer].avatar + ' ' + g.players[streakPlayer].name, sub: streak + ' manches d\'affilée' });
+  }
+
+  if (momentum && nRounds >= 4) {
+    const sign = momentum.mom > 0 ? '+' : '';
+    stats.push({ label: '⚡ Momentum', value: momentum.avatar + ' ' + momentum.name, sub: sign + momentum.mom + ' sur les 2 dern.' });
+  }
+
+  if (biggestClimber && biggestClimber.gain > 0) {
+    stats.push({ label: '🚀 Remontée', value: biggestClimber.avatar + ' ' + biggestClimber.name, sub: '+' + biggestClimber.gain + ' place(s)' });
+  }
+
+  panel.innerHTML = stats.map(s => `
+    <div class="stat-pill">
+      <div class="label">${s.label}</div>
+      <div class="value">${s.value}</div>
+      <div class="sub">${s.sub}</div>
+    </div>`).join('');
 }
 
 // ============================================================
@@ -330,8 +554,9 @@ function renderChart() {
   if (state.activeChart) { state.activeChart.destroy(); state.activeChart = null; }
 
   const labels = g.rounds.map((_,i) => `M${i+1}`);
+  const mode = state.chartMode;
 
-  if (state.chartMode === 'line') {
+  if (mode === 'line') {
     // Cumulative
     const datasets = g.players.map((p,pi) => {
       let cum = 0;
@@ -339,28 +564,103 @@ function renderChart() {
         label: `${p.avatar} ${p.name}`,
         data: g.rounds.map(r => { cum += r[pi]??0; return cum; }),
         borderColor: p.color,
-        backgroundColor: p.color + '22',
-        tension: 0.35,
-        fill: false,
-        pointBackgroundColor: p.color,
-        pointRadius: 4,
-        borderWidth: 2.5,
+        backgroundColor: p.color + '18',
+        tension: 0.35, fill: false,
+        pointBackgroundColor: p.color, pointRadius: 4, borderWidth: 2.5,
       };
     });
     state.activeChart = new Chart(canvas, {
-      type: 'line',
-      data: { labels, datasets },
+      type: 'line', data: { labels, datasets },
+      options: chartOptions('Progression Cumulée'),
+    });
+
+  } else if (mode === 'bar') {
+    // Per-round gains
+    const datasets = g.players.map((p,pi) => ({
+      label: `${p.avatar} ${p.name}`,
+      data: g.rounds.map(r => r[pi]??0),
+      backgroundColor: p.color + 'cc',
+      borderColor: p.color,
+      borderWidth: 1, borderRadius: 4,
+    }));
+    state.activeChart = new Chart(canvas, {
+      type: 'bar', data: { labels, datasets },
+      options: chartOptions('Gains par Manche'),
+    });
+
+  } else if (mode === 'rank') {
+    // Rank per round (bump chart)
+    const n = g.players.length;
+    const datasets = g.players.map((p,pi) => {
+      const ranks = g.rounds.map((_,ri) => {
+        const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
+        const sorted = [...partial].sort((a,b) => g.direction==='high'?b-a:a-b);
+        // Stable rank: find position of this player's value
+        return sorted.indexOf(partial[pi]) + 1;
+      });
+      return {
+        label: `${p.avatar} ${p.name}`,
+        data: ranks,
+        borderColor: p.color,
+        backgroundColor: p.color + '22',
+        tension: 0.2, fill: false,
+        pointBackgroundColor: p.color, pointRadius: 5, borderWidth: 2.5,
+      };
+    });
+    state.activeChart = new Chart(canvas, {
+      type: 'line', data: { labels, datasets },
       options: {
-        responsive: true, maintainAspectRatio: true,
-        plugins: { legend: { position: 'top', labels: { font: { family: "'JetBrains Mono'", size: 11 }, usePointStyle: true, padding: 12, boxWidth: 8 } } },
+        ...chartOptions('Classement par Manche'),
         scales: {
-          x: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } } },
-          y: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } } }
-        },
-        animation: { duration: 400 },
+          ...chartOptions().scales,
+          y: {
+            ...chartOptions().scales?.y,
+            reverse: true,
+            min: 1, max: n,
+            ticks: { stepSize: 1, font: { family: "'JetBrains Mono'", size: 10 } },
+            grid: { color: 'oklch(0.92 0.01 290)' },
+          }
+        }
       }
     });
+
+  } else if (mode === 'gap') {
+    // Gap vs leader
+    const datasets = g.players.map((p,pi) => {
+      const data = g.rounds.map((_,ri) => {
+        const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
+        const leader = g.direction==='high' ? Math.max(...partial) : Math.min(...partial);
+        return g.direction==='high' ? partial[pi] - leader : leader - partial[pi];
+      });
+      return {
+        label: `${p.avatar} ${p.name}`,
+        data,
+        borderColor: p.color,
+        backgroundColor: p.color + '18',
+        tension: 0.3, fill: false,
+        pointBackgroundColor: p.color, pointRadius: 4, borderWidth: 2.5,
+      };
+    });
+    state.activeChart = new Chart(canvas, {
+      type: 'line', data: { labels, datasets },
+      options: chartOptions('Écart avec le Leader'),
+    });
   }
+}
+
+function chartOptions(title) {
+  return {
+    responsive: true, maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'top', labels: { font: { family: "'JetBrains Mono'", size: 11 }, usePointStyle: true, padding: 12, boxWidth: 8 }},
+      title: title ? { display: false } : undefined,
+    },
+    scales: {
+      x: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } }},
+      y: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } }}
+    },
+    animation: { duration: 350 },
+  };
 }
 
 function switchChart(mode, el) {
@@ -370,7 +670,6 @@ function switchChart(mode, el) {
   renderChart();
 }
 
-
 // ============================================================
 // END GAME
 // ============================================================
@@ -378,24 +677,34 @@ function endGame() {
   const g = state.currentGame;
   if (!g) return;
   if (!g.rounds.length) { toast('Jouez au moins une manche d\'abord !'); return; }
-
-  const ranked = getRanked(g);
-  g.winner = ranked[0].name;
-  g.finalRanked = ranked;
-  g.stats = computeStats(g);
-
-  // Save to history
-  state.history.push({...g});
-  saveHistory();
-
-  showView('awards');
-  launchConfetti();
+  showConfirm(
+    `Terminer la partie "${g.name}" ?`,
+    () => {
+      const ranked = getRanked(g);
+      g.winner = ranked[0].name;
+      g.finalRanked = ranked;
+      g.stats = computeStats(g);
+      state.history.push({...g});
+      saveHistory();
+      saveCurrentGame();
+      showView('awards');
+      launchConfetti();
+    },
+    'Terminer la partie'
+  );
 }
 
 function abandonGame() {
-  if (!confirm('Abandonner la partie ? Votre progression sera perdue.')) return;
-  state.currentGame = null;
-  showView('welcome');
+  showConfirm(
+    'Abandonner la partie ? La progression sera perdue.',
+    () => {
+      state.currentGame = null;
+      saveCurrentGame();
+      showView('welcome');
+    },
+    'Abandonner',
+    true
+  );
 }
 
 // ============================================================
@@ -406,13 +715,14 @@ function computeStats(g) {
   const ranked = getRanked(g);
   const n = g.players.length;
 
-  // Biggest comeback: biggest positive rank change (last round vs first round after 1st round)
+  // Comeback: biggest rank gain from first half to second half
   let comeback = {gain: -Infinity, player: null};
-  if (g.rounds.length > 1) {
+  if (g.rounds.length > 2) {
+    const half = Math.ceil(g.rounds.length / 2);
     totals.forEach(p => {
-      const firstHalf = g.rounds.slice(0, Math.ceil(g.rounds.length/2)).reduce((s,r)=>s+(r[p.idx]??0),0);
-      const secondHalf = g.rounds.slice(Math.ceil(g.rounds.length/2)).reduce((s,r)=>s+(r[p.idx]??0),0);
-      const gain = secondHalf - firstHalf;
+      const firstHalfTotal = g.rounds.slice(0, half).reduce((s,r) => s+(r[p.idx]??0), 0);
+      const secondHalfTotal = g.rounds.slice(half).reduce((s,r) => s+(r[p.idx]??0), 0);
+      const gain = g.direction === 'high' ? secondHalfTotal - firstHalfTotal : firstHalfTotal - secondHalfTotal;
       if (gain > comeback.gain) { comeback.gain = gain; comeback.player = p; }
     });
   }
@@ -426,26 +736,124 @@ function computeStats(g) {
       total: g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[pi]??0),0)
     }));
     partial.sort((a,b) => g.direction==='high'?b.total-a.total:a.total-b.total);
-    leadCounts[partial[0].name] = (leadCounts[partial[0].name]||0)+1;
+    leadCounts[partial[0].name] = (leadCounts[partial[0].name]||0) + 1;
   });
   const tyrant = Object.entries(leadCounts).sort((a,b)=>b[1]-a[1])[0];
 
   // Variance per player
-  const vars = totals.map(p=>({...p, var: variance(p.perRound)}));
-  vars.sort((a,b)=>b.var-a.var);
-  const gambler = vars[0];
-  const wall = vars[vars.length-1];
+  const vars = totals.map(p => ({...p, var: variance(p.perRound)}));
+  vars.sort((a,b) => b.var - a.var);
+  const gambler = vars[0]; // highest variance
+  const wall = vars[vars.length-1]; // lowest variance
 
-  // Sniper: big jump in last round
+  // Round wins
+  const roundWins = Array(n).fill(0);
+  g.rounds.forEach(r => {
+    const best = g.direction === 'high' ? Math.max(...r) : Math.min(...r);
+    r.forEach((v,i) => { if(v === best) roundWins[i]++; });
+  });
+
+  // Sniper: winner who scored best in last round
   let sniper = null;
   if (g.rounds.length > 1) {
     const lastRound = g.rounds[g.rounds.length-1];
-    const maxLastScore = Math.max(...lastRound);
-    const sniperIdx = lastRound.indexOf(maxLastScore);
+    const best = g.direction==='high' ? Math.max(...lastRound) : Math.min(...lastRound);
+    const sniperIdx = lastRound.indexOf(best);
     if (ranked[0].idx === sniperIdx) sniper = g.players[sniperIdx];
   }
 
-  return { comeback: comeback.player, tyrant: tyrant?.[0], gambler, wall, sniper, ranked, leadCounts };
+  // Sleeper: low first half, high second half
+  let sleeper = null;
+  totals.forEach(p => {
+    const half = Math.floor(p.perRound.length / 2);
+    if (half < 1) return;
+    const first = p.perRound.slice(0, half).reduce((a,b)=>a+b, 0) / half;
+    const second = p.perRound.slice(half).reduce((a,b)=>a+b, 0) / (p.perRound.length - half);
+    if (g.direction === 'high' && second > first * 1.5 && first > 0) sleeper = p;
+    if (g.direction === 'low' && second < first * 0.67 && first > 0) sleeper = p;
+  });
+
+  // Biggest single round score
+  let bigBang = {val: g.direction==='high'?-Infinity:Infinity, player: null};
+  totals.forEach(p => {
+    p.perRound.forEach(score => {
+      if ((g.direction==='high' && score > bigBang.val) || (g.direction==='low' && score < bigBang.val)) {
+        bigBang.val = score;
+        bigBang.player = p;
+      }
+    });
+  });
+
+  // Biggest score drop
+  let collapse = {val: -Infinity, player: null};
+  totals.forEach(p => {
+    for (let i=1; i < p.perRound.length; i++) {
+      const drop = g.direction==='high' ? p.perRound[i-1] - p.perRound[i] : p.perRound[i] - p.perRound[i-1];
+      if (drop > collapse.val) { collapse.val = drop; collapse.player = p; }
+    }
+  });
+
+  // Reversal: was behind most of the game but won
+  let reversal = null;
+  totals.forEach(p => {
+    let behindCount = 0;
+    g.rounds.forEach((_,ri) => {
+      const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
+      const leaderVal = g.direction==='high' ? Math.max(...partial) : Math.min(...partial);
+      if (partial[p.idx] !== leaderVal) behindCount++;
+    });
+    if (behindCount > g.rounds.length * 0.6 && ranked[0].name === p.name) reversal = p;
+  });
+
+  // Tourist: always in the bottom half, every single round
+  let tourist = null;
+  if (n >= 3) {
+    totals.forEach(p => {
+      const alwaysBottom = g.rounds.every((_,ri) => {
+        const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
+        const sorted = [...partial].sort((a,b) => g.direction==='high'?b-a:a-b);
+        const myRank = sorted.indexOf(partial[p.idx]);
+        return myRank >= Math.floor(n/2);
+      });
+      if (alwaysBottom) tourist = p;
+    });
+  }
+
+  // Clutch: best last 2 rounds combined
+  let clutch = {val: g.direction==='high'?-Infinity:Infinity, player: null};
+  totals.forEach(p => {
+    const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
+    if ((g.direction==='high' && last2 > clutch.val) || (g.direction==='low' && last2 < clutch.val)) {
+      clutch.val = last2; clutch.player = p;
+    }
+  });
+
+  // Phoenix: last place at halfway, won final
+  let phoenix = null;
+  if (g.rounds.length >= 4) {
+    const half = Math.ceil(g.rounds.length / 2);
+    const halfTotals = g.players.map((_,i) => g.rounds.slice(0,half).reduce((s,r)=>s+(r[i]??0),0));
+    const worstHalf = g.direction==='high' ? Math.min(...halfTotals) : Math.max(...halfTotals);
+    if (halfTotals[ranked[0].idx] === worstHalf) phoenix = ranked[0];
+  }
+
+  return {
+    comeback: comeback.player,
+    tyrant: tyrant?.[0],
+    gambler,
+    wall,
+    sniper,
+    sleeper,
+    bigBang: bigBang.player,
+    collapse: collapse.player,
+    reversal,
+    tourist,
+    clutch: clutch.player,
+    phoenix,
+    ranked,
+    leadCounts,
+    roundWins,
+  };
 }
 
 // ============================================================
@@ -455,32 +863,50 @@ function renderAwards() {
   const g = state.currentGame;
   if (!g || !g.finalRanked) return;
 
-  document.getElementById('awards-game-name').textContent = g.name + ' · ' + new Date(g.date).toLocaleDateString();
+  document.getElementById('awards-game-name').textContent = g.name + ' · ' + new Date(g.date).toLocaleDateString('fr-FR');
 
   // Podium
   const podium = document.getElementById('podium');
   const top = g.finalRanked.slice(0,3);
-  const medals = ['1.','2.','3.'];
+  const medals = ['🥇','🥈','🥉'];
   const ranks = ['1er','2ème','3ème'];
   podium.innerHTML = top.map((p,i) => `
     <div class="podium-slot${i===0?' p1':''}">
       <span class="podium-avatar">${p.avatar}</span>
-      <div class="podium-rank">${medals[i]} ${ranks[i]}</div>
+      <div class="podium-medal">${medals[i]}</div>
+      <div class="podium-rank">${ranks[i]}</div>
       <div class="podium-name" style="color:${p.color}">${p.name}</div>
       <div class="podium-score">${p.total}</div>
     </div>`).join('');
-
 
   // Awards
   const awards = generateAwards(g);
   const grid = document.getElementById('awards-grid');
   grid.innerHTML = awards.map((a, i) => `
-    <div class="award-card" style="animation-delay:${i*0.1}s">
+    <div class="award-card" style="animation-delay:${i*0.08}s">
       <span class="award-emoji">${a.emoji}</span>
       <div class="award-title">${a.title}</div>
       <div class="award-player">${a.player}</div>
       <div class="award-desc">${a.desc}</div>
     </div>`).join('');
+
+  // Game summary stats
+  renderAwardsSummary(g);
+}
+
+function renderAwardsSummary(g) {
+  const el = document.getElementById('awards-summary');
+  if (!el) return;
+  const nRounds = g.rounds.length;
+  const allScores = g.rounds.flatMap(r => r);
+  const maxScore = Math.max(...allScores);
+  const gap = Math.abs(g.finalRanked[0].total - g.finalRanked[1]?.total);
+  el.innerHTML = `
+    <div class="summary-stat"><span>${nRounds}</span><small>manches</small></div>
+    <div class="summary-stat"><span>${g.players.length}</span><small>joueurs</small></div>
+    <div class="summary-stat"><span>${maxScore}</span><small>record de manche</small></div>
+    <div class="summary-stat"><span>${gap}</span><small>pts d'écart final</small></div>
+  `;
 }
 
 function generateAwards(g) {
@@ -489,205 +915,100 @@ function generateAwards(g) {
   const totals = getTotals(g);
   const awards = [];
 
-  // L'Escargot - last place
-  const snail = ranked[ranked.length-1];
-  awards.push({ emoji:'', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
+  // Champion (always first, always displayed)
+  awards.push({ priority: 0, emoji:'🏆', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté avec ${ranked[0].total} pts. À la prochaine.` });
 
-  // Le Tyran - led the most rounds
+  // Last place
+  if (ranked.length > 1) {
+    const snail = ranked[ranked.length-1];
+    awards.push({ priority: 1, emoji:'🐌', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
+  }
+
+  // Tyrant — led the most rounds
   if (stats.tyrant) {
-    awards.push({ emoji:'', title:'Le Tyran', player: stats.tyrant, desc: `A passé le plus de temps en tête. Le pouvoir est addictif.` });
+    const tyrantCount = stats.leadCounts[stats.tyrant];
+    awards.push({ priority: 2, emoji:'👑', title:'Le Tyran', player: stats.tyrant, desc: `En tête pendant ${tyrantCount} manche${tyrantCount>1?'s':''}. Le pouvoir est addictif.` });
   }
 
-  // Le Flambeur - most volatile
-  if (stats.gambler) {
-    awards.push({ emoji:'', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles. Vit pour le chaos.` });
+  // Gambler — highest variance (distinct from wall)
+  if (stats.gambler && stats.gambler.name !== stats.wall?.name) {
+    awards.push({ priority: 3, emoji:'🎲', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles sur chaque manche. Vit pour le chaos.` });
   }
 
-  // Le Mur - most consistent (but not first)
-  const wallPlayer = ranked.find(p => p.name === stats.wall?.name && p !== ranked[0]);
-  if (wallPlayer) {
-    awards.push({ emoji:'', title:'Le Mur', player: stats.wall.name, desc: `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
+  // Wall — most consistent (distinct from gambler)
+  if (stats.wall && stats.wall.name !== stats.gambler?.name) {
+    const wallIsWinner = ranked[0].name === stats.wall.name;
+    awards.push({ priority: 4, emoji:'🧱', title:'Le Mur', player: stats.wall.name, desc: wallIsWinner ? `Régularité absolue ET victoire. Le combo parfait.` : `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
   }
 
-  // La Fusée - biggest comeback
+  // Comeback
   if (stats.comeback && g.rounds.length > 2) {
-    awards.push({ emoji:'', title:'La Fusée', player: stats.comeback.name, desc: `Plus grosse remontée en fin de partie. Pas de panique, juste du talent.` });
+    awards.push({ priority: 5, emoji:'🚀', title:'La Fusée', player: stats.comeback.name, desc: `La plus grosse remontée en seconde moitié de partie. Pas de panique, juste du talent.` });
   }
 
-  // Le Sniper - won on last round
+  // Sniper
   if (stats.sniper) {
-    awards.push({ emoji:'', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure performance à la dernière manche. Le timing est tout.` });
-  }
-  // BIG BANG — highest single round
-  let bigBang = { val: -Infinity, player: null };
-  totals.forEach(p => {
-    p.perRound.forEach(score => {
-      if (score > bigBang.val) {
-        bigBang.val = score;
-        bigBang.player = p;
-      }
-    });
-  });
-
-  if (bigBang.player) {
-    awards.push({
-      emoji: '',
-      title: 'Le Big Bang',
-      player: bigBang.player.name,
-      desc: 'Un tour explosif.'
-    });
+    awards.push({ priority: 6, emoji:'🎯', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure manche à la toute dernière round. Le timing, c'est tout.` });
   }
 
-  // COLLAPSE — biggest drop between rounds
-  let collapse = { val: -Infinity, player: null };
-  totals.forEach(p => {
-    for (let i = 1; i < p.perRound.length; i++) {
-      const drop = p.perRound[i - 1] - p.perRound[i];
-      if (drop > collapse.val) {
-        collapse.val = drop;
-        collapse.player = p;
-      }
-    }
-  });
-
-  if (collapse.player) {
-    awards.push({
-      emoji: '',
-      title: 'L\'Effondrement',
-      player: collapse.player.name,
-      desc: 'Tout s\'est écroulé.'
-    });
+  // Big Bang
+  if (stats.bigBang) {
+    awards.push({ priority: 7, emoji:'💥', title:'Le Big Bang', player: stats.bigBang.name, desc: `Le plus haut score sur une seule manche. Un tour légendaire.` });
   }
 
-  // REVERSAL — beat someone who was ahead most of the game
-  let reversal = null;
-  totals.forEach(p => {
-    let behindCount = 0;
-
-    g.rounds.forEach((_, ri) => {
-      const partial = getTotals({
-        ...g,
-        rounds: g.rounds.slice(0, ri + 1)
-      });
-
-      const sorted = partial.sort((a,b)=>g.direction==='high'?b.total-a.total:a.total-b.total);
-
-      if (sorted[0].name !== p.name) behindCount++;
-    });
-
-    if (behindCount > g.rounds.length / 2 && ranked[0].name === p.name) {
-      reversal = p;
-    }
-  });
-
-  if (reversal) {
-    awards.push({
-      emoji: '',
-      title: 'Le Retournement',
-      player: reversal.name,
-      desc: 'Les rôles sont inversés.'
-    });
+  // Collapse
+  if (stats.collapse && g.rounds.length > 2) {
+    awards.push({ priority: 8, emoji:'📉', title:'L\'Effondrement', player: stats.collapse.name, desc: `La plus grosse chute entre deux manches. Ce qui monte doit redescendre.` });
   }
 
-  // CLUTCH — best last 2 rounds combined
-  let clutch = { val: -Infinity, player: null };
-  totals.forEach(p => {
-    const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
-    if (last2 > clutch.val) {
-      clutch.val = last2;
-      clutch.player = p;
-    }
-  });
-
-  if (clutch.player) {
-    awards.push({
-      emoji: '',
-      title: 'Le Sang-Froid',
-      player: clutch.player.name,
-      desc: 'La pression fait les diamants.'
-    });
+  // Reversal
+  if (stats.reversal) {
+    awards.push({ priority: 9, emoji:'⚡', title:'Le Retournement', player: stats.reversal.name, desc: `Derrière pendant la majorité de la partie, vainqueur à la fin. Magistral.` });
   }
 
-  // TOURIST — always behind
-  let tourist = null;
-  totals.forEach(p => {
-    const alwaysLow = p.perRound.every(score => score < (Math.max(...p.perRound) * 0.6));
-    if (alwaysLow) tourist = p;
-  });
-
-  if (tourist) {
-    awards.push({
-      emoji: '',
-      title: 'Le Touriste',
-      player: tourist.name,
-      desc: 'Juste content d\'être là.'
-    });
+  // Clutch
+  if (stats.clutch) {
+    awards.push({ priority: 10, emoji:'🧊', title:'Le Sang-Froid', player: stats.clutch.name, desc: `Meilleures deux dernières manches combinées. La pression fait les diamants.` });
   }
 
-  // ACCOUNTANT — steady gains
-  let accountant = { val: Infinity, player: null };
-  totals.forEach(p => {
-    const v = variance(p.perRound);
-    if (v < accountant.val) {
-      accountant.val = v;
-      accountant.player = p;
-    }
-  });
-
-  if (accountant.player) {
-    awards.push({
-      emoji: '',
-      title: 'Le Comptable',
-      player: accountant.player.name,
-      desc: 'Lent, monotone… mais efficace.'
-    });
+  // Tourist — fixed condition: always in bottom half every round
+  if (stats.tourist) {
+    awards.push({ priority: 11, emoji:'🧳', title:'Le Touriste', player: stats.tourist.name, desc: `Jamais sorti du bas du classement. Juste content d'être là.` });
   }
 
-  // ROLLERCOASTER — high variance
-  let roller = { val: -Infinity, player: null };
-  totals.forEach(p => {
-    const v = variance(p.perRound);
-    if (v > roller.val) {
-      roller.val = v;
-      roller.player = p;
-    }
-  });
-
-  if (roller.player) {
-    awards.push({
-      emoji: '',
-      title: 'Le Grand Huit',
-      player: roller.player.name,
-      desc: 'En haut, en bas… un vrai manège.'
-    });
+  // Sleeper
+  if (stats.sleeper) {
+    awards.push({ priority: 12, emoji:'👻', title:'La Menace Fantôme', player: stats.sleeper.name, desc: `Discret en première moitié, explosif en seconde. On n'aurait pas dû les ignorer.` });
   }
 
-  // SLEEPER — late game spike
-  let sleeper = null;
-  totals.forEach(p => {
-    const first = p.perRound.slice(0, Math.floor(p.perRound.length/2)).reduce((a,b)=>a+b,0);
-    const second = p.perRound.slice(Math.floor(p.perRound.length/2)).reduce((a,b)=>a+b,0);
-    if (second > first * 1.5) sleeper = p;
-  });
-
-  if (sleeper) {
-    awards.push({
-      emoji: '',
-      title: 'La Menace Fantôme',
-      player: sleeper.name,
-      desc: 'On n\'aurait pas dû les ignorer.'
-    });
+  // Phoenix
+  if (stats.phoenix) {
+    awards.push({ priority: 13, emoji:'🔥', title:'Le Phoenix', player: stats.phoenix.name, desc: `Dernier à mi-partie, champion à la fin. Renaître des cendres, c'est un art.` });
   }
 
-  // Le Champion - winner
-  awards.push({ emoji:'', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté. À la prochaine.` });
-
-  // Bonus: The Tortoise - if scoring direction is low and someone barely scored
+  // Low-score direction bonus
   if (g.direction === 'low') {
-    awards.push({ emoji:'', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Plus bas score, plus grande victoire.` });
+    awards.push({ priority: 14, emoji:'🎭', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Le plus bas score remporte la mise.` });
   }
 
-  return awards.slice(0, 9); // max 9 awards
+  // Champion du presque — 2nd place within 5%
+  if (ranked.length >= 2) {
+    const winner = ranked[0]; const runnerUp = ranked[1];
+    const pct = Math.abs(winner.total - runnerUp.total) / Math.max(1, Math.abs(winner.total));
+    if (pct < 0.05) {
+      awards.push({ priority: 15, emoji:'🏅', title:'Champion du Presque', player: runnerUp.name, desc: `${Math.abs(winner.total - runnerUp.total)} point(s) d'écart. La victoire vous frôlait.` });
+    }
+  }
+
+  // Round wins trophy
+  const roundWinLeader = g.players.reduce((a,b) => stats.roundWins[a.idx] >= stats.roundWins[b.idx] ? a : b,
+    {...g.players[0], idx: 0});
+  if (stats.roundWins[roundWinLeader.idx] >= Math.ceil(g.rounds.length * 0.5)) {
+    awards.push({ priority: 16, emoji:'⚔️', title:'Le Dominateur', player: roundWinLeader.name, desc: `A remporté ${stats.roundWins[roundWinLeader.idx]} manche${stats.roundWins[roundWinLeader.idx]>1?'s':''} sur ${g.rounds.length}. Une présence écrasante.` });
+  }
+
+  // Sort by priority and return all
+  return awards.sort((a,b) => a.priority - b.priority);
 }
 
 // ============================================================
@@ -697,18 +1018,20 @@ function renderHistory() {
   const container = document.getElementById('history-games-list');
   const gstats = document.getElementById('global-stats');
 
-  // Global stats
   const total = state.history.length;
   const allPlayers = {};
   state.history.forEach(g => {
     g.players?.forEach(p => {
-      if (!allPlayers[p.name]) allPlayers[p.name] = {wins:0,games:0};
+      if (!allPlayers[p.name]) allPlayers[p.name] = {wins:0, games:0, podiums:0};
       allPlayers[p.name].games++;
     });
     if (g.winner) {
-      if (!allPlayers[g.winner]) allPlayers[g.winner] = {wins:0,games:0};
+      if (!allPlayers[g.winner]) allPlayers[g.winner] = {wins:0, games:0, podiums:0};
       allPlayers[g.winner].wins++;
     }
+    (g.finalRanked||[]).slice(0,3).forEach(p => {
+      if (allPlayers[p.name]) allPlayers[p.name].podiums++;
+    });
   });
   const topPlayer = Object.entries(allPlayers).sort((a,b)=>b[1].wins-a[1].wins)[0];
   const totalRounds = state.history.reduce((s,g)=>s+(g.rounds?.length||0),0);
@@ -718,7 +1041,7 @@ function renderHistory() {
     <div class="gstat"><div class="num">${total}</div><div class="lbl">Parties jouées</div></div>
     <div class="gstat"><div class="num">${totalRounds}</div><div class="lbl">Manches totales</div></div>
     <div class="gstat"><div class="num">${uniquePlayers}</div><div class="lbl">Joueurs uniques</div></div>
-    <div class="gstat"><div class="num">${topPlayer?topPlayer[0].slice(0,8):'—'}</div><div class="lbl">Plus de victoires${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
+    <div class="gstat"><div class="num">${topPlayer ? topPlayer[0].slice(0,10) : '—'}</div><div class="lbl">Plus de victoires${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
 
   if (!state.history.length) {
     container.innerHTML = '<p class="empty-message empty-message-xl">Aucune partie jouée. Lancez votre première partie !</p>';
@@ -727,15 +1050,16 @@ function renderHistory() {
 
   container.innerHTML = state.history.slice().reverse().map((g,i) => {
     const realIdx = state.history.length - 1 - i;
+    const top3 = (g.finalRanked || []).slice(0,3);
     return `
       <div class="history-game-card" onclick="reviewGame(${realIdx})">
         <div class="hgc-head">
-          <span class="hgc-avatar">${g.players?.[0]?.avatar||''}</span>
           <span class="hgc-name">${g.name}</span>
-          <span class="hgc-date">${new Date(g.date).toLocaleDateString()} · ${g.rounds?.length||0} manches</span>
-          <span class="history-item-badge">
-            ${g.winner||'?'}
-          </span>
+          <span class="hgc-date">${new Date(g.date).toLocaleDateString('fr-FR')} · ${g.rounds?.length||0} manches</span>
+          <span class="history-item-badge">🏆 ${g.winner||'?'}</span>
+        </div>
+        <div class="hgc-podium">
+          ${top3.map((p,r)=>`<span class="hgc-podium-chip" style="color:${p.color}">${['🥇','🥈','🥉'][r]} ${p.avatar} ${p.name} <span class="mono" style="opacity:.6">${p.total}</span></span>`).join('')}
         </div>
         <div class="hgc-players">
           ${(g.players||[]).map(p=>`
@@ -751,7 +1075,6 @@ function renderHistory() {
 function reviewGame(idx) {
   const g = state.history[idx];
   if (!g) return;
-  // Load game as read-only view — just show the awards
   state.currentGame = {...g, _readonly: true};
   state.currentGame.finalRanked = state.currentGame.finalRanked || getRanked(g);
   state.currentGame.stats = state.currentGame.stats || computeStats(g);
@@ -764,17 +1087,20 @@ function reviewGame(idx) {
 function launchConfetti() {
   const container = document.getElementById('confetti');
   container.innerHTML = '';
-  const colors = ['#7c3aed','#2563eb','#059669','#d97706','#db2777','#f59e0b','#10b981'];
-  for (let i=0;i<80;i++) {
+  const colors = ['#7c3aed','#2563eb','#059669','#d97706','#db2777','#f59e0b','#10b981','#ef4444'];
+  const shapes = ['2px','4px','6px','8px'];
+  for (let i=0; i<120; i++) {
     const el = document.createElement('div');
     el.className = 'confetti-piece';
+    const size = shapes[Math.floor(Math.random()*shapes.length)];
     el.style.cssText = `
       left:${Math.random()*100}%;
       background:${colors[Math.floor(Math.random()*colors.length)]};
-      animation-duration:${1.5+Math.random()*2}s;
-      animation-delay:${Math.random()*0.8}s;
-      width:${6+Math.random()*6}px;
-      height:${6+Math.random()*6}px;
+      animation-duration:${1.8+Math.random()*2.5}s;
+      animation-delay:${Math.random()*1.2}s;
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':size};
       transform:rotate(${Math.random()*360}deg);
     `;
     container.appendChild(el);
@@ -785,5 +1111,31 @@ function launchConfetti() {
 // ============================================================
 // INIT
 // ============================================================
+// Restore mid-game session if available
+(function restoreSession() {
+  const saved = localStorage.getItem('boardnight_current');
+  if (saved) {
+    try {
+      const g = JSON.parse(saved);
+      if (g && g.id && !g._readonly && g.rounds) {
+        state.currentGame = g;
+        const banner = document.getElementById('resume-banner');
+        if (banner) {
+          banner.style.display = 'flex';
+          banner.querySelector('.resume-game-name').textContent = g.name;
+          banner.querySelector('.resume-round').textContent = `Manche ${g.currentRound} · ${g.rounds.length} terminées`;
+        }
+      }
+    } catch(e) { localStorage.removeItem('boardnight_current'); }
+  }
+})();
+
+function discardCurrentGame() {
+  state.currentGame = null;
+  localStorage.removeItem('boardnight_current');
+  const banner = document.getElementById('resume-banner');
+  if (banner) banner.style.display = 'none';
+}
+
 initSetup();
 renderWelcome();
