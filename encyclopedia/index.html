@@ -8,7 +8,7 @@
   <meta property="og:title" content="Encyclopédie — Carte mentale" />
   <meta property="og:description" content="Structuration de connaissances personnelles, à mi-chemin entre wiki, carnet et carte mentale." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=3" />
+  <link rel="stylesheet" href="../style.css?v=4" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -24,6 +24,41 @@
           <!-- Dynamically filled -->
         </div>
       </div>
+
+      <!-- Formulaire de contribution -->
+      <button class="contribute-trigger" onclick="toggleContributePanel('form-encyclopedia')" aria-expanded="false" aria-controls="form-encyclopedia" style="margin-top: 2rem;">
+        + Partager un savoir
+      </button>
+
+      <div class="contribute-panel" id="form-encyclopedia" role="form" aria-label="Ajouter un savoir">
+        <div class="contribute-panel-header">
+          <h4>Partager un savoir</h4>
+          <button class="contribute-close-btn" onclick="toggleContributePanel('form-encyclopedia')" aria-label="Fermer">×</button>
+        </div>
+
+        <div class="cf-field">
+          <label for="ef-contributor">Votre nom</label>
+          <input type="text" id="ef-contributor" placeholder="ex: Pierre">
+        </div>
+
+        <div class="cf-field">
+          <label for="ef-title">Titre du savoir</label>
+          <input type="text" id="ef-title" placeholder="ex: Effet Dunning-Kruger">
+        </div>
+
+        <div class="cf-field">
+          <label for="ef-category">Catégorie</label>
+          <input type="text" id="ef-category" placeholder="ex: Psychologie, Maths…">
+        </div>
+
+        <div class="cf-field">
+          <label for="ef-text">Explication</label>
+          <textarea id="ef-text" rows="3" placeholder="Décrivez ce savoir en quelques lignes…"></textarea>
+        </div>
+
+        <button class="cf-submit" onclick="submitEncyclopediaEntry()">Ajouter →</button>
+        <p class="cf-note">Sauvegardé localement · Pierre intègre les entrées manuellement</p>
+      </div>
     </aside>
 
     <div class="graph-container"
@@ -31,7 +66,7 @@
          aria-label="Carte mentale des connaissances — cliquez sur un nœud pour voir le profil associé"
          aria-describedby="graph-desc">
       <p id="graph-desc" class="sr-only">
-        Graphe interactif : les nœuds représentent des sources de connaissances. Cliquez sur un nœud pour afficher ses notes dans le panneau latéral. Utilisez la molette pour zoomer, cliquez-glissez pour naviguer.
+        Graphe interactif : les nœuds représentent des sources de connaissances. Cliquez sur un nœud pour afficher ses notes dans le panneau latéral.
       </p>
       <div id="mindmap" aria-hidden="true"></div>
       <div id="tooltip" class="graph-tooltip" role="tooltip"></div>
@@ -48,10 +83,37 @@
 
   <div id="site-footer"></div>
 
-  <!-- Scripts -->
-  <script src="../shared-layout.js?v=3"></script>
+  <script src="../shared-layout.js?v=4"></script>
   <script src="data.js?v=2"></script>
   <script src="mindmap.js?v=2"></script>
   <script src="app.js?v=2"></script>
+  <script>
+    function submitEncyclopediaEntry() {
+      const title = document.getElementById('ef-title').value.trim();
+      if (!title) { showToast('Le titre est obligatoire.', 'error'); return; }
+
+      const item = {
+        timestamp: new Date().toISOString(),
+        tool: 'encyclopedia',
+        data: {
+          title,
+          text: document.getElementById('ef-text').value.trim(),
+          category: document.getElementById('ef-category').value.trim() || 'Divers',
+          source: document.getElementById('ef-contributor').value.trim() || 'Anonyme',
+          contributor: document.getElementById('ef-contributor').value.trim() || 'Anonyme'
+        }
+      };
+
+      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
+      stored.push(item);
+      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+
+      ['ef-contributor','ef-title','ef-category','ef-text'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      toggleContributePanel('form-encyclopedia');
+      showToast('"' + title + '" ajouté — merci !', 'success');
+    }
+  </script>
 </body>
 </html>

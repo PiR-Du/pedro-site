@@ -92,7 +92,7 @@ function renderWelcome() {
           <strong>${g.name}</strong>
           <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString('fr-FR')}</span>
         </div>
-        <span class="history-item-badge">🏆 ${g.winner}</span>
+        <span class="history-item-badge">${g.winner}</span>
       </div>`;
     }).join('');
 }
@@ -411,7 +411,7 @@ function checkDramaticMoments(g) {
   if (g.rounds.length < 2) return;
   const ranked = getRanked(g);
   const prev = getPrevRank(g, ranked[0].idx);
-  if (prev > 1) toast(`👑 ${ranked[0].name} prend la tête !`, 'event', 3500);
+  if (prev > 1) toast(`${ranked[0].name} prend la tête !`, 'event', 3500);
   const lastRound = g.rounds[g.rounds.length-1];
   const maxScore = Math.max(...lastRound);
   if (maxScore > 0) {
@@ -419,7 +419,7 @@ function checkDramaticMoments(g) {
     const prevMax = allPrev.length ? Math.max(...allPrev) : 0;
     if (maxScore > prevMax * 1.5 && maxScore > 20) {
       const hero = g.players[lastRound.indexOf(maxScore)];
-      setTimeout(() => toast(`💥 ${hero.name} explose le record de manche !`, 'event', 3500), 1200);
+      setTimeout(() => toast(`${hero.name} explose le record de manche !`, 'event', 3500), 1200);
     }
   }
 }
@@ -571,23 +571,23 @@ function renderLiveStats() {
   }
 
   const stats = [
-    { label: '🥇 En tête', value: leader.avatar + ' ' + leader.name, sub: leader.total + ' pts' },
-    { label: '📏 Écart avec le 2ème', value: gap + ' pts', sub: second.name + ' à ' + second.total },
-    { label: '🎯 Manches remportées', value: topWinner.avatar + ' ' + topWinner.name, sub: roundWins[topWinner.idx] + ' / ' + nRounds },
-    { label: '⏱️ Plus régulier', value: mostConsistent.avatar + ' ' + mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
+    { label: 'En tête', value: leader.avatar + ' ' + leader.name, sub: leader.total + ' pts' },
+    { label: 'Écart avec le 2ème', value: gap + ' pts', sub: second.name + ' à ' + second.total },
+    { label: 'Manches remportées', value: topWinner.avatar + ' ' + topWinner.name, sub: roundWins[topWinner.idx] + ' / ' + nRounds },
+    { label: 'Plus régulier', value: mostConsistent.avatar + ' ' + mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
   ];
 
   if (streak >= 2 && streakPlayer !== null) {
-    stats.push({ label: '🔥 Série en cours', value: g.players[streakPlayer].avatar + ' ' + g.players[streakPlayer].name, sub: streak + ' manches d\'affilée' });
+    stats.push({ label: 'Série en cours', value: g.players[streakPlayer].avatar + ' ' + g.players[streakPlayer].name, sub: streak + ' manches d\'affilée' });
   }
 
   if (momentum && nRounds >= 4) {
     const sign = momentum.mom > 0 ? '+' : '';
-    stats.push({ label: '⚡ Momentum', value: momentum.avatar + ' ' + momentum.name, sub: sign + momentum.mom + ' sur les 2 dern.' });
+    stats.push({ label: 'Momentum', value: momentum.avatar + ' ' + momentum.name, sub: sign + momentum.mom + ' sur les 2 dern.' });
   }
 
   if (biggestClimber && biggestClimber.gain > 0) {
-    stats.push({ label: '🚀 Remontée', value: biggestClimber.avatar + ' ' + biggestClimber.name, sub: '+' + biggestClimber.gain + ' place(s)' });
+    stats.push({ label: 'Remontée', value: biggestClimber.avatar + ' ' + biggestClimber.name, sub: '+' + biggestClimber.gain + ' place(s)' });
   }
 
   panel.innerHTML = stats.map(s => `
@@ -1123,10 +1123,10 @@ function renderHistory() {
         <div class="hgc-head">
           <span class="hgc-name">${g.name}</span>
           <span class="hgc-date">${new Date(g.date).toLocaleDateString('fr-FR')} · ${g.rounds?.length||0} manches</span>
-          <span class="history-item-badge">🏆 ${g.winner||'?'}</span>
+          <span class="history-item-badge">${g.winner||'?'}</span>
         </div>
         <div class="hgc-podium">
-          ${top3.map((p,r)=>`<span class="hgc-podium-chip" style="color:${p.color}">${['🥇','🥈','🥉'][r]} ${p.avatar} ${p.name} <span class="mono" style="opacity:.6">${p.total}</span></span>`).join('')}
+          ${top3.map((p,r)=>`<span class="hgc-podium-chip" style="color:${p.color}">${['#1','#2','#3'][r]} ${p.avatar} ${p.name} <span class="mono" style="opacity:.6">${p.total}</span></span>`).join('')}
         </div>
         <div class="hgc-players">
           ${(g.players||[]).map(p=>`

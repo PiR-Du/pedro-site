@@ -8,20 +8,8 @@
   <meta property="og:title" content="Assistant Batch Cooking" />
   <meta property="og:description" content="Générateur de plans de repas pour des sessions de cuisine optimisées." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=3" />
+  <link rel="stylesheet" href="../style.css?v=4" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
-  <style>
-    .status-notice {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: var(--primary);
-      background: color-mix(in oklab, var(--primary) 10%, transparent);
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-      display: inline-block;
-      font-weight: 500;
-    }
-  </style>
 </head>
 <body data-root=".." data-page="batch-cooking">
 
@@ -31,153 +19,91 @@
     <section class="hero">
       <div class="grid-bg" aria-hidden="true"></div>
       <div class="inner">
-        <p class="eyebrow">./projets/batch-cooking</p>
+        <p class="eyebrow">./batch-cooking</p>
         <h1>Organisez votre semaine <span class="text-gradient">en un clic</span>.</h1>
         <p class="lead">Choisissez votre point de départ, nous nous occupons du reste.</p>
-        <p class="status-notice">✨ Ce projet est disponible mais en cours de finalisation.</p>
       </div>
     </section>
 
     <div class="batch-container">
       <div class="selector-box">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="setMode('meal')">Partir d'un plat</button>
-        <button class="tab-btn" onclick="setMode('ingredient')">Partir d'un ingrédient</button>
-      </div>
+        <div class="tabs">
+          <button class="tab-btn active" data-mode="meal" onclick="setMode('meal')">Partir d'un plat</button>
+          <button class="tab-btn" data-mode="ingredient" onclick="setMode('ingredient')">Partir d'un ingrédient</button>
+        </div>
 
-      <div class="input-group">
-        <label id="select-label">Quel plat vous fait envie ?</label>
-        <div id="selectors-container" class="input-group">
-          <select id="main-select"></select>
+        <div class="input-group">
+          <label id="select-label">Quel plat vous fait envie ?</label>
+          <div id="selectors-container" class="input-group"></div>
+        </div>
+
+        <button class="generate-btn" onclick="generatePlan()">Générer ma semaine</button>
+
+        <!-- Formulaire de contribution -->
+        <button class="contribute-trigger" onclick="toggleContributePanel('form-batch')" aria-expanded="false" aria-controls="form-batch">
+          + Proposer un plat
+        </button>
+
+        <div class="contribute-panel" id="form-batch" role="form" aria-label="Proposer un nouveau plat">
+          <div class="contribute-panel-header">
+            <h4>Proposer un plat</h4>
+            <button class="contribute-close-btn" onclick="toggleContributePanel('form-batch')" aria-label="Fermer">×</button>
+          </div>
+
+          <div class="cf-field">
+            <label for="bf-title">Nom du plat</label>
+            <input type="text" id="bf-title" placeholder="ex: Lasagnes bolognaise">
+          </div>
+
+          <div class="cf-field">
+            <label for="bf-ingredients">Ingrédients principaux <span style="font-weight:400;color:var(--muted-foreground)">(séparés par des virgules)</span></label>
+            <textarea id="bf-ingredients" rows="2" placeholder="ex: pâtes, tomates, bœuf, oignons, ail"></textarea>
+          </div>
+
+          <button class="cf-submit" onclick="submitBatchMeal()">Proposer ce plat →</button>
+          <p class="cf-note">Sauvegardé localement · Pierre intègre les plats manuellement</p>
         </div>
       </div>
 
-      <button class="generate-btn" onclick="generatePlan()">Générer ma semaine</button>
-    </div>
-
-    <div id="plan-result" class="plan-grid">
-      <!-- Resultats ici -->
+      <div id="plan-result" class="plan-grid"></div>
     </div>
   </main>
 
   <div id="site-footer"></div>
 
-  <script src="../shared-layout.js?v=3"></script>
+  <script src="../shared-layout.js?v=4"></script>
   <script src="data.js"></script>
+  <script src="app.js"></script>
   <script>
-    let currentMode = 'meal';
-    const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+    function submitBatchMeal() {
+      const title = document.getElementById('bf-title').value.trim();
+      if (!title) { showToast('Le nom du plat est obligatoire.', 'error'); return; }
 
-    function init() {
-      const ingredients = new Set();
-      MEALS.forEach(m => m.ingredients.forEach(i => ingredients.add(i)));
-      window.allIngredients = Array.from(ingredients).sort();
-      setMode('meal');
-    }
+      const rawIngredients = document.getElementById('bf-ingredients').value;
+      const ingredients = rawIngredients
+        .split(',')
+        .map(s => s.trim().toLowerCase())
+        .filter(Boolean);
 
-    function setMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(mode === 'meal' ? 'plat' : 'ingrédient')));
-      
-      const container = document.getElementById('selectors-container');
-      const label = document.getElementById('select-label');
-      container.innerHTML = '';
-      
-      if (mode === 'meal') {
-        label.innerText = "Quel plat vous fait envie ?";
-        const select = document.createElement('select');
-        select.id = 'main-select';
-        MEALS.forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m.id;
-          opt.innerText = m.title;
-          select.appendChild(opt);
-        });
-        container.appendChild(select);
-      } else {
-        label.innerText = "De quels ingrédients disposez-vous ? (choisissez-en 3)";
-        for (let i = 0; i < 3; i++) {
-          const select = document.createElement('select');
-          select.className = 'ingredient-select';
-          
-          // Option vide par défaut
-          const emptyOpt = document.createElement('option');
-          emptyOpt.value = "";
-          emptyOpt.innerText = "-- Choisir un ingrédient --";
-          select.appendChild(emptyOpt);
-
-          window.allIngredients.forEach(ing => {
-            const opt = document.createElement('option');
-            opt.value = ing;
-            opt.innerText = ing.charAt(0).toUpperCase() + ing.slice(1);
-            select.appendChild(opt);
-          });
-          container.appendChild(select);
+      const item = {
+        timestamp: new Date().toISOString(),
+        tool: 'batch-cooking',
+        data: {
+          id: Math.floor(Math.random() * 9000) + 1000,
+          title,
+          ingredients: ingredients.length ? ingredients : ['ingrédients à préciser']
         }
-      }
+      };
+
+      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
+      stored.push(item);
+      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+
+      document.getElementById('bf-title').value = '';
+      document.getElementById('bf-ingredients').value = '';
+      toggleContributePanel('form-batch');
+      showToast('"' + title + '" proposé — merci !', 'success');
     }
-
-    function generatePlan() {
-      let plan = [];
-
-      if (currentMode === 'meal') {
-        const select = document.getElementById('main-select');
-        const value = select.value;
-        const anchor = MEALS.find(m => m.id == value);
-        plan.push(anchor);
-        
-        // Trouver les plats qui partagent le plus d'ingrédients
-        const others = MEALS.filter(m => m.id != anchor.id)
-          .map(m => {
-            const common = m.ingredients.filter(i => anchor.ingredients.includes(i)).length;
-            return { ...m, score: common };
-          })
-          .sort((a, b) => b.score - a.score);
-        
-        plan.push(...others.slice(0, 4));
-      } else {
-        const selects = document.querySelectorAll('.ingredient-select');
-        const selectedIngredients = Array.from(selects).map(s => s.value).filter(v => v !== "");
-        
-        if (selectedIngredients.length === 0) {
-          alert("Veuillez choisir au moins un ingrédient.");
-          return;
-        }
-
-        // Marquer chaque plat avec un score basé sur les ingrédients choisis
-        const scored = MEALS.map(m => {
-          const score = selectedIngredients.filter(si => m.ingredients.includes(si)).length;
-          return { ...m, score };
-        }).sort((a, b) => b.score - a.score);
-
-        // On prend les meilleurs matchs
-        plan = scored.slice(0, 5);
-      }
-
-      renderPlan(plan);
-    }
-
-    function renderPlan(plan) {
-      const container = document.getElementById('plan-result');
-      container.innerHTML = '';
-      
-      plan.forEach((meal, i) => {
-        const card = document.createElement('div');
-        card.className = 'day-card';
-        card.innerHTML = `
-          <div class="day-label">${DAYS[i]}</div>
-          <div class="meal-info">
-            <h3>${meal.title}</h3>
-            <p class="meal-ingredients">${meal.ingredients.join(' · ')}</p>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-      
-      container.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    init();
   </script>
 </body>
 </html>

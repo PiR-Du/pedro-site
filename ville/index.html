@@ -9,7 +9,7 @@
   <meta property="og:title" content="Que faire en ville ?" />
   <meta property="og:description" content="Bonnes adresses à Toulouse, Madrid et Paris — filtrées par ambiance, type et budget." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=3">
+  <link rel="stylesheet" href="../style.css?v=4">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -20,25 +20,21 @@
 
   <main>
     <!-- Hero -->
-    <div class="section-head">
+    <div class="section-head-centered">
       <p class="eyebrow">./ville</p>
-      <h1 style="font-family:var(--font-serif);font-size:clamp(2.5rem,6vw,4.25rem);line-height:1.1;letter-spacing:-0.01em;">
-        Que faire ce soir ?
-      </h1>
-      <p style="color:var(--muted-foreground);max-width:38rem;margin:0.75rem auto 0;line-height:1.65;font-size:1.05rem;">
-        Restaurants, bars, cafés et lieux de vie — testés et approuvés.
-      </p>
+      <h1>Que faire ce soir ?</h1>
+      <p>Restaurants, bars, cafés et lieux de vie — testés et approuvés.</p>
     </div>
 
     <!-- Mood bar -->
     <div class="mood-bar">
       <button class="mood-pill active" data-mood="all">Tout voir</button>
-      <button class="mood-pill" data-mood="Entre amis">🍻 Entre amis</button>
-      <button class="mood-pill" data-mood="Date">🕯️ Date</button>
-      <button class="mood-pill" data-mood="Festif">🎉 Festif</button>
-      <button class="mood-pill" data-mood="Tranquille">☕ Tranquille</button>
-      <button class="mood-pill" data-mood="Brunch">🥐 Brunch</button>
-      <button class="mood-pill" data-mood="Culture">🎭 Culture</button>
+      <button class="mood-pill" data-mood="Entre amis">Entre amis</button>
+      <button class="mood-pill" data-mood="Date">Date</button>
+      <button class="mood-pill" data-mood="Festif">Festif</button>
+      <button class="mood-pill" data-mood="Tranquille">Tranquille</button>
+      <button class="mood-pill" data-mood="Brunch">Brunch</button>
+      <button class="mood-pill" data-mood="Culture">Culture</button>
     </div>
 
     <!-- Main layout -->
@@ -66,14 +62,70 @@
         </div>
 
         <div class="ville-count" id="ville-count">— lieux</div>
+
+        <!-- Formulaire de proposition -->
+        <button class="contribute-trigger" onclick="toggleContributePanel('form-ville')" aria-expanded="false" aria-controls="form-ville">
+          + Proposer un lieu
+        </button>
+
+        <div class="contribute-panel" id="form-ville" role="form" aria-label="Proposer un lieu">
+          <div class="contribute-panel-header">
+            <h4>Proposer un lieu</h4>
+            <button class="contribute-close-btn" onclick="toggleContributePanel('form-ville')" aria-label="Fermer">×</button>
+          </div>
+
+          <div class="cf-field">
+            <label for="vf-contributor">Votre nom</label>
+            <input type="text" id="vf-contributor" placeholder="ex: Pierre">
+          </div>
+
+          <div class="cf-field">
+            <label for="vf-name">Nom du lieu</label>
+            <input type="text" id="vf-name" placeholder="ex: Le Perchoir">
+          </div>
+
+          <div class="cf-row">
+            <div class="cf-field">
+              <label for="vf-type">Type</label>
+              <select id="vf-type">
+                <option value="Restaurant">Restaurant</option>
+                <option value="Bar">Bar</option>
+                <option value="Café">Café</option>
+                <option value="Culture">Culture</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+            <div class="cf-field">
+              <label for="vf-city">Ville</label>
+              <select id="vf-city">
+                <option value="Toulouse">Toulouse</option>
+                <option value="Madrid">Madrid</option>
+                <option value="Paris">Paris</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="cf-field">
+            <label for="vf-neighborhood">Quartier</label>
+            <input type="text" id="vf-neighborhood" placeholder="ex: Saint-Pierre, Malasaña…">
+          </div>
+
+          <div class="cf-field">
+            <label for="vf-description">Description</label>
+            <textarea id="vf-description" placeholder="Pourquoi y aller ? Ce qui le rend spécial…"></textarea>
+          </div>
+
+          <button class="cf-submit" onclick="submitVilleReco()">Proposer →</button>
+          <p class="cf-note">Sauvegardé localement · Pierre intègre les suggestions manuellement</p>
+        </div>
       </aside>
 
       <!-- Main content -->
       <div class="ville-main">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
           <div class="ville-view-toggle">
-            <button class="view-btn active" id="btn-map" onclick="setView('map')">🗺 Carte</button>
-            <button class="view-btn" id="btn-list" onclick="setView('list')">☰ Liste</button>
+            <button class="view-btn active" id="btn-map" onclick="setView('map')">Carte</button>
+            <button class="view-btn" id="btn-list" onclick="setView('list')">Liste</button>
           </div>
           <p style="font-size:0.8rem;color:var(--muted-foreground);">Cliquer sur un lieu pour les détails</p>
         </div>
@@ -94,9 +146,40 @@
   <div id="site-footer"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="../shared-layout.js?v=3"></script>
+  <script src="../shared-layout.js?v=4"></script>
   <script src="data.js?v=1"></script>
   <script src="app.js?v=1"></script>
+  <script>
+    function submitVilleReco() {
+      const name = document.getElementById('vf-name').value.trim();
+      if (!name) { showToast('Le nom du lieu est obligatoire.', 'error'); return; }
+
+      const item = {
+        timestamp: new Date().toISOString(),
+        tool: 'city-guide',
+        data: {
+          id: 'v' + Date.now().toString().slice(-8),
+          name,
+          type: document.getElementById('vf-type').value,
+          city: document.getElementById('vf-city').value,
+          neighborhood: document.getElementById('vf-neighborhood').value.trim(),
+          description: document.getElementById('vf-description').value.trim(),
+          contributor: document.getElementById('vf-contributor').value.trim() || 'Anonyme',
+          moods: []
+        }
+      };
+
+      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
+      stored.push(item);
+      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+
+      ['vf-contributor','vf-name','vf-neighborhood','vf-description'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      toggleContributePanel('form-ville');
+      showToast('"' + name + '" proposé — merci !', 'success');
+    }
+  </script>
 </body>
 
 </html>

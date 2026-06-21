@@ -1,18 +1,4 @@
-const TYPE_ICONS = {
-  'Restaurant': '🍽️',
-  'Bar':        '🍺',
-  'Café':       '☕',
-  'Cocktail':   '🍹',
-  'Club':       '🎵',
-  'Musée':      '🏛️',
-  'Marché':     '🛒',
-  'Magasin':    '🛍️',
-  'Spectacle':  '🎭',
-  'Parc':       '🌳',
-  'Monument':   '🗿',
-  'Cinéma':     '🎬',
-  'Stade':      '⚽',
-};
+const TYPE_ICONS = {}; /* Plus d'emoji — on utilise le nom du type seul */
 
 const TYPE_HEX = {
   'Restaurant': '#e07b35',
@@ -30,14 +16,7 @@ const TYPE_HEX = {
   'Stade':      '#dc2626',
 };
 
-const MOOD_ICONS = {
-  'Entre amis': '🍻',
-  'Date':       '🕯️',
-  'Festif':     '🎉',
-  'Tranquille': '☕',
-  'Brunch':     '🥐',
-  'Culture':    '🎭',
-};
+const MOOD_ICONS = {}; /* Plus d'emoji — texte seul */
 
 let filters = { mood: 'all', type: 'all', city: 'all', search: '' };
 let villeMap = null;
@@ -142,7 +121,6 @@ function renderCards(places) {
 
   if (places.length === 0) {
     grid.innerHTML = `<div class="ville-empty">
-      <p style="font-size:2.5rem;margin-bottom:0.75rem;">🗺️</p>
       <p>Aucun lieu ne correspond à ces filtres.</p>
     </div>`;
     return;

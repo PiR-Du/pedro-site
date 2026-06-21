@@ -8,7 +8,7 @@
 <meta property="og:title" content="BoardNight — Suivi de Scores" />
 <meta property="og:description" content="Saisie rapide, graphiques élégants et trophées épiques pour vos soirées jeux de société." />
 <meta property="og:type" content="website" />
-<link rel="stylesheet" href="../style.css?v=3">
+<link rel="stylesheet" href="../style.css?v=4">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -21,7 +21,6 @@
 <!-- WELCOME -->
 <div id="view-welcome" class="view active">
     <div class="welcome-hero">
-      <span class="welcome-icon" aria-hidden="true">🎲</span>
       <div class="eyebrow">Soirée Jeux de Société</div>
       <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
       <p>Compagnon de suivi de score et statistiques pour vos soirées jeux. Saisie rapide, graphiques élégants et trophées épiques.</p>
@@ -43,13 +42,13 @@
     <div class="welcome-cards">
       <div class="welcome-card" onclick="showView('setup'); initSetup()" role="button" tabindex="0"
         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('setup');initSetup()}">
-        <div class="welcome-card-icon" aria-hidden="true">🎮</div>
+        <div class="welcome-card-icon" aria-hidden="true">+</div>
         <h3>Nouvelle Partie</h3>
         <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
       </div>
       <div class="welcome-card" onclick="showView('history')" role="button" tabindex="0"
         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('history')}">
-        <div class="welcome-card-icon" aria-hidden="true">📊</div>
+        <div class="welcome-card-icon" aria-hidden="true">≡</div>
         <h3>Historique</h3>
         <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
       </div>
@@ -162,10 +161,10 @@
           </div>
           <div id="score-inputs"></div>
           <button id="copy-last-round-btn" class="copy-round-btn" onclick="copyLastRound()" style="display:none">
-            <span aria-hidden="true">📋</span> Copier la manche précédente
+            Copier la manche précédente
           </button>
           <button class="submit-round-btn" onclick="submitRound()">
-            <span aria-hidden="true">✓</span> Valider la Manche
+            Valider la Manche
           </button>
           <div class="score-hint mono" aria-hidden="true">Tab / ↑↓ pour naviguer · Enter pour valider</div>
         </div>
@@ -176,7 +175,6 @@
 <!-- AWARDS -->
 <div id="view-awards" class="view">
   <div class="ceremony-header">
-    <span class="trophy" aria-hidden="true">🏆</span>
     <div class="eyebrow">Partie Terminée</div>
     <h2>Résultats Finaux</h2>
     <p id="awards-game-name"></p>
@@ -240,6 +238,6 @@
 <div class="confetti-container" id="confetti" aria-hidden="true"></div>
 
 <script src="app.js"></script>
-<script src="../shared-layout.js?v=3"></script>
+<script src="../shared-layout.js?v=4"></script>
 </body>
 </html>
