@@ -9,7 +9,7 @@
   <meta property="og:title" content="Pierre Duchesne — Data, Maths & Code" />
   <meta property="og:description" content="Des outils pensés pour la vraie vie. Algorithmes, visualisations et interfaces construits à la main." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 </head>
@@ -21,31 +21,55 @@
 
     <!-- ═══ HERO ═══ -->
     <section class="lp-hero">
-      <div class="lp-hero-grid" aria-hidden="true"></div>
-      <p class="lp-hero-eyebrow">Pierre Duchesne · 2026</p>
-      <h1 class="lp-hero-title">
-        Des outils pensés<br>pour la vraie vie.
-      </h1>
-      <p class="lp-hero-lead">
-        Algorithmes, visualisations et interfaces construits à la main.<br>
-        Chaque outil existe parce qu'il me manquait quelque chose.
-      </p>
-      <div class="lp-hero-cta">
-        <a href="#explorer" class="btn btn-primary">Explorer les espaces</a>
-        <a href="#about" class="btn btn-outline">À propos</a>
+      <div class="lp-hero-inner">
+        <div class="lp-hero-meta" aria-hidden="true">
+          <span class="lp-hero-num">01</span>
+          <span class="lp-hero-eyebrow">Pierre Duchesne · 2026</span>
+        </div>
+        <div class="lp-hero-rule" aria-hidden="true"></div>
+        <h1 class="lp-hero-title">
+          Des outils pensés<br>pour la vraie vie.
+        </h1>
+        <div class="lp-hero-body">
+          <p class="lp-hero-lead">
+            Algorithmes, visualisations et interfaces construits à la main.
+            Chaque outil existe parce qu'il me manquait quelque chose.
+          </p>
+          <div class="lp-hero-cta">
+            <a href="#explorer" class="btn btn-primary">Explorer les espaces</a>
+            <a href="#about" class="btn btn-outline">À propos</a>
+          </div>
+        </div>
+      </div>
+      <div class="lp-hero-foot">
+        <div class="lp-stats">
+          <div class="lp-stat">
+            <span class="lp-stat-num">6</span>
+            <span class="lp-stat-label">Espaces</span>
+          </div>
+          <div class="lp-stat">
+            <span class="lp-stat-num">3</span>
+            <span class="lp-stat-label">Villes</span>
+          </div>
+          <div class="lp-stat">
+            <span class="lp-stat-num">0</span>
+            <span class="lp-stat-label">Frameworks</span>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- ═══ À PROPOS ═══ -->
     <section id="about" class="lp-about">
       <div class="lp-about-inner">
-        <div>
+        <div class="lp-about-left">
+          <p class="lp-section-num" aria-hidden="true">02</p>
           <p class="eyebrow">./a-propos</p>
           <h2 class="lp-about-heading">
             Construire des solutions simples pour des problèmes complexes.
           </h2>
         </div>
-        <div>
+        <div class="lp-about-right">
           <p class="lp-about-text">
             J'aime décortiquer des problèmes, les modéliser, et les rendre tangibles via du code
             et des visualisations. Ce site est un terrain de jeu — pas un produit fini.
@@ -72,14 +96,19 @@
     <section id="explorer" class="lp-features">
 
       <div class="lp-features-header">
+        <p class="lp-section-num" aria-hidden="true">03</p>
         <p class="eyebrow">./explorer</p>
         <h2>Des catalogues vivants,<br>alimentés par les contributions.</h2>
         <p>Ces espaces s'enrichissent au fil des recommandations — chaque page intègre son propre formulaire.</p>
       </div>
 
       <div class="lp-feature-block">
-        <div class="lp-feature-visual lp-feature-visual--mediatheque" aria-hidden="true">
-          <span class="lp-feature-monogram">M</span>
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">01</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--mediatheque">
+          <span class="lp-feature-monogram" aria-hidden="true">M</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">La Médiathèque</p>
@@ -93,8 +122,12 @@
       </div>
 
       <div class="lp-feature-block lp-feature-block--alt">
-        <div class="lp-feature-visual lp-feature-visual--ville" aria-hidden="true">
-          <span class="lp-feature-monogram">V</span>
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">02</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--ville">
+          <span class="lp-feature-monogram" aria-hidden="true">V</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">Que faire en ville ?</p>
@@ -108,8 +141,12 @@
       </div>
 
       <div class="lp-feature-block">
-        <div class="lp-feature-visual lp-feature-visual--encyclopedia" aria-hidden="true">
-          <span class="lp-feature-monogram">E</span>
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">03</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--encyclopedia">
+          <span class="lp-feature-monogram" aria-hidden="true">E</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">L'Encyclopédie</p>
@@ -123,8 +160,12 @@
       </div>
 
       <div class="lp-feature-block lp-feature-block--alt">
-        <div class="lp-feature-visual lp-feature-visual--batch" aria-hidden="true">
-          <span class="lp-feature-monogram">B</span>
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">04</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--batch">
+          <span class="lp-feature-monogram" aria-hidden="true">B</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">Assistant Batch Cooking</p>
@@ -143,14 +184,19 @@
     <section id="jeux" class="lp-features lp-features--jeux">
 
       <div class="lp-features-header">
+        <p class="lp-section-num" aria-hidden="true">04</p>
         <p class="eyebrow">./jeux</p>
         <h2>Pour s'amuser<br>avec des algorithmes.</h2>
         <p>Deux outils pensés autour du jeu — l'un pour les soirées en groupe, l'autre pour défier une machine.</p>
       </div>
 
       <div class="lp-feature-block">
-        <div class="lp-feature-visual lp-feature-visual--score" aria-hidden="true">
-          <span class="lp-feature-monogram">S</span>
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">05</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--score">
+          <span class="lp-feature-monogram" aria-hidden="true">S</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">BoardNight — Suivi de Scores</p>
@@ -163,9 +209,13 @@
         </div>
       </div>
 
-      <div class="lp-feature-block lp-feature-block--alt">
-        <div class="lp-feature-visual lp-feature-visual--sudoku" aria-hidden="true">
-          <span class="lp-feature-monogram">Sk</span>
+      <div class="lp-feature-block lp-feature-block--alt lp-feature-block--last">
+        <div class="lp-feature-block-head" aria-hidden="true">
+          <span class="lp-feature-idx">06</span>
+          <span class="lp-feature-rule-line"></span>
+        </div>
+        <div class="lp-feature-visual lp-feature-visual--sudoku">
+          <span class="lp-feature-monogram" aria-hidden="true">Sk</span>
         </div>
         <div class="lp-feature-content">
           <p class="eyebrow">Solveur de Sudoku</p>
@@ -183,7 +233,7 @@
   </main>
 
   <div id="site-footer"></div>
-  <script src="shared-layout.js?v=4"></script>
+  <script src="shared-layout.js?v=5"></script>
 </body>
 
 </html>
