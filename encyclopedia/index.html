@@ -8,7 +8,7 @@
   <meta property="og:title" content="Encyclopédie — Carte mentale" />
   <meta property="og:description" content="Structuration de connaissances personnelles, à mi-chemin entre wiki, carnet et carte mentale." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=4" />
+  <link rel="stylesheet" href="../style.css?v=5" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -19,7 +19,11 @@
   <main class="encyclopedia-shell">
     <aside class="sidebar" aria-label="Profils et filtres">
       <div class="sources-list" style="margin-top: 0;">
-        <h2>Sachants &amp; Profils</h2>
+        <div style="margin-bottom:1rem;">
+          <span class="page-header-num" style="display:block;margin-bottom:0.5rem;">03</span>
+          <div style="height:1px;background:var(--border-strong);margin-bottom:0.75rem;" aria-hidden="true"></div>
+          <h2 style="font-family:var(--font-serif);font-size:1.25rem;letter-spacing:-0.02em;font-weight:400;">Sachants &amp; Profils</h2>
+        </div>
         <div id="sachants-container">
           <!-- Dynamically filled -->
         </div>
@@ -83,7 +87,7 @@
 
   <div id="site-footer"></div>
 
-  <script src="../shared-layout.js?v=4"></script>
+  <script src="../shared-layout.js?v=5"></script>
   <script src="data.js?v=2"></script>
   <script src="mindmap.js?v=2"></script>
   <script src="app.js?v=2"></script>

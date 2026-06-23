@@ -4,12 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pierre Duchesne — Data, Maths & Code</title>
-  <meta name="description" content="Six outils construits à la main — médiathèque, carte interactive, suivi de scores, encyclopédie, batch cooking, sudoku." />
-  <meta property="og:title" content="Pierre Duchesne — Data, Maths & Code" />
-  <meta property="og:description" content="Des outils pensés pour la vraie vie. Algorithmes, visualisations et interfaces construits à la main." />
+  <title>Pierre Duchesne</title>
+  <meta name="description" content="Un système personnel de connaissances, d'outils et de curiosités." />
+  <meta property="og:title" content="Pierre Duchesne" />
+  <meta property="og:description" content="Un système personnel de connaissances, d'outils et de curiosités." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="style.css?v=5" />
+  <!-- tu as trouvé l'endroit où tout se passe. -->
+  <link rel="stylesheet" href="style.css?v=6" />
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
 </head>
@@ -28,211 +29,189 @@
         </div>
         <div class="lp-hero-rule" aria-hidden="true"></div>
         <h1 class="lp-hero-title">
-          Des outils pensés<br>pour la vraie vie.
+          Un système<br>personnel.
         </h1>
-        <div class="lp-hero-body">
-          <p class="lp-hero-lead">
-            Algorithmes, visualisations et interfaces construits à la main.
-            Chaque outil existe parce qu'il me manquait quelque chose.
-          </p>
-          <div class="lp-hero-cta">
-            <a href="#explorer" class="btn btn-primary">Explorer les espaces</a>
-            <a href="#about" class="btn btn-outline">À propos</a>
-          </div>
-        </div>
+        <p class="lp-hero-manifesto">
+          Connaissances, outils et curiosités.<br>
+          Construit pour moi. Ouvert par envie.
+        </p>
       </div>
+
+      <!-- Compteurs vivants -->
       <div class="lp-hero-foot">
         <div class="lp-stats">
           <div class="lp-stat">
-            <span class="lp-stat-num">6</span>
-            <span class="lp-stat-label">Espaces</span>
+            <span class="lp-stat-num" id="stat-media">—</span>
+            <span class="lp-stat-label">Références culturelles</span>
           </div>
           <div class="lp-stat">
-            <span class="lp-stat-num">3</span>
-            <span class="lp-stat-label">Villes</span>
+            <span class="lp-stat-num" id="stat-places">—</span>
+            <span class="lp-stat-label">Lieux cartographiés</span>
           </div>
           <div class="lp-stat">
-            <span class="lp-stat-num">0</span>
-            <span class="lp-stat-label">Frameworks</span>
+            <span class="lp-stat-num" id="stat-meals">—</span>
+            <span class="lp-stat-label">Recettes</span>
+          </div>
+          <div class="lp-stat">
+            <span class="lp-stat-num" id="stat-nodes">—</span>
+            <span class="lp-stat-label">Savoirs partagés</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══ À PROPOS ═══ -->
-    <section id="about" class="lp-about">
-      <div class="lp-about-inner">
-        <div class="lp-about-left">
-          <p class="lp-section-num" aria-hidden="true">02</p>
-          <p class="eyebrow">./a-propos</p>
-          <h2 class="lp-about-heading">
-            Construire des solutions simples pour des problèmes complexes.
-          </h2>
-        </div>
-        <div class="lp-about-right">
-          <p class="lp-about-text">
-            J'aime décortiquer des problèmes, les modéliser, et les rendre tangibles via du code
-            et des visualisations. Ce site est un terrain de jeu — pas un produit fini.
-          </p>
-          <p class="lp-about-text">
-            La médiathèque pour ne plus perdre une recommandation d'ami. Le suivi de scores pour
-            arrêter de chercher un crayon le vendredi soir. L'encyclopédie pour que les bonnes
-            idées ne disparaissent pas dans un carnet oublié.
-          </p>
-          <div class="lp-tech-tags">
-            <span class="lp-tech-tag">Python</span>
-            <span class="lp-tech-tag">JavaScript</span>
-            <span class="lp-tech-tag">D3.js</span>
-            <span class="lp-tech-tag">Leaflet</span>
-            <span class="lp-tech-tag">Chart.js</span>
-            <span class="lp-tech-tag">Pyodide</span>
-            <span class="lp-tech-tag">Vanilla CSS</span>
+    <!-- ═══ GRILLE DES OUTILS ═══ -->
+    <section class="lp-grid" id="explorer">
+      <div class="lp-grid-inner">
+
+        <a href="mediatheque/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">01</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ EXPLORER ═══ -->
-    <section id="explorer" class="lp-features">
-
-      <div class="lp-features-header">
-        <p class="lp-section-num" aria-hidden="true">03</p>
-        <p class="eyebrow">./explorer</p>
-        <h2>Des catalogues vivants,<br>alimentés par les contributions.</h2>
-        <p>Ces espaces s'enrichissent au fil des recommandations — chaque page intègre son propre formulaire.</p>
-      </div>
-
-      <div class="lp-feature-block">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">01</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--mediatheque">
-          <span class="lp-feature-monogram" aria-hidden="true">M</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">La Médiathèque</p>
-          <h3>Vos recommandations culturelles, organisées.</h3>
-          <p>Films, séries, livres, musique et jeux — filtrés par ambiance, genre et humeur du moment. Ajoutez vos propres recommandations directement depuis l'espace.</p>
-          <div class="lp-feature-tags">
-            <span>Films</span><span>Séries</span><span>Livres</span><span>Musique</span><span>Jeux</span>
+          <h2 class="lp-card-name">Médiathèque</h2>
+          <p class="lp-card-desc">Base de recommandations culturelles filtrables — films, séries, livres, musique, jeux.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live" id="last-media">Films · Séries · Livres · Musique</span>
           </div>
-          <a href="mediatheque/index.html" class="lp-feature-link">Ouvrir la Médiathèque →</a>
-        </div>
-      </div>
+        </a>
 
-      <div class="lp-feature-block lp-feature-block--alt">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">02</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--ville">
-          <span class="lp-feature-monogram" aria-hidden="true">V</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">Que faire en ville ?</p>
-          <h3>Les meilleures adresses, sur une carte.</h3>
-          <p>Restaurants, bars et lieux de vie testés et approuvés à Toulouse, Madrid et Paris. Filtrez par ambiance, mood ou type de lieu — carte Leaflet interactive.</p>
-          <div class="lp-feature-tags">
-            <span>Toulouse</span><span>Madrid</span><span>Paris</span><span>Carte</span>
+        <a href="ville/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">02</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
           </div>
-          <a href="ville/index.html" class="lp-feature-link">Explorer la carte →</a>
-        </div>
-      </div>
-
-      <div class="lp-feature-block">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">03</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--encyclopedia">
-          <span class="lp-feature-monogram" aria-hidden="true">E</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">L'Encyclopédie</p>
-          <h3>Une carte mentale des savoirs partagés.</h3>
-          <p>Structuration de connaissances personnelles, à mi-chemin entre wiki, carnet et carte mentale. Graphe interactif D3.js — cliquez sur les noeuds pour explorer.</p>
-          <div class="lp-feature-tags">
-            <span>D3.js</span><span>Mindmap</span><span>Savoirs</span><span>Interactif</span>
+          <h2 class="lp-card-name">Que faire ce soir ?</h2>
+          <p class="lp-card-desc">Carte interactive de lieux testés et approuvés à Toulouse, Paris et Madrid.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live" id="last-place">Toulouse · Madrid · Paris</span>
           </div>
-          <a href="encyclopedia/index.html" class="lp-feature-link">Explorer l'encyclopédie →</a>
-        </div>
-      </div>
+        </a>
 
-      <div class="lp-feature-block lp-feature-block--alt">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">04</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--batch">
-          <span class="lp-feature-monogram" aria-hidden="true">B</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">Assistant Batch Cooking</p>
-          <h3>Planifiez votre semaine de cuisine en un clic.</h3>
-          <p>Partez d'un plat ou d'ingrédients disponibles, l'algorithme construit un plan de 5 repas optimisés pour mutualiser les courses. Proposez de nouvelles recettes directement.</p>
-          <div class="lp-feature-tags">
-            <span>Algorithme</span><span>Matching</span><span>Recettes</span>
+        <a href="encyclopedia/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">03</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
           </div>
-          <a href="batch-cooking/index.html" class="lp-feature-link">Planifier ma semaine →</a>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ═══ JEUX ═══ -->
-    <section id="jeux" class="lp-features lp-features--jeux">
-
-      <div class="lp-features-header">
-        <p class="lp-section-num" aria-hidden="true">04</p>
-        <p class="eyebrow">./jeux</p>
-        <h2>Pour s'amuser<br>avec des algorithmes.</h2>
-        <p>Deux outils pensés autour du jeu — l'un pour les soirées en groupe, l'autre pour défier une machine.</p>
-      </div>
-
-      <div class="lp-feature-block">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">05</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--score">
-          <span class="lp-feature-monogram" aria-hidden="true">S</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">BoardNight — Suivi de Scores</p>
-          <h3>Notez chaque manche, célébrez chaque victoire.</h3>
-          <p>Compagnon de soirée jeux pour suivre les scores, visualiser la progression sur 4 types de graphiques et distribuer des trophées épiques à la fin de la partie.</p>
-          <div class="lp-feature-tags">
-            <span>Graphiques</span><span>Trophées</span><span>Stats</span><span>Chart.js</span>
+          <h2 class="lp-card-name">Encyclopédie</h2>
+          <p class="lp-card-desc">Carte mentale D3.js de connaissances organisées par profils contributeurs.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live" id="last-node">Savoirs partagés</span>
           </div>
-          <a href="score/index.html" class="lp-feature-link">Lancer une partie →</a>
-        </div>
-      </div>
+        </a>
 
-      <div class="lp-feature-block lp-feature-block--alt lp-feature-block--last">
-        <div class="lp-feature-block-head" aria-hidden="true">
-          <span class="lp-feature-idx">06</span>
-          <span class="lp-feature-rule-line"></span>
-        </div>
-        <div class="lp-feature-visual lp-feature-visual--sudoku">
-          <span class="lp-feature-monogram" aria-hidden="true">Sk</span>
-        </div>
-        <div class="lp-feature-content">
-          <p class="eyebrow">Solveur de Sudoku</p>
-          <h3>Du Python dans le navigateur, sans serveur.</h3>
-          <p>Entrez une grille, l'algorithme de backtracking la résout en quelques millisecondes. Le code Python tourne directement dans le navigateur via Pyodide.</p>
-          <div class="lp-feature-tags">
-            <span>Python</span><span>Pyodide</span><span>Backtracking</span><span>WebAssembly</span>
+        <a href="batch-cooking/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">04</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
           </div>
-          <a href="sudoku/sudoku.html" class="lp-feature-link">Essayer le solveur →</a>
-        </div>
-      </div>
+          <h2 class="lp-card-name">Batch Cooking</h2>
+          <p class="lp-card-desc">Générateur intelligent de repas hebdomadaires à partir d'un ingrédient ou d'une envie.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live" id="last-meal">Recettes de saison</span>
+          </div>
+        </a>
 
+        <a href="score/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">05</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
+          </div>
+          <h2 class="lp-card-name">BoardNight</h2>
+          <p class="lp-card-desc">Suivi interactif de soirées jeux de société avec graphiques et trophées épiques.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live">Scores · Graphiques · Trophées</span>
+          </div>
+        </a>
+
+        <a href="sudoku/sudoku.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">06</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
+          </div>
+          <h2 class="lp-card-name">Solveur de Sudoku</h2>
+          <p class="lp-card-desc">Solveur Python exécuté dans le navigateur via Pyodide — sans serveur, sans installation.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live">Python · Pyodide · Backtracking</span>
+          </div>
+        </a>
+
+      </div>
     </section>
 
   </main>
 
   <div id="site-footer"></div>
+
+  <!-- Données vivantes — chargées avant le script de comptage -->
+  <script src="mediatheque/data.js"></script>
+  <script src="ville/data.js"></script>
+  <script src="batch-cooking/data.js"></script>
+  <script src="encyclopedia/data.js"></script>
+
+  <script>
+  (function () {
+    function countUp(el, to, ms) {
+      if (!el || !to) return;
+      ms = ms || 700;
+      var t0 = performance.now();
+      (function tick(now) {
+        var p = Math.min((now - t0) / ms, 1);
+        el.textContent = Math.round(p * to);
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var mediaCount  = typeof MEDIA        !== 'undefined' ? MEDIA.length                        : 0;
+      var placesCount = typeof PLACES       !== 'undefined' ? PLACES.length                       : 0;
+      var mealsCount  = typeof MEALS        !== 'undefined' ? MEALS.length                        : 0;
+      var nodesCount  = typeof INITIAL_DATA !== 'undefined' ? (INITIAL_DATA.infos || []).length   : 0;
+
+      countUp(document.getElementById('stat-media'),  mediaCount);
+      countUp(document.getElementById('stat-places'), placesCount);
+      countUp(document.getElementById('stat-meals'),  mealsCount);
+      countUp(document.getElementById('stat-nodes'),  nodesCount);
+
+      // Dernière entrée médiathèque
+      if (mediaCount) {
+        var last = MEDIA[MEDIA.length - 1];
+        var el = document.getElementById('last-media');
+        if (el) el.textContent = last.title + ' — ' + (last.contributor || last.type || '');
+      }
+
+      // Répartition des lieux par ville
+      if (placesCount) {
+        var cities = {};
+        PLACES.forEach(function (p) {
+          var c = p.city || '?';
+          cities[c] = (cities[c] || 0) + 1;
+        });
+        var str = Object.keys(cities)
+          .map(function (c) { return c + ' (' + cities[c] + ')'; })
+          .join(' · ');
+        var elP = document.getElementById('last-place');
+        if (elP) elP.textContent = str;
+      }
+
+      // Dernière entrée encyclopédie
+      if (nodesCount) {
+        var infos = INITIAL_DATA.infos;
+        var lastNode = infos[infos.length - 1];
+        var elN = document.getElementById('last-node');
+        if (elN) elN.textContent = lastNode.title + ' — ' + lastNode.category;
+      }
+
+      // Dernière recette batch cooking
+      if (mealsCount) {
+        var lastMeal = MEALS[MEALS.length - 1];
+        var elM = document.getElementById('last-meal');
+        if (elM) elM.textContent = 'Ajouté : ' + lastMeal.title;
+      }
+    });
+  })();
+  </script>
+
   <script src="shared-layout.js?v=5"></script>
 </body>
 

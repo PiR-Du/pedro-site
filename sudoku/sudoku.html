@@ -8,7 +8,7 @@
   <meta property="og:title" content="Solveur de Sudoku" />
   <meta property="og:description" content="Algorithme de résolution par backtracking Python exécuté en temps réel dans le navigateur." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=4" />
+  <link rel="stylesheet" href="../style.css?v=5" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 </head>
@@ -18,12 +18,17 @@
 
   <main>
     <section class="sudoku-page">
-      <p class="eyebrow">./projets/sudoku</p>
-      <h1>Solveur de Sudoku</h1>
-      <p class="lead">
-        Backtracking en Python, exécuté dans votre navigateur via
-        <span class="mono">Pyodide</span>.
-      </p>
+      <header class="page-header" style="padding-left:0;padding-right:0;">
+        <div class="page-header-inner" style="max-width:100%;">
+          <div class="page-header-meta">
+            <span class="page-header-num">06</span>
+            <span class="eyebrow">./projets/sudoku</span>
+          </div>
+          <div class="page-header-rule" aria-hidden="true"></div>
+          <h1 class="page-header-title">Solveur de Sudoku</h1>
+          <p class="page-header-lead">Backtracking en Python, exécuté dans votre navigateur via <span class="mono">Pyodide</span>.</p>
+        </div>
+      </header>
 
       <div class="status-bar loading" id="status">
         <span class="dot"></span>
@@ -51,7 +56,7 @@
 
   <div id="site-footer"></div>
 
-  <script src="../shared-layout.js?v=4"></script>
+  <script src="../shared-layout.js?v=5"></script>
   <script src="app.js"></script>
 </body>
 </html>

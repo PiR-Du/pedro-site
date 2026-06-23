@@ -9,7 +9,7 @@
   <meta property="og:title" content="Que faire en ville ?" />
   <meta property="og:description" content="Bonnes adresses à Toulouse, Madrid et Paris — filtrées par ambiance, type et budget." />
   <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=4">
+  <link rel="stylesheet" href="../style.css?v=5">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -19,12 +19,17 @@
   <div id="site-header"></div>
 
   <main>
-    <!-- Hero -->
-    <div class="section-head-centered">
-      <p class="eyebrow">./ville</p>
-      <h1>Que faire ce soir ?</h1>
-      <p>Restaurants, bars, cafés et lieux de vie — testés et approuvés.</p>
-    </div>
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="page-header-meta">
+          <span class="page-header-num">02</span>
+          <span class="eyebrow">./ville</span>
+        </div>
+        <div class="page-header-rule" aria-hidden="true"></div>
+        <h1 class="page-header-title">Que faire ce soir ?</h1>
+        <p class="page-header-lead">Restaurants, bars, cafés et lieux de vie — testés et approuvés.</p>
+      </div>
+    </header>
 
     <!-- Mood bar -->
     <div class="mood-bar">
@@ -146,7 +151,7 @@
   <div id="site-footer"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="../shared-layout.js?v=4"></script>
+  <script src="../shared-layout.js?v=5"></script>
   <script src="data.js?v=1"></script>
   <script src="app.js?v=1"></script>
   <script>
