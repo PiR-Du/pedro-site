@@ -107,6 +107,14 @@ const PLACES = [
     address: 'Toulouse – Centre', lat: 43.6010, lng: 1.4456,
     hours: '–', tags: ['Tapas', 'Espagnol', 'Partage'], highlight: true, contributor: 'Pedro',
   },
+  {
+    id: 'tlse_13', city: 'Toulouse',
+    name: 'Musée des Abattoirs', type: 'Musée', neighborhood: 'Centre',
+    moods: ['Entre amis', 'Date', 'Tranquille'], budget: '€',
+    description:"L'exposition Jean-Charles de Castelbajac. L'imagination au pouvoir investit magistralement le musée des Abattoirs à Toulouse. C'est une rétrospective XXL de près de 300 œuvres qui retrace plus de cinquante ans de création d'un artiste inclassable, qui a toujours refusé de s'enfermer dans les frontières de la mode. Jusqu'à fin août 2026. Gratuit le premier dimanche du mois",
+    address: 'Toulouse – Centre', lat: 43.3603, lng: 1.2546,
+    hours: '–', tags: ['Émerveillement','Art'], highlight: true, contributor: 'Romain S',
+  },
 
   // ══════════════════════════════════════════
   //  MADRID
