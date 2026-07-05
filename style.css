@@ -3467,3 +3467,117 @@ body[data-page="sudoku"]::before       { background: linear-gradient(90deg, oklc
 }
 
 .lp-card:hover .lp-card-live { color: var(--primary); }
+
+/* =========================================
+   PHONE-FIRST RESPONSIVE ENHANCEMENTS
+   ========================================= */
+
+/* ── Stats strip: 2×2 grid on small phones ── */
+@media (max-width: 639px) {
+  .lp-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 1.25rem var(--lp-gutter);
+  }
+  .lp-stat,
+  .lp-stat:last-child {
+    flex: none;
+    padding: 0.875rem 0;
+    margin-right: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .lp-stat:nth-child(odd) {
+    padding-right: 0.875rem;
+    border-right: 1px solid var(--border);
+  }
+  .lp-stat:nth-child(even) {
+    padding-left: 0.875rem;
+  }
+  /* bottom row: remove border */
+  .lp-stat:nth-last-child(-n+2),
+  .lp-stat:nth-last-child(-n+2):last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Page headers: reduce top padding on small screens ── */
+@media (max-width: 639px) {
+  .page-header {
+    padding-top: clamp(2rem, 6vh, 4rem);
+  }
+  .page-header-rule {
+    margin-bottom: clamp(1.25rem, 3vh, 2rem);
+  }
+}
+
+/* ── Mediatheque: content+search before filters on mobile ── */
+@media (max-width: 799px) {
+  body[data-page="mediatheque"] .muse-sidebar { order: 2; }
+  body[data-page="mediatheque"] .grid-content { order: 1; }
+}
+
+/* ── muse-container: consistent gutter on mobile ── */
+@media (max-width: 799px) {
+  .muse-container {
+    padding: 0 var(--lp-gutter);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* ── Mood bar: horizontal scroll on mobile ── */
+@media (max-width: 639px) {
+  .mood-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mood-bar::-webkit-scrollbar { display: none; }
+  .mood-pill { flex-shrink: 0; }
+}
+
+/* ── Detail drawer: tighter padding on mobile ── */
+@media (max-width: 639px) {
+  #detail-drawer {
+    padding: 3.5rem 1.25rem 2rem;
+    max-width: 100%;
+  }
+}
+
+/* ── Score: larger stepper touch targets + wrappable footer ── */
+@media (max-width: 639px) {
+  .stepper-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .setup-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Encyclopedia: clear overflow on mobile ── */
+@media (max-width: 768px) {
+  .encyclopedia-shell {
+    overflow: visible;
+  }
+}
+
+/* ── Sudoku: reduce page padding on mobile ── */
+@media (max-width: 639px) {
+  .sudoku-page {
+    padding: 2rem 1.25rem;
+  }
+}
+
+/* ── Batch cooking: tighter card padding on mobile ── */
+@media (max-width: 639px) {
+  .selector-box {
+    padding: 1.25rem;
+  }
+}
