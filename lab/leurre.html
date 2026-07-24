@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leurre — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Faux-semblant</span>
+        <h1 class="lab-heading">Attention<br>au faux-semblant.</h1>
+
+        <div class="lab-fake" style="margin: 2rem 0; padding: 1.5rem; border: 2px solid var(--border); border-radius: 0.5rem; text-align: center;">
+          <p style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">réponse évidente :</p>
+          <p class="lab-fake-answer" style="font-family: var(--font-mono); font-size: 2rem; color: var(--primary); letter-spacing: 0.1em;">leurre</p>
+        </div>
+
+        <p class="lab-body">
+          Sur cette page, tout ce qui attire l'œil est faux.
+          Le vrai n'est pas là où tu regardes.
+          Il est là où tu ne regardes pas encore.
+        </p>
+
+        <div class="lab-fake" style="margin: 1rem 0; opacity: 0.4; text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+          → leurre ← | → leurre ← | → leurre ← | → leurre ← | → leurre ←
+        </div>
+
+        <span data-fake="leurre" style="position:absolute; left:-9999px;" aria-hidden="true">leurre</span>
+        <span class="lab-real" data-clue="silence" style="display:inline-block; width:1px; height:1px; overflow:hidden; opacity:0.015; font-size:0.1rem; color:var(--background); user-select:text;">silence</span>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="scripts/niveau34.js"></script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

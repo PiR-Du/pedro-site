@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cette voie n'existe pas — Pierre Duchesne</title>
+  <link rel="stylesheet" href="/style.css?v=7" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <style>
+    .not-found {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 6rem 1.5rem;
+      text-align: center;
+    }
+    .not-found h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .not-found p {
+      color: var(--muted-foreground);
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    .not-found .back {
+      display: inline-block;
+      margin-top: 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--primary);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+    .not-found .back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body data-root="." data-page="">
+  <div id="site-header"></div>
+  <main>
+    <div class="not-found">
+      <h1>Cette voie n'existe pas.</h1>
+      <p>Ce que tu cherches n'est pas là.<br>Peut-être que tu cherches au mauvais endroit.</p>
+      <a class="back" href="/">← retour</a>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <script src="/shared-layout.js?v=6"></script>
+</body>
+</html>

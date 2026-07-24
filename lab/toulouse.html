@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toulouse — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Séquence</span>
+        <h1 class="lab-heading">L'ordre<br>a son importance.</h1>
+        <p class="lab-body">
+          Ces quatre formes doivent être activées dans le bon ordre.
+          Lequel ? C'est à toi de le trouver.
+        </p>
+        <div class="lab-tiles" style="margin: 2rem 0;">
+          <div class="lab-tile" data-order="3">◆</div>
+          <div class="lab-tile" data-order="1">◇</div>
+          <div class="lab-tile" data-order="4">▲</div>
+          <div class="lab-tile" data-order="2">△</div>
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    (function () {
+      var expected = 0;
+      var tiles = document.querySelectorAll('.lab-tile');
+      tiles.forEach(function (tile) {
+        tile.addEventListener('click', function () {
+          if (parseInt(tile.dataset.order) === expected + 1) {
+            expected++;
+            tile.classList.add('active');
+            if (expected === tiles.length) {
+              document.getElementById('answer-input').value = 'cadence';
+            }
+          } else {
+            expected = 0;
+            tiles.forEach(function (t) { t.classList.remove('active'); });
+          }
+        });
+      });
+    })();
+  </script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

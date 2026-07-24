@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Regard — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Coordonnées</span>
+        <h1 class="lab-heading">Un point précis<br>sur Terre.</h1>
+        <p class="lab-body">
+          Ces chiffres désignent un endroit. Un seul.
+          Assez précis pour que tu saches exactement où c'est.
+          Quel lieu se cache derrière ces coordonnées ?
+        </p>
+        <div class="lab-cipher" style="font-size: 1.1rem; letter-spacing: 0.04em; line-height: 1.8;">
+          48.8606° N<br>2.3376° E
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadence — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Faux-semblant</span>
+        <h1 class="lab-heading">Tout ici<br>est une distraction.</h1>
+
+        <div class="lab-fake" style="margin: 1.5rem 0; padding: 1.25rem; border: 2px solid var(--border); border-radius: 0.5rem; text-align: center;">
+          <p style="font-family: var(--font-mono); font-size: 2rem; color: var(--primary); letter-spacing: 0.1em;">gagne</p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin: 1rem 0;">
+          <span class="lab-fake" style="font-family: var(--font-mono); font-size: 0.9rem; border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: 2rem; color: var(--text-muted);">bravo</span>
+          <span class="lab-fake" style="font-family: var(--font-mono); font-size: 0.9rem; border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: 2rem; color: var(--text-muted);">lumiere</span>
+          <span class="lab-fake" style="font-family: var(--font-mono); font-size: 0.9rem; border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: 2rem; color: var(--text-muted);">cadence</span>
+          <span class="lab-fake" style="font-family: var(--font-mono); font-size: 0.9rem; border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: 2rem; color: var(--text-muted);">fin</span>
+        </div>
+
+        <p class="lab-body" style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+          Cherche bien. La réponse n'est pas là où tu regardes.
+        </p>
+        <!-- le vrai est : voile -->
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="scripts/niveau22.js"></script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

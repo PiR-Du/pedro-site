@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lune — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Code hexadécimal</span>
+        <h1 class="lab-heading">Six chiffres.<br>Une couleur.</h1>
+        <p class="lab-body">
+          Les écrans mélangent rouge, vert et bleu pour produire toutes les teintes.
+          Ce code décrit l'une d'elles — en hexadécimal.
+          Quelle couleur se cache derrière ?
+        </p>
+        <div style="margin: 1.5rem auto; text-align: center;">
+          <div style="width: 80px; height: 80px; background: #FF0000; border-radius: 0.5rem; margin: 0 auto 1rem;"></div>
+          <div class="lab-cipher" style="font-size: 1.4rem; letter-spacing: 0.1em;">#FF0000</div>
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

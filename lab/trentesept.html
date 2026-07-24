@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>◆ — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <style>
+    @keyframes pulse-diamond {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.15); }
+    }
+    .lab-diamond-final {
+      font-size: 3.5rem;
+      color: var(--primary);
+      display: block;
+      text-align: center;
+      margin: 2rem 0 1.5rem;
+      animation: pulse-diamond 2.4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page lab-final">
+      <span class="lab-diamond-final" aria-hidden="true">◆</span>
+
+      <div class="lab-content" style="text-align: center;">
+        <h1 class="lab-heading" style="text-align: center;">Tu l'as fait.</h1>
+        <p class="lab-body" style="text-align: center;">
+          37 niveaux. Aucun indice. Juste toi, le navigateur, et les bons réflexes.
+        </p>
+        <p class="lab-body" style="text-align: center; margin-top: 1rem;">
+          Il te reste une dernière étape :
+          réclame ton verre.
+        </p>
+      </div>
+
+      <form
+        class="lab-final-form"
+        action="https://formspree.io/f/maqgvpaa"
+        method="POST"
+        style="margin-top: 2.5rem;"
+      >
+        <div class="lab-field">
+          <label for="f-name" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); display:block; margin-bottom: 0.4rem;">ton prénom</label>
+          <input
+            id="f-name"
+            class="lab-input"
+            type="text"
+            name="prenom"
+            required
+            autocomplete="given-name"
+            spellcheck="false"
+            placeholder="···"
+            style="width: 100%;"
+          />
+        </div>
+        <div class="lab-field" style="margin-top: 1rem;">
+          <label for="f-message" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); display:block; margin-bottom: 0.4rem;">un mot (facultatif)</label>
+          <textarea
+            id="f-message"
+            class="lab-input"
+            name="message"
+            rows="3"
+            spellcheck="false"
+            placeholder="···"
+            style="width: 100%; resize: vertical; font-family: var(--font-mono); font-size: 0.9rem;"
+          ></textarea>
+        </div>
+        <button
+          type="submit"
+          class="lab-btn"
+          style="margin-top: 1.25rem; width: 100%; font-size: 0.9rem; letter-spacing: 0.05em;"
+        >
+          Réclamer mon verre →
+        </button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

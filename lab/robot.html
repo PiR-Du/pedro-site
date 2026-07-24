@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Robot — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Réseau</span>
+        <h1 class="lab-heading">Cette page<br>charge lentement.</h1>
+        <p class="lab-body">
+          Parfois, une page ne se contente pas d'afficher ce que tu vois.
+          Elle fait aussi des requêtes — vers d'autres ressources, d'autres fichiers,
+          d'autres serveurs. Ces échanges ne sont pas visibles dans la page.
+          Mais ils laissent des traces.
+        </p>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 1.5rem;">
+          <div class="badge">
+            <div class="dot"></div>
+            <span>chargement en cours</span>
+          </div>
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    (function () {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/lab/data/indice.json', true);
+      xhr.send();
+    })();
+  </script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

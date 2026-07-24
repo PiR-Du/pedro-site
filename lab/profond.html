@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profond — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <style>
+    :root { --key: "37"; }
+  </style>
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Final</span>
+        <h1 class="lab-heading">Tu approches.<br>Un dernier verrou.</h1>
+        <p class="lab-body">
+          Quelque part dans cette page se trouve une clé.
+          Et quelque part dans cette page se trouve une serrure.
+          La serrure attend la clé.
+        </p>
+
+        <div class="lab-grid" style="margin: 1.5rem 0;">
+          <div class="lab-cell">1</div><div class="lab-cell">2</div><div class="lab-cell">3</div>
+          <div class="lab-cell">4</div><div class="lab-cell">5</div><div class="lab-cell">6</div>
+          <div class="lab-cell">7</div><div class="lab-cell">8</div><div class="lab-cell">9</div>
+          <div class="lab-cell">10</div><div class="lab-cell">11</div><div class="lab-cell">12</div>
+          <div class="lab-cell">13</div><div class="lab-cell">14</div><div class="lab-cell">15</div>
+          <div class="lab-cell">16</div><div class="lab-cell">17</div><div class="lab-cell">18</div>
+          <div class="lab-cell">19</div><div class="lab-cell">20</div><div class="lab-cell">21</div>
+          <div class="lab-cell">22</div><div class="lab-cell">23</div><div class="lab-cell">24</div>
+          <div class="lab-cell">25</div><div class="lab-cell">26</div><div class="lab-cell">27</div>
+          <div class="lab-cell">28</div><div class="lab-cell">29</div><div class="lab-cell">30</div>
+          <div class="lab-cell">31</div><div class="lab-cell">32</div><div class="lab-cell">33</div>
+          <div class="lab-cell">34</div><div class="lab-cell">35</div><div class="lab-cell">36</div>
+          <div class="lab-cell key">37</div>
+        </div>
+
+        <div class="lab-cipher" style="font-size: 1rem;">boss(k)</div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    window.boss = function (k) {
+      if (k === '37') return 'trentesept';
+      return null;
+    };
+  </script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

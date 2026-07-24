@@ -235,6 +235,15 @@ main { width: 100%; flex-grow: 1; }
   }
 }
 .site-footer .tag { font-size: 0.7rem; letter-spacing: 0.06em; }
+.lab-entry {
+  color: var(--border);
+  text-decoration: none;
+  font-size: 0.65rem;
+  line-height: 1;
+  transition: color 0.2s;
+  display: inline-block;
+}
+.lab-entry:hover { color: var(--primary); }
 
 main { flex: 1; }
 

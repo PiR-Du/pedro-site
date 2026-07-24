@@ -1,0 +1,33 @@
+<!-- cette page existe bel et bien — la prochaine se nomme : piste -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>404 — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page" style="text-align: center; padding-top: 6rem;">
+      <div class="lab-content">
+        <p style="font-family: var(--font-mono); font-size: 4rem; font-weight: 600; color: var(--border); line-height: 1; margin-bottom: 1rem;">404</p>
+        <p style="font-size: 1.05rem; color: var(--text-muted);">Cette voie n'existe pas.</p>
+        <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--border); margin-top: 2rem;">
+          ERR_NOT_FOUND — /lab/seuil
+        </p>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off" style="margin-top: 3rem;">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

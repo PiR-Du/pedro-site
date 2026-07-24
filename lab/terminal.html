@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terminal — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Proc SQL</span>
+        <h1 class="lab-heading">Une requête.<br>Un résultat.</h1>
+        <p class="lab-body">
+          Les bases de données répondent aux questions qu'on leur pose.
+          Ici, la question a déjà été posée. Il reste à lire la réponse.
+        </p>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem 1.5rem; margin: 1.5rem 0; line-height: 1.8; color: var(--text);">
+          <div style="color: var(--text-muted); margin-bottom: 0.75rem;">sql&gt; SELECT reponse FROM cle WHERE id = 7;</div>
+          <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
+            <div style="color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.08em; margin-bottom: 0.5rem;">REPONSE</div>
+            <div style="border-top: 1px solid var(--border); padding-top: 0.5rem; color: var(--primary); font-size: 1rem; letter-spacing: 0.05em;">requete</div>
+            <div style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem; color: var(--text-muted); font-size: 0.7rem;">1 ligne(s)</div>
+          </div>
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

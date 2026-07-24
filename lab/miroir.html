@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Miroir — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Séquence</span>
+        <h1 class="lab-heading">Certains codes<br>ne se tapent pas.</h1>
+        <p class="lab-body">
+          Ils se jouent. Comme dans un jeu vidéo, comme dans un rêve.
+          Une séquence précise, répétée depuis des décennies par ceux qui savent.
+        </p>
+        <p class="lab-body" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted-foreground); letter-spacing: 0.15em;">
+          ↑ ↑ ↓ ↓ ← → ← → B A
+        </p>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    (function () {
+      var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+      var idx = 0;
+      document.addEventListener('keydown', function (e) {
+        if (e.key === seq[idx]) {
+          idx++;
+          if (idx === seq.length) {
+            document.getElementById('answer-input').value = 'konami';
+            idx = 0;
+          }
+        } else {
+          idx = (e.key === seq[0]) ? 1 : 0;
+        }
+      });
+    })();
+  </script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

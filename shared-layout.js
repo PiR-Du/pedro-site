@@ -70,6 +70,7 @@ const TEMPLATES = {
   <div class="inner">
     <p>© 2026 — Pierre Duchesne</p>
     <p class="tag mono">Data · Maths · Code</p>
+    <a href="{{root}}/lab/index.html" class="lab-entry" aria-hidden="true" tabindex="-1">◆</a>
   </div>
 </footer>`
 };
@@ -87,7 +88,9 @@ document.addEventListener("DOMContentLoaded", () => {
   injectPartial("site-header", TEMPLATES.header, html =>
     html.replace(/{{root}}/g, root)
   );
-  injectPartial("site-footer", TEMPLATES.footer);
+  injectPartial("site-footer", TEMPLATES.footer, html =>
+    html.replace(/{{root}}/g, root)
+  );
 
   document.querySelectorAll("[data-nav-link]").forEach(el => {
     if (el.dataset.navLink === page) {

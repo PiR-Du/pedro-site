@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Archive — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Partition</span>
+        <h1 class="lab-heading">Une mélodie<br>sans son.</h1>
+        <p class="lab-body">
+          Ce qui suit est une suite de notes.
+          Reconnais la mélodie. Quel astre met-on en lumière ?
+        </p>
+        <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 0.05em;">
+          solfège
+        </div>
+        <div class="lab-cipher" style="font-size: 1.05rem; letter-spacing: 0.08em; line-height: 2;">
+          Do — Do — Do — Ré — Mi — Ré — Do
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0.25rem; letter-spacing: 0.05em;">
+          notation anglaise
+        </div>
+        <div class="lab-cipher" style="font-size: 1.05rem; letter-spacing: 0.12em; line-height: 2;">
+          C — C — C — D — E — D — C
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

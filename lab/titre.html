@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Titre — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Regard</span>
+        <h1 class="lab-heading">Ce qui regarde<br>ne se voit pas toujours.</h1>
+        <p class="lab-body">
+          Une image ne parle qu'à ceux qui s'arrêtent dessus.
+          Pas ceux qui la voient — ceux qui la regardent vraiment.
+        </p>
+        <div style="margin: 1.5rem 0;">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'%3E%3Crect width='120' height='80' rx='8' fill='%23f5f0e8'/%3E%3Ccircle cx='60' cy='34' r='16' fill='none' stroke='%237c3aed' stroke-width='1.5'/%3E%3Ccircle cx='60' cy='34' r='4' fill='%237c3aed'/%3E%3Cline x1='60' y1='54' x2='60' y2='62' stroke='%237c3aed' stroke-width='1.5'/%3E%3Cline x1='48' y1='58' x2='60' y2='62' stroke='%237c3aed' stroke-width='1.5'/%3E%3Cline x1='72' y1='58' x2='60' y2='62' stroke='%237c3aed' stroke-width='1.5'/%3E%3C/svg%3E"
+               alt="regard"
+               width="120" height="80"
+               style="border-radius: 0.5rem; border: 1px solid var(--border);" />
+        </div>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>

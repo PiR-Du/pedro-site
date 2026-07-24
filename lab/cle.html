@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clé — Pierre Duchesne</title>
+  <link rel="stylesheet" href="../style.css?v=7" />
+  <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body data-root=".." data-page="lab">
+  <div id="site-header"></div>
+  <main>
+    <section class="lab-page">
+      <div class="lab-content">
+        <span class="lab-eyebrow">Glisse</span>
+        <h1 class="lab-heading">Certaines actions<br>ne se cliquent pas.</h1>
+        <p class="lab-body">
+          Elles se font autrement — en tirant, en portant, en déposant.
+          Il y a un objet ici, et un endroit où il appartient.
+        </p>
+        <div class="lab-drag-zone">
+          <div class="lab-draggable" id="draggable" draggable="true">◆</div>
+          <div class="lab-drop-target" id="drop-target">déposer ici</div>
+        </div>
+        <p id="drag-result" style="display:none; font-family: var(--font-mono); color: var(--primary); text-align: center; font-size: 1rem;"></p>
+      </div>
+      <form class="lab-form" id="answer-form" autocomplete="off">
+        <input class="lab-input" type="text" id="answer-input" placeholder="···" autocomplete="off" spellcheck="false" aria-label="Réponse" />
+        <button class="lab-btn" type="submit" aria-label="Valider">→</button>
+      </form>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    (function () {
+      var draggable = document.getElementById('draggable');
+      var target = document.getElementById('drop-target');
+      var result = document.getElementById('drag-result');
+
+      draggable.addEventListener('dragstart', function (e) {
+        e.dataTransfer.setData('text/plain', 'glisse');
+      });
+      target.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        target.classList.add('dragover');
+      });
+      target.addEventListener('dragleave', function () {
+        target.classList.remove('dragover');
+      });
+      target.addEventListener('drop', function (e) {
+        e.preventDefault();
+        target.classList.remove('dragover');
+        target.classList.add('filled');
+        target.textContent = '✓';
+        document.getElementById('answer-input').value = 'glisse';
+        if (result) { result.style.display = 'block'; result.textContent = 'glisse'; }
+      });
+    })();
+  </script>
+  <script src="lab.js"></script>
+  <script src="../shared-layout.js?v=6"></script>
+</body>
+</html>
