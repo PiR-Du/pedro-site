@@ -38,6 +38,12 @@ const TEMPLATES = {
               <small>Plan de repas de la semaine</small>
             </span>
           </a>
+          <a href="{{root}}/web/index.html" data-nav-link="web" role="menuitem">
+            <span class="nav-dd-text">
+              <strong>Cool Web</strong>
+              <small>Sites qui valent le détour</small>
+            </span>
+          </a>
         </div>
       </div>
 

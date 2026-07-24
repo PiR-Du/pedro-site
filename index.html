@@ -56,6 +56,10 @@
             <span class="lp-stat-num" id="stat-nodes">—</span>
             <span class="lp-stat-label">Savoirs partagés</span>
           </div>
+          <div class="lp-stat">
+            <span class="lp-stat-num" id="stat-web">—</span>
+            <span class="lp-stat-label">Sites favoris</span>
+          </div>
         </div>
       </div>
     </section>
@@ -136,6 +140,18 @@
           </div>
         </a>
 
+        <a href="web/index.html" class="lp-card">
+          <div class="lp-card-head">
+            <span class="lp-card-idx">07</span>
+            <span class="lp-card-arrow" aria-hidden="true">→</span>
+          </div>
+          <h2 class="lp-card-name">Cool Web</h2>
+          <p class="lp-card-desc">Sélection de sites qui valent le détour — portfolios, outils, inspirations, expériences.</p>
+          <div class="lp-card-foot">
+            <span class="lp-card-live" id="last-web">Bientôt garni</span>
+          </div>
+        </a>
+
       </div>
     </section>
 
@@ -148,11 +164,12 @@
   <script src="ville/data.js"></script>
   <script src="batch-cooking/data.js"></script>
   <script src="encyclopedia/data.js"></script>
+  <script src="web/data.js"></script>
 
   <script>
   (function () {
     function countUp(el, to, ms) {
-      if (!el || !to) return;
+      if (!el || to == null) return;
       ms = ms || 700;
       var t0 = performance.now();
       (function tick(now) {
@@ -167,11 +184,13 @@
       var placesCount = typeof PLACES       !== 'undefined' ? PLACES.length                       : 0;
       var mealsCount  = typeof MEALS        !== 'undefined' ? MEALS.length                        : 0;
       var nodesCount  = typeof INITIAL_DATA !== 'undefined' ? (INITIAL_DATA.infos || []).length   : 0;
+      var webCount    = typeof SITES        !== 'undefined' ? SITES.length                        : 0;
 
       countUp(document.getElementById('stat-media'),  mediaCount);
       countUp(document.getElementById('stat-places'), placesCount);
       countUp(document.getElementById('stat-meals'),  mealsCount);
       countUp(document.getElementById('stat-nodes'),  nodesCount);
+      countUp(document.getElementById('stat-web'),    webCount);
 
       // Dernière entrée médiathèque
       if (mediaCount) {
@@ -207,6 +226,13 @@
         var lastMeal = MEALS[MEALS.length - 1];
         var elM = document.getElementById('last-meal');
         if (elM) elM.textContent = 'Ajouté : ' + lastMeal.title;
+      }
+
+      // Dernier site ajouté à Cool Web
+      if (webCount) {
+        var lastSite = SITES[SITES.length - 1];
+        var elW = document.getElementById('last-web');
+        if (elW) elW.textContent = lastSite.name + ' — ' + lastSite.category;
       }
     });
   })();

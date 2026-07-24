@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cool Web — Pierre Duchesne</title>
+  <meta name="description" content="Sélection de sites qui valent le détour — portfolios, outils, inspirations, expériences web." />
+  <meta property="og:title" content="Cool Web" />
+  <meta property="og:description" content="Une liste de sites qui valent le détour, triés par catégorie." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="../style.css?v=7">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+</head>
+
+<body data-page="web" data-root="..">
+  <div id="site-header"></div>
+
+  <main>
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="page-header-meta">
+          <span class="page-header-num">07</span>
+          <span class="eyebrow">./web</span>
+        </div>
+        <div class="page-header-rule" aria-hidden="true"></div>
+        <h1 class="page-header-title">Cool Web</h1>
+        <p class="page-header-lead">Les sites qui valent le détour — portfolios, outils, inspirations, expériences.</p>
+      </div>
+    </header>
+
+    <div class="muse-container">
+      <!-- Sidebar -->
+      <aside class="muse-sidebar" aria-label="Filtres">
+        <div class="filter-group">
+          <label for="web-search">Rechercher</label>
+          <input type="search" id="web-search" class="mediatheque-search" placeholder="Nom, description, tag...">
+        </div>
+
+        <div class="filter-group">
+          <label>Catégorie</label>
+          <div class="type-pills" id="category-filter"></div>
+        </div>
+
+        <div class="ville-count" id="web-count">— sites</div>
+
+        <!-- Formulaire de proposition -->
+        <button class="contribute-trigger" onclick="toggleContributePanel('form-web')" aria-expanded="false" aria-controls="form-web">
+          + Proposer un site
+        </button>
+
+        <div class="contribute-panel" id="form-web" role="form" aria-label="Proposer un site">
+          <div class="contribute-panel-header">
+            <h4>Proposer un site</h4>
+            <button class="contribute-close-btn" onclick="toggleContributePanel('form-web')" aria-label="Fermer">×</button>
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-contributor">Votre nom</label>
+            <input type="text" id="wf-contributor" placeholder="ex: Pierre">
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-name">Nom du site</label>
+            <input type="text" id="wf-name" placeholder="ex: Pudding.cool">
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-url">URL</label>
+            <input type="url" id="wf-url" placeholder="https://...">
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-category">Catégorie</label>
+            <input type="text" id="wf-category" placeholder="ex: Inspiration, Outil, Portfolio…">
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-tags">Tags</label>
+            <input type="text" id="wf-tags" placeholder="séparés par des virgules">
+          </div>
+
+          <div class="cf-field">
+            <label for="wf-description">Pourquoi c'est cool</label>
+            <textarea id="wf-description" placeholder="Ce qui le rend spécial…"></textarea>
+          </div>
+
+          <button class="cf-submit" onclick="submitWebReco()">Proposer →</button>
+          <p class="cf-note">Sauvegardé localement · Pierre intègre les suggestions manuellement</p>
+        </div>
+      </aside>
+
+      <!-- Grid Content -->
+      <div class="grid-content">
+        <div class="media-grid" id="web-grid" aria-live="polite" aria-label="Résultats"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Detail Drawer -->
+  <div id="detail-drawer" role="dialog" aria-modal="true" aria-label="Détail" aria-hidden="true">
+    <button class="close-drawer" onclick="closeDrawer()" aria-label="Fermer le détail">×</button>
+    <div id="drawer-content"></div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="../shared-layout.js?v=6"></script>
+  <script src="data.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+  <script>
+    function submitWebReco() {
+      const name = document.getElementById('wf-name').value.trim();
+      const url = document.getElementById('wf-url').value.trim();
+      if (!name) { showToast('Le nom du site est obligatoire.', 'error'); return; }
+      if (!url) { showToast("L'URL est obligatoire.", 'error'); return; }
+
+      const item = {
+        timestamp: new Date().toISOString(),
+        tool: 'cool-web',
+        data: {
+          id: 'w' + Date.now().toString().slice(-8),
+          name,
+          url,
+          category: document.getElementById('wf-category').value.trim() || 'Divers',
+          tags: document.getElementById('wf-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+          description: document.getElementById('wf-description').value.trim(),
+          contributor: document.getElementById('wf-contributor').value.trim() || 'Anonyme'
+        }
+      };
+
+      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
+      stored.push(item);
+      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+
+      ['wf-contributor', 'wf-name', 'wf-url', 'wf-category', 'wf-tags', 'wf-description'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      toggleContributePanel('form-web');
+      showToast('"' + name + '" proposé — merci !', 'success');
+      if (typeof initWeb === 'function') initWeb();
+    }
+  </script>
+</body>
+
+</html>
