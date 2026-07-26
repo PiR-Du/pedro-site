@@ -8,10 +8,7 @@ function initWeb() {
 }
 
 function getAllItems() {
-    const userSites = JSON.parse(localStorage.getItem('pending_contributions') || '[]')
-        .filter(item => item.tool === 'cool-web')
-        .map(item => item.data);
-    return [...SITES, ...userSites];
+    return SITES;
 }
 
 function populateCategoryPills(items) {

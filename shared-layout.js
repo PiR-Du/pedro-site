@@ -140,6 +140,34 @@ function toggleContributePanel(id) {
   if (trigger) trigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
 }
 
+const FORMSPREE_ID = "meenoaez";
+
+async function sendContribution(tool, data, btn) {
+  const originalText = btn ? btn.textContent : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Envoi en cours…";
+  }
+  try {
+    const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ _subject: `Nouvelle contribution — ${tool}`, tool, ...data })
+    });
+    if (!response.ok) throw new Error("Erreur Formspree");
+    return true;
+  } catch (err) {
+    console.error(err);
+    showToast("Erreur lors de l'envoi. Réessayez plus tard.", "error");
+    return false;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
 function showToast(msg, type = "default") {
   let container = document.getElementById("global-toasts");
   if (!container) {

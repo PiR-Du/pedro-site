@@ -123,8 +123,8 @@
             <textarea id="mf-pitch" placeholder="De quoi s'agit-il ?"></textarea>
           </div>
 
-          <button class="cf-submit" onclick="submitMediaReco()">Ajouter →</button>
-          <p class="cf-note">Sauvegardé localement · visible immédiatement</p>
+          <button class="cf-submit" onclick="submitMediaReco(this)">Proposer →</button>
+          <p class="cf-note">Envoyé à Pierre · intégré manuellement</p>
         </div>
       </aside>
 
@@ -154,36 +154,28 @@
   <script src="data.js?v=2"></script>
   <script src="app.js?v=2"></script>
   <script>
-    function submitMediaReco() {
+    async function submitMediaReco(btn) {
       const contributor = document.getElementById('mf-contributor').value.trim() || 'Anonyme';
       const title = document.getElementById('mf-title').value.trim();
       if (!title) { showToast('Le titre est obligatoire.', 'error'); return; }
 
       const item = {
-        id: 'u' + Date.now().toString().slice(-8),
         type: document.getElementById('mf-type').value,
         title,
         contributor,
         main_genre: document.getElementById('mf-genre').value.trim() || 'Divers',
-        sub_genres: [],
-        main_emotion: '',
-        complexity: 3,
         ambiance: document.getElementById('mf-ambiance').value.trim() || '',
-        public: 'Solo',
-        pitch: document.getElementById('mf-pitch').value.trim(),
-        favorite: false
+        pitch: document.getElementById('mf-pitch').value.trim()
       };
 
-      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
-      stored.push({ timestamp: new Date().toISOString(), tool: 'recommendation', data: item });
-      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+      const ok = await sendContribution('recommendation', item, btn);
+      if (!ok) return;
 
       ['mf-contributor','mf-title','mf-genre','mf-ambiance','mf-pitch'].forEach(id => {
         document.getElementById(id).value = '';
       });
       toggleContributePanel('form-mediatheque');
-      showToast('"' + title + '" ajouté à la médiathèque !', 'success');
-      if (typeof initMuse === 'function') initMuse();
+      showToast('"' + title + '" envoyé — merci !', 'success');
     }
   </script>
 </body>

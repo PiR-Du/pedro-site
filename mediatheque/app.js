@@ -8,10 +8,7 @@ function initMuse() {
 }
 
 function getAllItems() {
-    const userMedia = JSON.parse(localStorage.getItem('pending_contributions') || '[]')
-                        .filter(item => item.tool === 'recommendation')
-                        .map(item => item.data);
-    return [...MEDIA, ...userMedia];
+    return MEDIA;
 }
 
 function populateFilters(items) {

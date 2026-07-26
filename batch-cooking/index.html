@@ -63,8 +63,8 @@
             <textarea id="bf-ingredients" rows="2" placeholder="ex: pâtes, tomates, bœuf, oignons, ail"></textarea>
           </div>
 
-          <button class="cf-submit" onclick="submitBatchMeal()">Proposer ce plat →</button>
-          <p class="cf-note">Sauvegardé localement · Pierre intègre les plats manuellement</p>
+          <button class="cf-submit" onclick="submitBatchMeal(this)">Proposer ce plat →</button>
+          <p class="cf-note">Envoyé à Pierre · intégré manuellement</p>
         </div>
       </div>
 
@@ -78,7 +78,7 @@
   <script src="data.js"></script>
   <script src="app.js"></script>
   <script>
-    function submitBatchMeal() {
+    async function submitBatchMeal(btn) {
       const title = document.getElementById('bf-title').value.trim();
       if (!title) { showToast('Le nom du plat est obligatoire.', 'error'); return; }
 
@@ -89,23 +89,17 @@
         .filter(Boolean);
 
       const item = {
-        timestamp: new Date().toISOString(),
-        tool: 'batch-cooking',
-        data: {
-          id: Math.floor(Math.random() * 9000) + 1000,
-          title,
-          ingredients: ingredients.length ? ingredients : ['ingrédients à préciser']
-        }
+        title,
+        ingredients: ingredients.length ? ingredients : ['ingrédients à préciser']
       };
 
-      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
-      stored.push(item);
-      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+      const ok = await sendContribution('batch-cooking', item, btn);
+      if (!ok) return;
 
       document.getElementById('bf-title').value = '';
       document.getElementById('bf-ingredients').value = '';
       toggleContributePanel('form-batch');
-      showToast('"' + title + '" proposé — merci !', 'success');
+      showToast('"' + title + '" envoyé — merci !', 'success');
     }
   </script>
 </body>

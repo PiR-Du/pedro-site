@@ -60,7 +60,7 @@
           <textarea id="ef-text" rows="3" placeholder="Décrivez ce savoir en quelques lignes…"></textarea>
         </div>
 
-        <button class="cf-submit" onclick="submitEncyclopediaEntry()">Ajouter →</button>
+        <button class="cf-submit" onclick="submitEncyclopediaEntry(this)">Proposer →</button>
         <p class="cf-note">Sauvegardé localement · Pierre intègre les entrées manuellement</p>
       </div>
     </aside>
@@ -92,31 +92,25 @@
   <script src="mindmap.js?v=2"></script>
   <script src="app.js?v=2"></script>
   <script>
-    function submitEncyclopediaEntry() {
+    async function submitEncyclopediaEntry(btn) {
       const title = document.getElementById('ef-title').value.trim();
       if (!title) { showToast('Le titre est obligatoire.', 'error'); return; }
 
       const item = {
-        timestamp: new Date().toISOString(),
-        tool: 'encyclopedia',
-        data: {
-          title,
-          text: document.getElementById('ef-text').value.trim(),
-          category: document.getElementById('ef-category').value.trim() || 'Divers',
-          source: document.getElementById('ef-contributor').value.trim() || 'Anonyme',
-          contributor: document.getElementById('ef-contributor').value.trim() || 'Anonyme'
-        }
+        title,
+        text: document.getElementById('ef-text').value.trim(),
+        category: document.getElementById('ef-category').value.trim() || 'Divers',
+        contributor: document.getElementById('ef-contributor').value.trim() || 'Anonyme'
       };
 
-      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
-      stored.push(item);
-      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+      const ok = await sendContribution('encyclopedia', item, btn);
+      if (!ok) return;
 
       ['ef-contributor','ef-title','ef-category','ef-text'].forEach(id => {
         document.getElementById(id).value = '';
       });
       toggleContributePanel('form-encyclopedia');
-      showToast('"' + title + '" ajouté — merci !', 'success');
+      showToast('"' + title + '" envoyé — merci !', 'success');
     }
   </script>
 </body>

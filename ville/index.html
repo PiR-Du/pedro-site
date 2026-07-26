@@ -120,7 +120,7 @@
             <textarea id="vf-description" placeholder="Pourquoi y aller ? Ce qui le rend spécial…"></textarea>
           </div>
 
-          <button class="cf-submit" onclick="submitVilleReco()">Proposer →</button>
+          <button class="cf-submit" onclick="submitVilleReco(this)">Proposer →</button>
           <p class="cf-note">Sauvegardé localement · Pierre intègre les suggestions manuellement</p>
         </div>
       </aside>
@@ -155,34 +155,27 @@
   <script src="data.js?v=1"></script>
   <script src="app.js?v=1"></script>
   <script>
-    function submitVilleReco() {
+    async function submitVilleReco(btn) {
       const name = document.getElementById('vf-name').value.trim();
       if (!name) { showToast('Le nom du lieu est obligatoire.', 'error'); return; }
 
       const item = {
-        timestamp: new Date().toISOString(),
-        tool: 'city-guide',
-        data: {
-          id: 'v' + Date.now().toString().slice(-8),
-          name,
-          type: document.getElementById('vf-type').value,
-          city: document.getElementById('vf-city').value,
-          neighborhood: document.getElementById('vf-neighborhood').value.trim(),
-          description: document.getElementById('vf-description').value.trim(),
-          contributor: document.getElementById('vf-contributor').value.trim() || 'Anonyme',
-          moods: []
-        }
+        name,
+        type: document.getElementById('vf-type').value,
+        city: document.getElementById('vf-city').value,
+        neighborhood: document.getElementById('vf-neighborhood').value.trim(),
+        description: document.getElementById('vf-description').value.trim(),
+        contributor: document.getElementById('vf-contributor').value.trim() || 'Anonyme'
       };
 
-      const stored = JSON.parse(localStorage.getItem('pending_contributions') || '[]');
-      stored.push(item);
-      localStorage.setItem('pending_contributions', JSON.stringify(stored));
+      const ok = await sendContribution('city-guide', item, btn);
+      if (!ok) return;
 
       ['vf-contributor','vf-name','vf-neighborhood','vf-description'].forEach(id => {
         document.getElementById(id).value = '';
       });
       toggleContributePanel('form-ville');
-      showToast('"' + name + '" proposé — merci !', 'success');
+      showToast('"' + name + '" envoyé — merci !', 'success');
     }
   </script>
 </body>
