@@ -8,24 +8,39 @@ const TEMPLATES = {
     </a>
     <nav class="nav" aria-label="Navigation principale">
 
-      <div class="nav-group" id="nav-group-explorer">
-        <button class="nav-group-btn" onclick="toggleNavGroup('nav-group-explorer')" aria-expanded="false" aria-haspopup="true">
-          Explorer
+      <div class="nav-group" id="nav-group-decouvrir">
+        <button class="nav-group-btn" onclick="toggleNavGroup('nav-group-decouvrir')" aria-expanded="false" aria-haspopup="true">
+          Découvrir
           <span class="nav-arrow" aria-hidden="true">▾</span>
         </button>
-        <div class="nav-dropdown" role="menu" aria-label="Espaces Explorer">
+        <div class="nav-dropdown" role="menu" aria-label="Espaces Découvrir">
+          <a href="{{root}}/ville/index.html" data-nav-link="ville" role="menuitem">
+            <span class="nav-dd-text">
+              <strong>Que faire en ville ?</strong>
+              <small>Carte interactive de lieux à découvrir</small>
+            </span>
+          </a>
           <a href="{{root}}/mediatheque/index.html" data-nav-link="mediatheque" role="menuitem">
             <span class="nav-dd-text">
               <strong>Médiathèque</strong>
               <small>Films, séries, livres, musique</small>
             </span>
           </a>
-          <a href="{{root}}/ville/index.html" data-nav-link="ville" role="menuitem">
+          <a href="{{root}}/web/index.html" data-nav-link="web" role="menuitem">
             <span class="nav-dd-text">
-              <strong>Ville</strong>
-              <small>Bonnes adresses sur la carte</small>
+              <strong>Sites web à découvrir</strong>
+              <small>Sites qui valent le détour</small>
             </span>
           </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="nav-group-organiser">
+        <button class="nav-group-btn" onclick="toggleNavGroup('nav-group-organiser')" aria-expanded="false" aria-haspopup="true">
+          Organiser
+          <span class="nav-arrow" aria-hidden="true">▾</span>
+        </button>
+        <div class="nav-dropdown" role="menu" aria-label="Espaces Organiser">
           <a href="{{root}}/encyclopedia/index.html" data-nav-link="encyclopedia" role="menuitem">
             <span class="nav-dd-text">
               <strong>Encyclopédie</strong>
@@ -36,12 +51,6 @@ const TEMPLATES = {
             <span class="nav-dd-text">
               <strong>Batch Cooking</strong>
               <small>Plan de repas de la semaine</small>
-            </span>
-          </a>
-          <a href="{{root}}/web/index.html" data-nav-link="web" role="menuitem">
-            <span class="nav-dd-text">
-              <strong>Cool Web</strong>
-              <small>Sites qui valent le détour</small>
             </span>
           </a>
         </div>

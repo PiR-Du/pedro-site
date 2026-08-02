@@ -2437,7 +2437,7 @@ body[data-page="encyclopedia"] {
 }
 
 /* =========================================
-   VILLE — Que faire ce soir
+   VILLE — Que faire en ville
    ========================================= */
 
 body[data-page="ville"] .serif { font-family: var(--font-serif); letter-spacing: -0.01em; }
