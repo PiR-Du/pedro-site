@@ -192,6 +192,11 @@
     display: block;
   }
 
+  fieldset {
+    min-inline-size: 0;
+    border: 0;
+  }
+
   /* ---------- Tableaux ---------- */
   table {
     inline-size: 100%;

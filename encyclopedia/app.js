@@ -1,105 +1,82 @@
-// Global App State and Initialization
+// État global et initialisation
 let data = { infos: [] };
+let sources = [];
+
+// Série de données (1 à 8) attribuée à un contributeur, dans l'ordre alphabétique
+function seriesOf(source) {
+    return (Math.max(sources.indexOf(source), 0) % 8) + 1;
+}
 
 function initApp() {
-    // 1. Use ONLY data from data.js
-    if (typeof INITIAL_DATA !== 'undefined') {
-        data = JSON.parse(JSON.stringify(INITIAL_DATA));
-    } else {
-        data = { infos: [] };
-    }
-    
-    // CRITICAL: Initialize colorScale domain with ALL sorted sources before rendering anything
-    if (typeof colorScale !== 'undefined') {
-        const allSources = Array.from(new Set(data.infos.map(i => i.source))).sort();
-        colorScale.domain(allSources);
-    }
-    
-    onDataLoaded();
+    data = typeof INITIAL_DATA !== 'undefined' ? JSON.parse(JSON.stringify(INITIAL_DATA)) : { infos: [] };
+    sources = Array.from(new Set(data.infos.map(i => i.source))).sort();
+    renderGraph();
+    renderSachants();
 }
 
-function onDataLoaded() {
-    // This is called when data is ready
-    if (typeof renderGraph === 'function') renderGraph();
-    if (typeof renderSachants === 'function') renderSachants();
-}
-
-// Initial Load
 document.addEventListener('DOMContentLoaded', initApp);
 
+let resizeTimer = null;
 window.addEventListener('resize', () => {
-    if (typeof renderGraph === 'function') renderGraph();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderGraph, 200);
 });
 
-// Sidebar Rendering (Moved from form.js)
+// Liste des profils
 function renderSachants() {
     const container = document.getElementById('sachants-container');
     if (!container) return;
-    container.innerHTML = '';
-    
-    const sources = Array.from(new Set(data.infos.map(i => i.source))).sort();
-
-    sources.forEach(s => {
+    container.innerHTML = sources.map(s => {
         const count = data.infos.filter(i => i.source === s).length;
-        const color = typeof colorScale !== 'undefined' ? colorScale(s) : 'inherit';
-        const div = document.createElement('div');
-        div.className = 'source-item';
-        div.style.color = color;
-        div.style.fontWeight = '600';
-        div.innerHTML = `<span>${s}</span> <span class="count" style="color:var(--muted-foreground)">${count} infos</span>`;
-        div.onclick = () => showProfile(s);
-        container.appendChild(div);
+        return `
+        <li>
+            <button type="button" class="source" data-source="${escapeHtml(s)}">
+                <span class="swatch swatch--${seriesOf(s)}"></span>
+                <span class="source__name">${escapeHtml(s)}</span>
+                <span class="eyebrow">${count} note${count > 1 ? 's' : ''}</span>
+            </button>
+        </li>`;
+    }).join('');
+
+    container.addEventListener('click', e => {
+        const btn = e.target.closest('[data-source]');
+        if (btn) showProfile(btn.dataset.source);
     });
 }
 
+function noteHtml(n) {
+    return `
+        <div class="drawer__section">
+            <span class="eyebrow">${escapeHtml(n.category)}</span>
+            <h3 class="title-4">${escapeHtml(n.title)}</h3>
+            <p>${escapeHtml(n.text)}</p>
+        </div>`;
+}
+
 function showProfile(name) {
-    const shell = document.querySelector('.encyclopedia-shell');
-    const profileName = document.getElementById('profile-name');
-    const profileNotes = document.getElementById('profile-notes');
-    const color = typeof colorScale !== 'undefined' ? colorScale(name) : 'inherit';
-
-    shell.classList.add('has-profile');
-    
-    profileName.innerText = `Profil de ${name}`;
-    profileName.style.color = color;
-    
     const notes = data.infos.filter(i => i.source === name);
-    profileNotes.innerHTML = notes.map(n => `
-        <div class="note-card">
-            <span class="note-cat" style="color: ${color}">[${n.category}]</span>
-            <strong class="note-title">${n.title}</strong>
-            <p class="note-text">${n.text}</p>
-        </div>
-    `).join('');
-
-    if (typeof highlightSource === 'function') highlightSource(name);
+    openDrawer(`
+        <header class="stack stack--1">
+            <span class="cluster cluster--1"><span class="swatch swatch--${seriesOf(name)}"></span><span class="eyebrow">${notes.length} note${notes.length > 1 ? 's' : ''}</span></span>
+            <h2 class="title-2" id="drawer-title">Profil de ${escapeHtml(name)}</h2>
+        </header>
+        ${notes.map(noteHtml).join('<hr class="rule">')}`);
+    highlightSource(name);
 }
 
 function showNodeDetail(d) {
-    const shell = document.querySelector('.encyclopedia-shell');
-    const profileName = document.getElementById('profile-name');
-    const profileNotes = document.getElementById('profile-notes');
-    const color = typeof colorScale !== 'undefined' ? colorScale(d.source) : 'inherit';
-
-    shell.classList.add('has-profile');
-    
-    profileName.innerText = d.title;
-    profileName.style.color = color;
-    
-    profileNotes.innerHTML = `
-        <div class="note-card" style="border-bottom: none;">
-            <span class="note-cat" style="color: ${color}">[${d.category}]</span>
-            <div style="font-size: 0.8rem; color: var(--muted-foreground); margin-bottom: 0.5rem; font-family: var(--font-mono); text-transform: uppercase;">Source : ${d.source}</div>
-            <p class="note-text" style="font-size: 1rem; color: var(--foreground);">${d.text}</p>
-        </div>
-    `;
-
-    if (typeof highlightSource === 'function') highlightSource(d.source);
+    openDrawer(`
+        <header class="stack stack--1">
+            <span class="eyebrow">${escapeHtml(d.category)}</span>
+            <h2 class="title-2" id="drawer-title">${escapeHtml(d.title)}</h2>
+        </header>
+        <p>${escapeHtml(d.text)}</p>
+        <dl class="spec">
+            <dt class="spec__term">Source</dt>
+            <dd class="spec__value"><span class="cluster cluster--1"><span class="swatch swatch--${seriesOf(d.source)}"></span>${escapeHtml(d.source)}</span></dd>
+        </dl>`);
+    highlightSource(d.source);
 }
 
-function closeProfile() {
-    const shell = document.querySelector('.encyclopedia-shell');
-    shell.classList.remove('has-profile');
-    
-    d3.selectAll(".node circle, .node text").transition().duration(500).attr("opacity", 1);
-}
+// À la fermeture du tiroir, tous les nœuds retrouvent leur opacité
+document.getElementById('detail-drawer').addEventListener('close', () => highlightSource(null));

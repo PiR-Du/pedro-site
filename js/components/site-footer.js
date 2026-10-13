@@ -10,7 +10,7 @@ class SiteFooter extends HTMLElement {
           <p class="eyebrow">Data · Maths · Code</p>
           <div class="cluster">
             <a href="${root}/styleguide.html">Guide de style</a>
-            <button type="button" class="btn btn--quiet" data-theme-toggle>Thème</button>
+            <button type="button" class="btn btn--quiet btn--sm" data-theme-toggle>Thème</button>
           </div>
         </div>
       </footer>`;
