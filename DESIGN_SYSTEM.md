@@ -16,11 +16,12 @@ Fondation : style typographique international, d'après *Grid Systems in Graphic
 | `css/base.css` | `@font-face`, reset, typographie de base, éléments HTML nus, focus | `base` |
 | `css/layout.css` | Conteneur, grille, classes de placement, sections, piles | `layout` |
 | `css/components.css` | Atomes, molécules, organismes (BEM), primitives de mouvement | `components` |
-| `css/utilities.css` | 9 utilitaires | `utilities` |
+| `css/utilities.css` | 8 utilitaires et la règle `[hidden]` | `utilities` |
 | `css/styleguide.css` | Spécimens du guide de style uniquement, non chargé par le site | `components` |
+| `css/vendor/leaflet-core.css` | Styles structurels de Leaflet 1.9.4 (page ville uniquement), sans habillage | `vendor` |
 
 ```css
-@layer tokens, base, layout, components, utilities;
+@layer tokens, base, vendor, layout, components, utilities;
 ```
 
 La cascade est tenue par `@layer` : une règle d'une couche postérieure l'emporte toujours, quelle que soit la spécificité. Conséquence : aucun `!important`, aucun sélecteur renforcé artificiellement.
@@ -41,7 +42,11 @@ La cascade est tenue par `@layer` : une règle d'une couche postérieure l'empor
 | `js/theme-init.js` | Script classique en `<head>` : applique le thème mémorisé avant le premier rendu |
 | `js/theme.js` | Module : bascule `[data-theme-toggle]`, mémorisation |
 | `js/motion.js` | Module : apparitions, révélation de texte, compteurs, calque de grille |
-| `js/components/` | Web Components des organismes répétés (phase 4) |
+| `js/main.js` | Module d'entrée commun : charge les Web Components, le thème et le mouvement |
+| `js/components/site-header.js` | Web Component `<site-header>` : marque, sept liens numérotés, menu repliable sous 1024 px |
+| `js/components/site-footer.js` | Web Component `<site-footer>` : mentions, lien vers le guide, bascule de thème |
+| `js/site.js` | Script classique partagé par les outils : échappement HTML, messages éphémères, tiroir, formulaires de contribution, lecture d'une couleur de token |
+| `js/home.js` | Compteurs et dernières entrées de l'accueil |
 
 Aucune dépendance ajoutée. Motion One a été écarté : les trois primitives retenues tiennent en 70 lignes environ avec `IntersectionObserver` et des transitions CSS.
 
@@ -302,19 +307,31 @@ Inspiré des primitives In View, Text Effect, Animated Group et Animated Number 
 | Message éphémère | `.toast-region`, `.toast`, `.toast--error` | 2 systèmes de toast |
 | Panneau dépliable | `.disclosure__panel` | `.contribute-panel` |
 
-### Organismes, gabarits, pages (phase 4)
+### Organismes, gabarits, pages
 
 | Organisme | Forme |
 |---|---|
-| `<site-header>` | Web Component sans Shadow DOM, `js/components/site-header.js`. Repli HTML dans chaque page : lien vers l'accueil, qui sert de sommaire. |
-| `<site-footer>` | Web Component sans Shadow DOM |
-| En-tête de page | `.page-head` : folio, filet tracé, titre, chapô décalé |
-| Barre de filtres | `.filters` |
-| Liste de résultats | `.entry-list` |
-| Tiroir de détail | `<detail-drawer>`, un seul composant pour les 3 pages, élément `<dialog>` natif |
-| Formulaire de contribution | `<contribute-form>`, un seul composant pour les 5 pages |
+| `<site-header>` | Web Component sans Shadow DOM. Repli HTML dans chaque page : marque et lien « Sommaire » vers l'accueil. `display: contents`, l'en-tête interne est collant. |
+| `<site-footer>` | Web Component sans Shadow DOM. Repli HTML : copyright et mention. |
+| En-tête de page | `.page-head` : folio, catégorie, filet tracé, titre en colonnes 1 à 7, chapô en colonnes 8 à 12 |
+| Gabarit outil | `.tool`, `.tool__aside` (filtres, collant avec `--sticky`), `.tool__main`, `.tool__bar` |
+| Liste de résultats | `.results` et `.result` : tableau typographique à 4 colonnes (étiquette, titre, texte, méta), lien étendu à la ligne par `.entry__link` |
+| Registre | `.ledger` : libellé à gauche, titre et texte à droite (plan de repas, trophées) |
+| Tiroir de détail | `<dialog class="drawer">` natif, ouvert par `openDrawer()` de `js/site.js`. Un seul composant pour médiathèque, web, ville et encyclopédie. Piège à focus, Échap et retour du focus fournis par le navigateur. |
+| Boîte de dialogue | `<dialog class="modal">` : confirmation et choix de couleur du suivi de scores |
+| Formulaire de contribution | `<details class="disclosure">` et `<form data-contribute="outil">`. Validation, erreurs rattachées aux champs et envoi gérés une seule fois dans `js/site.js`. Le panneau se déplie sans JS. |
+| Carte | `.map`, `.map-marker`, `.map-tooltip` : habillage de Leaflet, tuiles désaturées par `--map-filter` |
+| Graphe | `.graph`, `.graph__node`, `.graph__hull` : carte mentale D3 stylée par classes |
+| Sudoku | `.sudoku`, `.sudoku__cell`, `.numpad` |
+| Suivi de scores | `.view`, `.avatar`, `.standings`, `.score-row`, `.stepper`, `.score-table`, `.podium`, `.color-picker` |
 
-Gabarits : accueil (sommaire), outil à filtres (médiathèque, web, ville), outil plein cadre (encyclopédie), outil à étapes (batch cooking, score, sudoku).
+Gabarits : accueil (affiche, chiffres, sommaire numéroté), outil à filtres (médiathèque, web, ville, encyclopédie), outil à deux colonnes (batch cooking, sudoku), outil à vues (suivi de scores).
+
+### Exceptions documentées
+
+- `js/site.js` et `encyclopedia/mindmap.js` appellent `style.setProperty` à trois endroits : pour lire la couleur résolue d'un token (Chart.js ne lit pas les variables CSS) et pour transmettre les coordonnées de l'infobulle du graphe par `--tip-x` et `--tip-y`. Aucune valeur de design n'y est écrite.
+- Les bibliothèques de dessin reçoivent quelques nombres en dur (taille des nœuds du graphe, rayon des points du graphique) : ce sont des multiples de 4 et la taille de police reprend `--text-sm`.
+- `score/app.js` garde la liste des 8 anciennes couleurs hexadécimales, uniquement pour convertir les parties enregistrées avant la refonte vers les séries de données.
 
 ### Ce qui remplace les motifs bannis
 

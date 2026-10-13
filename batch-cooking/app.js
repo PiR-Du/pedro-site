@@ -85,12 +85,12 @@ function renderPlan(plan) {
   const shared = getSharedIngredients(plan);
 
   container.innerHTML = `
-    <ol class="plan">
+    <ol class="ledger">
       ${plan.map((meal, i) => `
-      <li class="plan__day">
+      <li class="ledger__row">
         <span class="eyebrow">${DAYS[i]}</span>
-        <h3 class="plan__meal">${escapeHtml(meal.title)}</h3>
-        <p class="plan__ingredients">${meal.ingredients.map(escapeHtml).join(', ')}</p>
+        <h3 class="ledger__title">${escapeHtml(meal.title)}</h3>
+        <p class="ledger__text">${meal.ingredients.map(escapeHtml).join(', ')}</p>
       </li>`).join('')}
     </ol>
     ${shared.length ? `

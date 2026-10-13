@@ -1,0 +1,92 @@
+[
+  {
+    "page": "index",
+    "perf": 94,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.8 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "failed": []
+  },
+  {
+    "page": "mediatheque",
+    "perf": 97,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.3 s",
+    "cls": "0",
+    "tbt": "50 ms",
+    "failed": []
+  },
+  {
+    "page": "ville",
+    "perf": 87,
+    "a11y": 97,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.6 s",
+    "cls": "0",
+    "tbt": "290 ms",
+    "failed": [
+      "target-size"
+    ]
+  },
+  {
+    "page": "encyclopedia",
+    "perf": 89,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.8 s",
+    "cls": "0.033",
+    "tbt": "190 ms",
+    "failed": []
+  },
+  {
+    "page": "batch-cooking",
+    "perf": 98,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.1 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "failed": []
+  },
+  {
+    "page": "score",
+    "perf": 94,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.6 s",
+    "cls": "0",
+    "tbt": "100 ms",
+    "failed": []
+  },
+  {
+    "page": "sudoku",
+    "perf": 98,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.1 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "failed": []
+  },
+  {
+    "page": "web",
+    "perf": 98,
+    "a11y": 100,
+    "bp": 100,
+    "seo": 100,
+    "lcp": "2.1 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "failed": []
+  }
+]

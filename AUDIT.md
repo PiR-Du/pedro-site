@@ -268,3 +268,123 @@ Ces points touchent au contenu ou au fonctionnement, pas seulement à l'apparenc
 4. **Fond de carte.** CARTO exige désormais une clé. Proposition : tuiles OpenStreetMap standard (gratuites, sans clé, usage modéré admis), désaturées par un filtre CSS pour rester dans la palette. Autre option : fournir une clé CARTO ou Stadia.
 5. **Sudoku.** Pyodide bloque le fil principal 9 s. Proposition : ne le charger qu'au premier clic sur « Résoudre », avec la ligne d'état « Chargement de Python ». Le premier résultat arrive plus tard, mais la page est utilisable tout de suite.
 6. **Libellé « BoardNight ».** L'accueil dit « BoardNight », le menu « Suivi de Scores », le titre de page « Notez chaque manche, célébrez chaque victoire ». Proposition : « Suivi de scores » partout, « BoardNight » conservé dans le `<title>`.
+
+---
+
+## 13. Résultat
+
+Refonte terminée le 14 octobre 2026, sur la branche `main`, en 17 commits (un par étape du système, puis un par page). Les captures après refonte sont dans `audit/after/`, les mesures dans `audit/after/lighthouse/summary.json`.
+
+### Décisions validées et appliquées
+
+Les six propositions de la section 12 ont été acceptées et mises en œuvre : initiales à la place des emojis, 8 séries de données et marqueurs monochromes, suppression des confettis, tuiles OpenStreetMap, Pyodide chargé au premier calcul, libellé « Suivi de scores ».
+
+### Mesures avant et après
+
+| Page | Performance | Accessibilité | Bonnes pratiques | SEO | CLS | TBT |
+|---|---|---|---|---|---|---|
+| Accueil | 81 → **94** | 100 → 100 | 96 → **100** | 100 | 0 → 0 | 0 → 0 ms |
+| Médiathèque | 73 → **97** | 92 → **100** | 96 → **100** | 100 | 1,02 → **0** | 0 → 50 ms |
+| Ville | 82 → **88** | 88 → **97** | 96 → **100** | 100 | 0,23 → **0** | 0 → 300 ms |
+| Encyclopédie | 85 → **89** | 91 → **100** | 96 → **100** | 100 | 0,18 → **0,03** | 10 → 190 ms |
+| Batch cooking | 90 → **98** | 88 → **100** | 96 → **100** | 100 | 0,17 → **0** | 0 → 0 ms |
+| Score | 88 → **94** | 89 → **100** | 96 → **100** | 100 | 0,13 → **0** | 0 → 100 ms |
+| Sudoku | 67 → **98** | 89 → **100** | 77 → **100** | 100 | 0,07 → **0** | 9 050 → **0 ms** |
+| Web | 89 → **98** | 92 → **100** | 96 → **100** | 100 | 0,18 → **0** | 0 → 0 ms |
+
+Mesures Lighthouse en profil mobile simulé, sur un serveur local : elles se comparent entre elles, pas à un site en production.
+
+| Contrôle | Avant | Après |
+|---|---|---|
+| `html-validate`, 8 pages et le guide de style | 135 erreurs | **0** |
+| Débordement horizontal à 375 px | 65 px sur 8 pages | **0 px sur 8 pages** |
+| Erreurs console | 1 par page | **0** |
+| CSS chargé par une page | 114 Ko, 841 règles, 40 % mort | 60 Ko répartis en 5 fichiers, sans règle morte connue |
+| Familles de polices | 3, depuis Google Fonts | 2, locales (88 Ko) |
+| Tailles de police distinctes | 53 | 11, toutes en tokens |
+| Valeurs d'espacement distinctes | 45 | 12, toutes en tokens |
+| Rayons d'angle distincts | 21 | 1 (zéro) |
+| Points de rupture | 13 | 2 |
+| `!important` | 13 | **0** |
+| Styles inline (HTML et gabarits JS) | 65 | **0** |
+| Gestionnaires inline (`onclick`, etc.) | 64 | **0** |
+| `box-shadow`, `backdrop-filter`, dégradés | 45, 5, 25 | **0, 0, 0** |
+| Emojis | 46 | **0** |
+| Tirets cadratins | environ 80 visibles | **0** |
+| Règles `:hover` avec mouvement ou transition | 11, plus 60 transitions | **0** |
+| Prise en compte de `prefers-reduced-motion` | aucune | durées à zéro, rien de masqué |
+
+### Vérifications manuelles
+
+- **Clavier, accueil** : 18 arrêts de tabulation dans l'ordre visuel (lien d'évitement, marque, 7 liens de navigation, 7 outils, guide de style, thème), tous avec un contour de focus visible. Le lien d'évitement mène à `#contenu`, Entrée sur un outil ouvre sa page. Sur mobile, le bouton Menu s'ouvre à Entrée, se ferme à Échap et reprend le focus.
+- **Sans JavaScript, accueil** : titre, chapô, cinq compteurs (valeurs écrites dans le HTML), sept outils, en-tête de repli avec lien vers le sommaire et pied de page sont visibles. Les liens fonctionnent. Les pages outils affichent un message expliquant que l'outil nécessite JavaScript.
+- **Mouvement réduit** : la classe `has-motion` n'est pas posée, les compteurs affichent directement leur valeur, les durées valent 0 ms.
+- **Thème sombre** : vérifié en capture sur l'accueil, la médiathèque et la ville (`audit/after/*-dark.png`).
+- **Fonctionnel** : chaque outil a été rejoué dans le navigateur. Médiathèque et web (filtres, recherche, état vide, tiroir, retour du focus), ville (87 marqueurs, filtres, tiroir, bascule carte et liste), encyclopédie (20 nœuds, profils, infobulle, tiroir), batch cooking (deux modes, plan, ingrédients mutualisés), sudoku (saisie au clavier, résolution d'une grille par Pyodide), score (partie complète de 4 manches, correction d'un score, annulation, fin de partie, historique, relecture d'une partie enregistrée à l'ancien format).
+
+### Ce qui a été corrigé, par rapport aux 10 problèmes principaux
+
+1. Débordement mobile : corrigé, navigation repliée derrière « Menu » sous 1024 px.
+2. Carte de la page ville : corrigée, tuiles OpenStreetMap.
+3. Échelle typographique : 11 paliers Major Third, plancher à 12,8 px, une famille plus une monospace.
+4. Grille : conteneur unique, 12, 8 et 4 colonnes, espacements sur la grille de 8.
+5. Contrastes : tout le texte est AAA, l'accent AA, les contours de contrôle à 3,9:1.
+6. Mouvement réduit : pris en compte par tokens et dans `js/motion.js`.
+7. Header et footer : Web Components avec repli HTML, CLS ramené à 0.
+8. CSS mort : `style.css` supprimé, réécriture complète.
+9. Variantes de composants : un bouton, un filtre, un tiroir, un formulaire de contribution.
+10. Anti-patterns : aucun ne ressort des recherches automatiques.
+
+### Micro-textes modifiés
+
+Seuls les textes qui violaient une règle (tiret cadratin, emoji, flèche, point d'exclamation décoratif) ou qui nuisaient à l'usage ont été touchés.
+
+| Où | Avant | Après | Raison |
+|---|---|---|---|
+| `<title>` de 6 pages | « Médiathèque — Pierre Duchesne » | « Médiathèque, Pierre Duchesne » | Tiret cadratin |
+| Descriptions `meta` et Open Graph | « … — … » | virgule ou deux-points | Tiret cadratin |
+| Pied de page | « © 2026 — Pierre Duchesne » | « © 2026 Pierre Duchesne » | Tiret cadratin |
+| Accueil, manifeste | Deux lignes en capitales monospace | « Connaissances, outils et curiosités. Construit pour moi, ouvert par envie. » | Lisibilité |
+| Accueil, sections | (aucun titre) | « En chiffres », « Sept outils » et une phrase d'introduction | Hiérarchie de titres |
+| Accueil et menu | « BoardNight », « Suivi de Scores » | « Suivi de scores » (menu : « Scores ») | Cohérence |
+| Accueil, batch cooking | « Générateur intelligent de repas hebdomadaires à partir d'un ingrédient ou d'une envie » | « Générateur de repas hebdomadaires à partir d'un plat ou d'un ingrédient » | Exactitude : l'outil part d'un plat ou d'ingrédients |
+| Accueil, sites web | « Bientôt garni » | « Sélection en cours » (remplacé par le dernier ajout dès que les données sont lues) | Clarté |
+| En-têtes de page | « ./mediatheque », « ./projets/sudoku » | « Découvrir », « Organiser », « Jeux » | Information utile au lieu d'un chemin |
+| Formulaires | « + Proposer un lieu », « Proposer → » | « Proposer un lieu », « Proposer » | Symboles décoratifs |
+| Formulaires, note | « Sauvegardé localement · Pierre intègre les suggestions manuellement » | « Envoyé à Pierre, intégré manuellement. » | L'ancienne note était fausse : l'envoi passe par Formspree |
+| Formulaires | « ex: Pierre », « URL », « Pourquoi c'est cool » | « Pierre », « Adresse », « Pourquoi il vaut le détour » | Sobriété |
+| Erreurs de formulaire | Message éphémère « Le titre est obligatoire. » | « Erreur : ce champ est obligatoire. » sous le champ | Erreur rattachée au champ |
+| Confirmation d'envoi | « "Hades" envoyé — merci ! » | « « Hades » envoyé, merci. » | Tiret cadratin |
+| Batch cooking, titre | « Organisez votre semaine en un clic. » | « Organisez votre semaine. » | Promesse inexacte : il faut choisir puis générer |
+| Batch cooking, chapô | « Choisissez votre point de départ, nous nous occupons du reste. » | « Choisissez un point de départ. Le générateur propose cinq repas qui partagent un maximum d'ingrédients. » | Dit ce que fait l'outil |
+| Batch cooking, onglets | « Partir d'un plat », « Partir d'un ingrédient » | « Un plat », « Des ingrédients » sous le libellé « Point de départ » | Concision |
+| Ville | « ★ Coup de cœur », « Cliquer sur un lieu pour les détails » | Étiquette « Coup de cœur », phrase d'aide sous la carte | Symbole, et la couleur des marqueurs est désormais expliquée |
+| Encyclopédie | « 18 infos », pas de titre de page | « 18 notes », titre « Encyclopédie » et chapô | Titre de page manquant |
+| Sudoku, état | « Chargement de Python... » au démarrage | « Saisissez votre grille, Python se charge au premier calcul » | Nouveau comportement |
+| Sudoku, pavé | « Suppr » | « Effacer la case » | Clarté |
+| Score, boutons | « ↩ Undo », « Fin & Résultats », « ← Retour », « Lancer la partie → » | « Annuler la dernière manche », « Terminer la partie », « Retour », « Lancer la partie » | Symboles, anglicisme |
+| Score, messages | « Manche 3 enregistrée ✓ », « Ana prend la tête ! » | « Manche 3 enregistrée. », « Ana prend la tête. » | Symbole, ponctuation |
+| Score, statistiques | « Momentum », « Écart avec le 2ème » | « Élan », « Écart avec le 2e » | Français, abréviation correcte |
+| Score, résultats | « Résultats Finaux » | « Ana l'emporte. » (nom du vainqueur) | Le titre porte l'information |
+| Score, trophée | « Meilleure manche à la toute dernière round. » | « Meilleur score lors de la toute dernière manche. » | Anglicisme |
+| Données | 7 descriptions avec tiret cadratin | deux-points ou virgule | Tiret cadratin |
+
+Les titres des 17 trophées, leurs descriptions (hors la ligne ci-dessus), les libellés de filtres et les données elles-mêmes sont inchangés.
+
+### Ce qui reste, et pourquoi
+
+| Point | Raison |
+|---|---|
+| Pas de `canonical`, `og:url` ni `og:image` | Le domaine de production n'apparaît nulle part dans le dépôt. Je n'ai pas voulu en inventer un. Les données structurées de l'accueil sont ajoutées sans URL. |
+| Ville : accessibilité 97, contrôle `target-size` | La zone cliquable des marqueurs est passée à 24 px, mais 87 marqueurs se chevauchent à l'échelle de trois pays. La vue Liste donne les mêmes lieux avec des cibles pleine largeur. |
+| Envoi réel des formulaires non testé | Un envoi de test aurait expédié un message à l'adresse Formspree. La validation, les erreurs et le chemin d'échec ont été testés, pas la réponse positive du service. |
+| Leaflet, D3, Chart.js et Pyodide viennent toujours de CDN | Inchangé par rapport à l'existant. Seul le CSS de Leaflet est désormais local. Les copier dans le dépôt est possible, Pyodide pèse environ 10 Mo. |
+| Tuiles OpenStreetMap | Service gratuit prévu pour un trafic modéré. Si le site prend de l'audience, il faudra un fournisseur de tuiles avec clé. |
+| Interlignage des titres fluides | Ratio sans unité (1,05 et 1,15) au lieu d'un multiple de 8 : une taille qui varie en continu ne peut pas tomber juste à toutes les largeurs. |
+| Trois appels à `style.setProperty` en JS | Lecture de la couleur résolue d'un token pour Chart.js, et coordonnées de l'infobulle du graphe. Aucune valeur de design n'y est écrite. |
+| Thème sombre sur anciens navigateurs | `light-dark()` date de 2024. Les navigateurs plus anciens reçoivent le thème clair par un bloc `@supports`. |
+| Transitions entre pages | `@view-transition` n'est pris en charge que par Chrome, Edge et Safari récents. Ailleurs, la navigation est simplement instantanée. |
+| Parties de score enregistrées avec des emojis | Elles restent lisibles : l'emoji stocké est ignoré, la couleur d'origine est convertie vers la série la plus proche. |
+| Scripts de page en scripts classiques | `data.js` et `app.js` partagent des variables globales, comme avant. Les convertir en modules n'apportait rien à la refonte visuelle. |
+| Tests automatisés | Les scénarios Playwright ont été exécutés depuis un dossier temporaire et ne sont pas versés au dépôt, qui n'a ni Node ni dépendances. |
+| `SKILL.md` | Fichier personnel, laissé tel quel. |
