@@ -120,7 +120,7 @@ const PLACES = [
   //  MADRID
   // ══════════════════════════════════════════
 
-  // — Restaurants & Bars à manger —
+  // : Restaurants & Bars à manger -
   {
     id: 'mad_01', city: 'Madrid',
     name: 'El Jardín Secreto', type: 'Cocktail', neighborhood: 'Conde Duque',
@@ -298,7 +298,7 @@ const PLACES = [
     hours: '–', tags: ['Desserts', 'Créatif', 'Tendance'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Clubs & Discothèques —
+  // : Clubs & Discothèques -
   {
     id: 'mad_23', city: 'Madrid',
     name: 'Calle 365', type: 'Club', neighborhood: 'Chueca',
@@ -364,7 +364,7 @@ const PLACES = [
     hours: 'Selon programme', tags: ['Soirées thématiques', 'Petit format'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Musées —
+  // : Musées -
   {
     id: 'mad_31', city: 'Madrid',
     name: 'Musée du Prado', type: 'Musée', neighborhood: 'Paseo del Arte',
@@ -462,7 +462,7 @@ const PLACES = [
     hours: 'Mar–Dim 10h–15h', tags: ['Trains', 'Locomotives', 'Histoire industrielle'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Spectacles & Culture —
+  // : Spectacles & Culture -
   {
     id: 'mad_43', city: 'Madrid',
     name: 'Teatro Albéniz Madrid', type: 'Spectacle', neighborhood: 'Centro',
@@ -520,7 +520,7 @@ const PLACES = [
     hours: 'Selon programme', tags: ['Cinéma', 'VO disponible', 'Centre'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Marchés —
+  // : Marchés -
   {
     id: 'mad_50', city: 'Madrid',
     name: 'Marché de San Miguel', type: 'Marché', neighborhood: 'Centro',
@@ -562,7 +562,7 @@ const PLACES = [
     hours: 'Lun–Sam 9h–14h30 / 17h–20h30', tags: ['Local', 'La Latina', 'Poissonnerie'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Parcs & Jardins —
+  // : Parcs & Jardins -
   {
     id: 'mad_55', city: 'Madrid',
     name: 'Jardins de Sabatini', type: 'Parc', neighborhood: 'Palacio Real',
@@ -604,7 +604,7 @@ const PLACES = [
     hours: 'Week-end et vacances, 12h–21h', tags: ['Attractions', 'Famille', 'Casa de Campo'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Monuments & Lieux emblématiques —
+  // : Monuments & Lieux emblématiques -
   {
     id: 'mad_60', city: 'Madrid',
     name: 'Plaza Mayor', type: 'Monument', neighborhood: 'Centro',
@@ -662,7 +662,7 @@ const PLACES = [
     hours: 'Selon matchs', tags: ['Foot', 'Atlético', 'Moderne'], highlight: false, contributor: 'Pedro',
   },
 
-  // — Magasins —
+  // : Magasins -
   {
     id: 'mad_67', city: 'Madrid',
     name: 'Boxer Madrid', type: 'Magasin', neighborhood: 'Chueca',

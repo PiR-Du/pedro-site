@@ -5,7 +5,7 @@
    Ordre de chargement : tokens, base, layout, components, utilities.
    ========================================================= */
 
-@layer tokens, base, layout, components, utilities;
+@layer tokens, base, vendor, layout, components, utilities;
 
 @layer tokens {
   :root {
@@ -117,6 +117,18 @@
     --drawer-width: 30rem;        /* 480 px */
     --icon-size: 1rem;
     --swatch-size: 1.5rem;
+    --avatar-size: 2rem;          /* 32 px */
+    --avatar-size-lg: 4rem;       /* 64 px */
+    --marker-size: 0.75rem;       /* 12 px */
+    --marker-size-active: 1.25rem;/* 20 px */
+    --map-height: 35rem;          /* 560 px */
+    --graph-height: 40rem;        /* 640 px */
+    --chart-height: 20rem;        /* 320 px */
+    --sudoku-size: 34rem;         /* 544 px */
+    --score-input-width: 6rem;    /* 96 px */
+    --map-filter: grayscale(1) contrast(1.1);
+    --hull-opacity: 0.06;
+    --dim-opacity: 0.2;
 
     /* ---------- Mouvement ---------- */
     --duration-fast: 200ms;
@@ -139,6 +151,12 @@
   /* Choix manuel du thème : l'attribut prime sur la préférence système */
   :root[data-theme="light"] { color-scheme: light; }
   :root[data-theme="dark"] { color-scheme: dark; }
+
+  /* Fond de carte : tuiles désaturées, inversées en sombre */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --map-filter: grayscale(1) invert(1) contrast(0.9); }
+  }
+  :root[data-theme="dark"] { --map-filter: grayscale(1) invert(1) contrast(0.9); }
 
   /* Tablette : 8 colonnes */
   @media (min-width: 48rem) {

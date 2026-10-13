@@ -1,244 +1,153 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pierre Duchesne</title>
-  <meta name="description" content="Mon bazar bien rangé — connaissances, outils et curiosités." />
-  <meta property="og:title" content="Pierre Duchesne" />
-  <meta property="og:description" content="Mon bazar bien rangé — connaissances, outils et curiosités." />
-  <meta property="og:type" content="website" />
-  <!-- tu as trouvé l'endroit où tout se passe. -->
-  <link rel="stylesheet" href="style.css?v=7" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <meta name="description" content="Mon bazar bien rangé : connaissances, outils et curiosités.">
+  <meta property="og:title" content="Pierre Duchesne">
+  <meta property="og:description" content="Mon bazar bien rangé : connaissances, outils et curiosités.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#efefec" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Pierre Duchesne",
+    "description": "Mon bazar bien rangé : connaissances, outils et curiosités.",
+    "inLanguage": "fr",
+    "author": { "@type": "Person", "name": "Pierre Duchesne" }
+  }
+  </script>
 </head>
 
 <body data-root="." data-page="home">
-  <div id="site-header"></div>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
 
-  <main>
-
-    <!-- ═══ HERO ═══ -->
-    <section class="lp-hero">
-      <div class="lp-hero-inner">
-        <div class="lp-hero-meta" aria-hidden="true">
-          <span class="lp-hero-num">01</span>
-          <span class="lp-hero-eyebrow">Pierre Duchesne</span>
-        </div>
-        <div class="lp-hero-rule" aria-hidden="true"></div>
-        <h1 class="lp-hero-title">
-          Mon bazar<br>bien rangé.
-        </h1>
-        <p class="lp-hero-manifesto">
-          Connaissances, outils et curiosités.<br>
-          Construit pour moi. Ouvert par envie.
-        </p>
+  <site-header>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-header__brand" href="index.html">Pierre Duchesne</a>
+        <a class="link text-sm" href="index.html#outils">Sommaire</a>
       </div>
+    </header>
+  </site-header>
 
-      <!-- Compteurs vivants -->
-      <div class="lp-hero-foot">
-        <div class="lp-stats">
-          <div class="lp-stat">
-            <span class="lp-stat-num" id="stat-media">—</span>
-            <span class="lp-stat-label">Références culturelles</span>
-          </div>
-          <div class="lp-stat">
-            <span class="lp-stat-num" id="stat-places">—</span>
-            <span class="lp-stat-label">Lieux cartographiés</span>
-          </div>
-          <div class="lp-stat">
-            <span class="lp-stat-num" id="stat-meals">—</span>
-            <span class="lp-stat-label">Recettes</span>
-          </div>
-          <div class="lp-stat">
-            <span class="lp-stat-num" id="stat-nodes">—</span>
-            <span class="lp-stat-label">Savoirs partagés</span>
-          </div>
-          <div class="lp-stat">
-            <span class="lp-stat-num" id="stat-web">—</span>
-            <span class="lp-stat-label">Sites favoris</span>
-          </div>
+  <main id="contenu">
+
+    <section class="page-head page-head--poster" aria-labelledby="titre">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <span class="folio sm-col-1-2 md-col-1-2 col-1-2">00</span>
+          <span class="eyebrow sm-col-3-4 md-col-5-8 col-10-12 align-end">Pierre Duchesne</span>
+        </div>
+        <hr class="rule rule--strong col-1-12" data-reveal>
+        <h1 class="display col-1-9 reveal-lines" id="titre" data-reveal="lines">
+          <span class="reveal-lines__line"><span>Mon bazar</span></span>
+          <span class="reveal-lines__line"><span>bien rangé.</span></span>
+        </h1>
+        <p class="lead col-8-12 md-col-4-8" data-reveal>Connaissances, outils et curiosités. Construit pour moi, ouvert par envie.</p>
+      </div>
+    </section>
+
+    <section class="section section--ruled section--tight" aria-labelledby="titre-chiffres">
+      <div class="container grid">
+        <h2 class="eyebrow col-1-12" id="titre-chiffres">En chiffres</h2>
+        <div class="grid__band stats" data-reveal-group>
+          <p class="stat" data-reveal><span class="numeral" id="stat-media">58</span><span class="eyebrow">Références culturelles</span></p>
+          <p class="stat" data-reveal><span class="numeral" id="stat-places">87</span><span class="eyebrow">Lieux cartographiés</span></p>
+          <p class="stat" data-reveal><span class="numeral" id="stat-meals">51</span><span class="eyebrow">Recettes</span></p>
+          <p class="stat" data-reveal><span class="numeral" id="stat-nodes">20</span><span class="eyebrow">Savoirs partagés</span></p>
+          <p class="stat" data-reveal><span class="numeral" id="stat-web">30</span><span class="eyebrow">Sites favoris</span></p>
         </div>
       </div>
     </section>
 
-    <!-- ═══ GRILLE DES OUTILS ═══ -->
-    <section class="lp-grid" id="explorer">
-      <div class="lp-grid-inner">
+    <section class="section section--ruled" id="outils" aria-labelledby="titre-outils">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <h2 class="title-2 col-1-5 md-col-1-4" id="titre-outils">Sept outils</h2>
+          <p class="muted col-7-12 md-col-5-8">Trois pour découvrir, deux pour organiser, deux pour jouer. Chaque ligne affiche sa dernière entrée.</p>
+        </div>
 
-        <a href="mediatheque/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">01</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Médiathèque</h2>
-          <p class="lp-card-desc">Base de recommandations culturelles filtrables — films, séries, livres, musique, jeux.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live" id="last-media">Films · Séries · Livres · Musique</span>
-          </div>
-        </a>
-
-        <a href="ville/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">02</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Que faire en ville ?</h2>
-          <p class="lp-card-desc">Carte interactive de lieux à découvrir — testés et approuvés à Toulouse, Paris et Madrid.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live" id="last-place">Toulouse · Madrid · Paris</span>
-          </div>
-        </a>
-
-        <a href="encyclopedia/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">03</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Encyclopédie</h2>
-          <p class="lp-card-desc">Carte mentale collaborative de connaissances, organisée par profils contributeurs.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live" id="last-node">Savoirs partagés</span>
-          </div>
-        </a>
-
-        <a href="batch-cooking/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">04</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Batch Cooking</h2>
-          <p class="lp-card-desc">Générateur intelligent de repas hebdomadaires à partir d'un ingrédient ou d'une envie.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live" id="last-meal">Recettes de saison</span>
-          </div>
-        </a>
-
-        <a href="score/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">05</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">BoardNight</h2>
-          <p class="lp-card-desc">Suivi interactif de soirées jeux de société avec graphiques et trophées épiques.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live">Scores · Graphiques · Trophées</span>
-          </div>
-        </a>
-
-        <a href="sudoku/sudoku.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">06</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Solveur de Sudoku</h2>
-          <p class="lp-card-desc">Solveur Python exécuté dans le navigateur via Pyodide — sans serveur, sans installation.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live">Python · Pyodide · Backtracking</span>
-          </div>
-        </a>
-
-        <a href="web/index.html" class="lp-card">
-          <div class="lp-card-head">
-            <span class="lp-card-idx">07</span>
-            <span class="lp-card-arrow" aria-hidden="true">→</span>
-          </div>
-          <h2 class="lp-card-name">Sites web à découvrir</h2>
-          <p class="lp-card-desc">Sélection de sites qui valent le détour — portfolios, outils, inspirations, expériences.</p>
-          <div class="lp-card-foot">
-            <span class="lp-card-live" id="last-web">Bientôt garni</span>
-          </div>
-        </a>
-
+        <ol class="grid__band grid--flush entry-list">
+          <li class="entry">
+            <span class="folio entry__folio">01</span>
+            <h3 class="entry__title"><a class="entry__link" href="mediatheque/index.html">Médiathèque</a></h3>
+            <p class="entry__body">Recommandations culturelles filtrables : films, séries, livres, musique, jeux.</p>
+            <span class="eyebrow entry__meta" id="last-media">Films, séries, livres</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">02</span>
+            <h3 class="entry__title"><a class="entry__link" href="ville/index.html">Que faire en ville ?</a></h3>
+            <p class="entry__body">Carte interactive de lieux testés et approuvés à Toulouse, Paris et Madrid.</p>
+            <span class="eyebrow entry__meta" id="last-place">Toulouse, Madrid, Paris</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">03</span>
+            <h3 class="entry__title"><a class="entry__link" href="encyclopedia/index.html">Encyclopédie</a></h3>
+            <p class="entry__body">Carte mentale collaborative de connaissances, organisée par profils contributeurs.</p>
+            <span class="eyebrow entry__meta" id="last-node">Savoirs partagés</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">04</span>
+            <h3 class="entry__title"><a class="entry__link" href="batch-cooking/index.html">Batch cooking</a></h3>
+            <p class="entry__body">Générateur de repas hebdomadaires à partir d'un plat ou d'un ingrédient.</p>
+            <span class="eyebrow entry__meta" id="last-meal">Recettes de saison</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">05</span>
+            <h3 class="entry__title"><a class="entry__link" href="score/index.html">Suivi de scores</a></h3>
+            <p class="entry__body">Compagnon de soirées jeux de société, avec classement, graphiques et trophées.</p>
+            <span class="eyebrow entry__meta">Scores, graphiques</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">06</span>
+            <h3 class="entry__title"><a class="entry__link" href="sudoku/sudoku.html">Solveur de Sudoku</a></h3>
+            <p class="entry__body">Solveur Python exécuté dans le navigateur avec Pyodide, sans serveur ni installation.</p>
+            <span class="eyebrow entry__meta">Python, Pyodide</span>
+          </li>
+          <li class="entry">
+            <span class="folio entry__folio">07</span>
+            <h3 class="entry__title"><a class="entry__link" href="web/index.html">Sites web à découvrir</a></h3>
+            <p class="entry__body">Sélection de sites qui valent le détour : portfolios, outils, inspirations, expériences.</p>
+            <span class="eyebrow entry__meta" id="last-web">Sélection en cours</span>
+          </li>
+        </ol>
       </div>
     </section>
 
   </main>
 
-  <div id="site-footer"></div>
+  <site-footer>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>© 2026 Pierre Duchesne</p>
+        <p class="eyebrow">Data · Maths · Code</p>
+      </div>
+    </footer>
+  </site-footer>
 
-  <!-- Données vivantes — chargées avant le script de comptage -->
+  <!-- Données vivantes : chargées avant le script de comptage -->
   <script src="mediatheque/data.js"></script>
   <script src="ville/data.js"></script>
   <script src="batch-cooking/data.js"></script>
   <script src="encyclopedia/data.js"></script>
   <script src="web/data.js"></script>
-
-  <script>
-  (function () {
-    function countUp(el, to, ms) {
-      if (!el || to == null) return;
-      ms = ms || 700;
-      var t0 = performance.now();
-      (function tick(now) {
-        var p = Math.min((now - t0) / ms, 1);
-        el.textContent = Math.round(p * to);
-        if (p < 1) requestAnimationFrame(tick);
-      })(t0);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var mediaCount  = typeof MEDIA        !== 'undefined' ? MEDIA.length                        : 0;
-      var placesCount = typeof PLACES       !== 'undefined' ? PLACES.length                       : 0;
-      var mealsCount  = typeof MEALS        !== 'undefined' ? MEALS.length                        : 0;
-      var nodesCount  = typeof INITIAL_DATA !== 'undefined' ? (INITIAL_DATA.infos || []).length   : 0;
-      var webCount    = typeof SITES        !== 'undefined' ? SITES.length                        : 0;
-
-      countUp(document.getElementById('stat-media'),  mediaCount);
-      countUp(document.getElementById('stat-places'), placesCount);
-      countUp(document.getElementById('stat-meals'),  mealsCount);
-      countUp(document.getElementById('stat-nodes'),  nodesCount);
-      countUp(document.getElementById('stat-web'),    webCount);
-
-      // Dernière entrée médiathèque
-      if (mediaCount) {
-        var last = MEDIA[MEDIA.length - 1];
-        var el = document.getElementById('last-media');
-        if (el) el.textContent = last.title + ' — ' + (last.contributor || last.type || '');
-      }
-
-      // Répartition des lieux par ville
-      if (placesCount) {
-        var cities = {};
-        PLACES.forEach(function (p) {
-          var c = p.city || '?';
-          cities[c] = (cities[c] || 0) + 1;
-        });
-        var str = Object.keys(cities)
-          .map(function (c) { return c + ' (' + cities[c] + ')'; })
-          .join(' · ');
-        var elP = document.getElementById('last-place');
-        if (elP) elP.textContent = str;
-      }
-
-      // Dernière entrée encyclopédie
-      if (nodesCount) {
-        var infos = INITIAL_DATA.infos;
-        var lastNode = infos[infos.length - 1];
-        var elN = document.getElementById('last-node');
-        if (elN) elN.textContent = lastNode.title + ' — ' + lastNode.category;
-      }
-
-      // Dernière recette batch cooking
-      if (mealsCount) {
-        var lastMeal = MEALS[MEALS.length - 1];
-        var elM = document.getElementById('last-meal');
-        if (elM) elM.textContent = 'Ajouté : ' + lastMeal.title;
-      }
-
-      // Dernier site ajouté à Sites web à découvrir
-      if (webCount) {
-        var lastSite = SITES[SITES.length - 1];
-        var elW = document.getElementById('last-web');
-        if (elW) elW.textContent = lastSite.name + ' — ' + lastSite.category;
-      }
-    });
-  })();
-  </script>
-
-  <script src="shared-layout.js?v=5"></script>
+  <script src="js/home.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 
 </html>
