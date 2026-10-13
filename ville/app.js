@@ -1,47 +1,25 @@
-const TYPE_ICONS = {}; /* Plus d'emoji — on utilise le nom du type seul */
-
-const TYPE_HEX = {
-  'Restaurant': '#e07b35',
-  'Bar':        '#3a70e8',
-  'Café':       '#b06430',
-  'Cocktail':   '#7c3aed',
-  'Club':       '#be185d',
-  'Musée':      '#0d9488',
-  'Marché':     '#059669',
-  'Magasin':    '#d97706',
-  'Spectacle':  '#8b5cf6',
-  'Parc':       '#16a34a',
-  'Monument':   '#64748b',
-  'Cinéma':     '#9333ea',
-  'Stade':      '#dc2626',
-};
-
-const MOOD_ICONS = {}; /* Plus d'emoji — texte seul */
-
 let filters = { mood: 'all', type: 'all', city: 'all', search: '' };
 let villeMap = null;
 let markersLayer = {};
 let activeCardId = null;
 
-// ——— Init ———
+// ---------- Initialisation ----------
 
 function initVille() {
-  buildSidebar();
+  buildTypeFilter();
   initMap();
   renderAll();
   setupEventListeners();
 }
 
-// ——— Sidebar ———
-
-function buildSidebar() {
+function buildTypeFilter() {
   const types = [...new Set(PLACES.map(p => p.type))].sort();
-  const typeContainer = document.getElementById('type-filter');
-  typeContainer.innerHTML = `<button class="type-pill active" data-type="all">Tous</button>` +
-    types.map(t => `<button class="type-pill" data-type="${t}"><span style="font-size:0.9em">${TYPE_ICONS[t] || ''}</span> ${t}</button>`).join('');
+  document.getElementById('type-filter').innerHTML =
+    `<button type="button" class="chip" data-type="all" aria-pressed="true">Tous</button>` +
+    types.map(t => `<button type="button" class="chip" data-type="${escapeHtml(t)}" aria-pressed="false">${escapeHtml(t)}</button>`).join('');
 }
 
-// ——— Map ———
+// ---------- Carte ----------
 
 function initMap() {
   villeMap = L.map('ville-map', {
@@ -49,276 +27,192 @@ function initMap() {
     zoom: CITY_CONFIG.zoom,
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(villeMap);
-
-  // Légende
-  const legend = L.control({ position: 'bottomright' });
-  legend.onAdd = function () {
-    const div = L.DomUtil.create('div');
-    div.style.cssText = 'background:white;padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.12);font-size:0.72rem;line-height:1.8;font-family:Inter,sans-serif;max-height:260px;overflow-y:auto;';
-    div.innerHTML = Object.entries(TYPE_HEX).map(([type, color]) =>
-      `<div style="display:flex;align-items:center;gap:7px;">
-        <div style="width:10px;height:10px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);flex-shrink:0;"></div>
-        <span style="color:#374151;">${TYPE_ICONS[type] || ''} ${type}</span>
-      </div>`
-    ).join('');
-    return div;
-  };
-  legend.addTo(villeMap);
+  villeMap.attributionControl.setPrefix(false);
 }
 
-function makeMarkerIcon(type, big = false) {
-  const color = TYPE_HEX[type] || '#7c3aed';
-  const size = big ? 20 : 12;
-  const border = big ? 3 : 2;
-  const shadow = big ? '0 3px 12px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.2)';
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:${size}px;height:${size}px;background:${color};border:${border}px solid white;border-radius:50%;box-shadow:${shadow};transition:all 0.2s;"></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
+// Marqueur carré : encre par défaut, accent pour un coup de cœur, agrandi quand il est actif.
+// La taille vient du CSS (.map-marker), d'où iconSize à null.
+function makeMarkerIcon(place, active = false) {
+  const classes = ['map-marker'];
+  if (place.highlight) classes.push('map-marker--favorite');
+  if (active) classes.push('map-marker--active');
+  return L.divIcon({ className: classes.join(' '), iconSize: null });
 }
 
 function renderMarkers(places) {
   Object.values(markersLayer).forEach(m => villeMap.removeLayer(m));
   markersLayer = {};
-
   if (places.length === 0) return;
 
   places.forEach(place => {
-    const marker = L.marker([place.lat, place.lng], { icon: makeMarkerIcon(place.type) });
+    const marker = L.marker([place.lat, place.lng], { icon: makeMarkerIcon(place), title: place.name, alt: `${place.name}, ${place.type}` });
     marker.on('click', () => showDetail(place.id));
-    marker.on('mouseover', () => marker.setIcon(makeMarkerIcon(place.type, true)));
+    marker.on('mouseover', () => marker.setIcon(makeMarkerIcon(place, true)));
     marker.on('mouseout', () => {
-      if (activeCardId !== place.id) marker.setIcon(makeMarkerIcon(place.type));
+      if (activeCardId !== place.id) marker.setIcon(makeMarkerIcon(place));
     });
-    marker.bindTooltip(place.name, { permanent: false, direction: 'top', offset: [0, -8], className: 'ville-tooltip' });
+    marker.bindTooltip(`${place.name} · ${place.type}`, { direction: 'top', offset: [0, -12], className: 'map-tooltip' });
     marker.addTo(villeMap);
     markersLayer[place.id] = marker;
   });
 
   // Ajuster la vue
+  const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (filters.city !== 'all' && CITIES[filters.city]) {
     const cfg = CITIES[filters.city];
-    villeMap.flyTo([cfg.lat, cfg.lng], cfg.zoom, { duration: 1 });
+    villeMap.setView([cfg.lat, cfg.lng], cfg.zoom, { animate });
   } else {
     try {
       const group = L.featureGroup(Object.values(markersLayer));
-      villeMap.fitBounds(group.getBounds().pad(0.15), { maxZoom: 14, duration: 1 });
-    } catch (_) {}
+      villeMap.fitBounds(group.getBounds().pad(0.15), { maxZoom: 14, animate });
+    } catch (_) { /* aucun marqueur */ }
   }
 }
 
-// ——— Cards ———
+function resetMarkers(activeId) {
+  Object.entries(markersLayer).forEach(([pid, marker]) => {
+    const place = PLACES.find(x => x.id === pid);
+    if (place) marker.setIcon(makeMarkerIcon(place, pid === activeId));
+  });
+}
+
+// ---------- Liste ----------
 
 function renderCards(places) {
   const grid = document.getElementById('ville-grid');
   if (!grid) return;
-
-  if (places.length === 0) {
-    grid.innerHTML = `<div class="ville-empty">
-      <p>Aucun lieu ne correspond à ces filtres.</p>
-    </div>`;
-    return;
-  }
-
-  grid.innerHTML = places.map(p => createPlaceCard(p)).join('');
-
-  grid.querySelectorAll('.place-card').forEach(card => {
-    const id = card.dataset.id;
-    card.addEventListener('click', () => showDetail(id));
-    card.addEventListener('mouseenter', () => {
-      const place = PLACES.find(p => p.id === id);
-      if (markersLayer[id] && place) markersLayer[id].setIcon(makeMarkerIcon(place.type, true));
-    });
-    card.addEventListener('mouseleave', () => {
-      const place = PLACES.find(p => p.id === id);
-      if (markersLayer[id] && place && activeCardId !== id) markersLayer[id].setIcon(makeMarkerIcon(place.type));
-    });
-  });
+  grid.innerHTML = places.length
+    ? places.map(createPlaceRow).join('')
+    : '<li class="empty">Aucun lieu ne correspond à ces filtres.</li>';
 }
 
-function createPlaceCard(place) {
-  const icon = TYPE_ICONS[place.type] || '';
-  const moodTags = place.moods.slice(0, 2).map(m =>
-    `<span class="place-mood-tag">${MOOD_ICONS[m] || ''} ${m}</span>`
-  ).join('');
-  const cityBadge = `<span style="font-size:0.6rem;color:var(--muted-foreground);font-family:var(--font-mono);opacity:0.7;">${place.city}</span>`;
-
+function createPlaceRow(place) {
   return `
-    <div class="place-card" data-id="${place.id}">
-      <div class="place-card-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
-          <span class="place-type-badge">${icon} ${place.type}</span>
-          ${place.highlight ? '<span class="ville-star" title="Coup de cœur">★</span>' : ''}
-        </div>
-        <div class="place-name">${place.name}</div>
-        <div class="place-meta">${place.neighborhood} · ${cityBadge}</div>
-        <div class="place-desc">${place.description}</div>
-      </div>
-      <div class="place-card-footer">
-        <span class="place-budget">${place.budget}</span>
-        <div class="place-moods">${moodTags}</div>
-      </div>
-    </div>
-  `;
+    <li class="result">
+      <span class="tag result__tag${place.highlight ? ' tag--accent' : ''}">${escapeHtml(place.type)}</span>
+      <h2 class="result__title"><button type="button" class="entry__link" data-id="${escapeHtml(place.id)}">${escapeHtml(place.name)}</button></h2>
+      <p class="result__body">${escapeHtml(place.neighborhood)}, ${escapeHtml(place.city)}${place.highlight ? '<br><strong class="accent">Coup de cœur</strong>' : ''}</p>
+      <span class="eyebrow result__meta">${escapeHtml(place.budget)} · ${place.moods.slice(0, 2).map(escapeHtml).join(', ')}</span>
+    </li>`;
 }
 
-// ——— Filters ———
+// ---------- Filtres ----------
 
 function getFilteredPlaces() {
-  return PLACES.filter(p => {
-    const matchMood = filters.mood === 'all' || p.moods.includes(filters.mood);
-    const matchType = filters.type === 'all' || p.type === filters.type;
-    const matchCity = filters.city === 'all' || p.city === filters.city;
-    const q = filters.search.toLowerCase();
-    const matchSearch = !q ||
+  const q = filters.search.toLowerCase();
+  return PLACES.filter(p =>
+    (filters.mood === 'all' || p.moods.includes(filters.mood)) &&
+    (filters.type === 'all' || p.type === filters.type) &&
+    (filters.city === 'all' || p.city === filters.city) &&
+    (!q ||
       p.name.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
       p.neighborhood.toLowerCase().includes(q) ||
-      p.tags.some(t => t.toLowerCase().includes(q));
-    return matchMood && matchType && matchCity && matchSearch;
-  });
+      p.tags.some(t => t.toLowerCase().includes(q)))
+  );
 }
 
 function renderAll() {
   const filtered = getFilteredPlaces();
   renderMarkers(filtered);
   renderCards(filtered);
-  const el = document.getElementById('ville-count');
-  if (el) el.textContent = `${filtered.length} lieu${filtered.length !== 1 ? 'x' : ''}`;
+  document.getElementById('ville-count').textContent = `${filtered.length} lieu${filtered.length > 1 ? 'x' : ''}`;
 }
 
-// ——— Event Listeners ———
+// ---------- Événements ----------
 
-function setupEventListeners() {
-  // Mood pills
-  document.querySelectorAll('.mood-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      filters.mood = pill.dataset.mood;
-      renderAll();
-    });
-  });
-
-  // Type pills (delegated — built dynamically)
-  document.getElementById('type-filter').addEventListener('click', e => {
-    const pill = e.target.closest('.type-pill');
-    if (!pill) return;
-    document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    filters.type = pill.dataset.type;
+function bindChipGroup(groupId, key, attr) {
+  const group = document.getElementById(groupId);
+  group.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    group.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
+    filters[key] = chip.dataset[attr];
     renderAll();
   });
+}
 
-  // City filter
+function setupEventListeners() {
+  bindChipGroup('mood-filter', 'mood', 'mood');
+  bindChipGroup('type-filter', 'type', 'type');
+
   document.getElementById('filter-city').addEventListener('change', e => {
     filters.city = e.target.value;
     renderAll();
   });
 
-  // Search
   document.getElementById('ville-search').addEventListener('input', e => {
     filters.search = e.target.value;
     renderAll();
   });
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeDrawer();
+  document.getElementById('btn-map').addEventListener('click', () => setView('map'));
+  document.getElementById('btn-list').addEventListener('click', () => setView('list'));
+
+  document.getElementById('ville-grid').addEventListener('click', e => {
+    const trigger = e.target.closest('[data-id]');
+    if (trigger) showDetail(trigger.dataset.id);
+  });
+
+  // À la fermeture du tiroir, plus aucun marqueur n'est actif
+  document.getElementById('detail-drawer').addEventListener('close', () => {
+    activeCardId = null;
+    resetMarkers(null);
   });
 }
 
-// ——— View toggle ———
+// ---------- Bascule carte / liste ----------
 
-window.setView = function (view) {
-  const mapEl = document.getElementById('ville-map');
-  const gridEl = document.getElementById('ville-grid');
-  const btnMap = document.getElementById('btn-map');
-  const btnList = document.getElementById('btn-list');
-  if (view === 'map') {
-    mapEl.classList.remove('hidden');
-    gridEl.classList.add('hidden');
-    btnMap.classList.add('active');
-    btnList.classList.remove('active');
-    setTimeout(() => villeMap && villeMap.invalidateSize(), 50);
-  } else {
-    mapEl.classList.add('hidden');
-    gridEl.classList.remove('hidden');
-    btnMap.classList.remove('active');
-    btnList.classList.add('active');
-  }
-};
+function setView(view) {
+  const showMap = view === 'map';
+  document.getElementById('ville-map').hidden = !showMap;
+  document.getElementById('ville-grid').hidden = showMap;
+  document.getElementById('btn-map').setAttribute('aria-pressed', String(showMap));
+  document.getElementById('btn-list').setAttribute('aria-pressed', String(!showMap));
+  if (showMap) setTimeout(() => villeMap && villeMap.invalidateSize(), 50);
+}
 
-// ——— Detail drawer ———
+// ---------- Fiche de lieu ----------
 
-window.showDetail = function (id) {
+function showDetail(id) {
   const place = PLACES.find(p => p.id === id);
   if (!place) return;
 
   activeCardId = id;
-
-  Object.entries(markersLayer).forEach(([pid, marker]) => {
-    const p = PLACES.find(x => x.id === pid);
-    if (p) marker.setIcon(makeMarkerIcon(p.type, pid === id));
-  });
+  resetMarkers(id);
   if (markersLayer[id]) villeMap.panTo([place.lat, place.lng]);
 
-  const content = document.getElementById('drawer-content');
-  const tagsList = place.tags.map(t => `<span class="tag">${t}</span>`).join('');
-  const moodsList = place.moods.map(m => `<span class="tag">${MOOD_ICONS[m] || ''} ${m}</span>`).join('');
+  const rows = [
+    ['Adresse', place.address],
+    ['Horaires', place.hours && place.hours !== '–' && place.hours !== '-' ? place.hours : ''],
+    ['Budget', place.budget],
+  ].filter(([, value]) => value);
 
-  content.innerHTML = `
-    <div style="margin-bottom:1.75rem;">
-      <p style="color:var(--primary);font-family:var(--font-mono);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.4rem;">
-        ${place.type} · ${place.city}
-      </p>
-      <h2 style="font-family:var(--font-serif);font-size:1.9rem;line-height:1.15;letter-spacing:-0.01em;">${place.name}</h2>
-      ${place.highlight ? '<div style="margin-top:0.5rem;"><span style="color:oklch(0.7 0.18 80);font-size:0.85rem;font-weight:600;">★ Coup de cœur</span></div>' : ''}
+  openDrawer(`
+    <header class="stack stack--1">
+      <span class="eyebrow">${escapeHtml(place.type)} · ${escapeHtml(place.city)}</span>
+      <h2 class="title-2" id="drawer-title">${escapeHtml(place.name)}</h2>
+      ${place.highlight ? '<p><span class="tag tag--accent">Coup de cœur</span></p>' : ''}
+    </header>
+    <p>${escapeHtml(place.description)}</p>
+    <dl class="spec">
+      ${rows.map(([term, value]) => `<dt class="spec__term">${term}</dt><dd class="spec__value">${escapeHtml(value)}</dd>`).join('')}
+    </dl>
+    <div class="drawer__section">
+      <h3 class="eyebrow">Ambiances</h3>
+      <div class="cluster cluster--1">${place.moods.map(m => `<span class="tag">${escapeHtml(m)}</span>`).join('')}</div>
     </div>
+    <div class="drawer__section">
+      <h3 class="eyebrow">À savoir</h3>
+      <div class="cluster cluster--1">${place.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+    </div>`);
+}
 
-    <div class="detail-section">
-      <h3>Infos pratiques</h3>
-      <p><strong>Adresse :</strong> ${place.address}</p>
-      ${place.hours && place.hours !== '–' ? `<p style="margin-top:0.4rem;"><strong>Horaires :</strong> ${place.hours}</p>` : ''}
-      <p style="margin-top:0.4rem;"><strong>Budget :</strong>
-        <span style="color:var(--primary);font-weight:700;font-family:var(--font-mono);">${place.budget}</span>
-      </p>
-    </div>
-
-    <div class="detail-section">
-      <h3>Description</h3>
-      <p style="color:var(--muted-foreground);line-height:1.7;font-style:italic;">${place.description}</p>
-    </div>
-
-    <div class="detail-section">
-      <h3>Ambiances</h3>
-      <div class="tag-cloud">${moodsList}</div>
-    </div>
-
-    <div class="detail-section">
-      <h3>À savoir</h3>
-      <div class="tag-cloud">${tagsList}</div>
-    </div>
-  `;
-
-  document.getElementById('detail-drawer').classList.add('open');
-};
-
-window.closeDrawer = function () {
-  document.getElementById('detail-drawer').classList.remove('open');
-  activeCardId = null;
-  Object.entries(markersLayer).forEach(([pid, marker]) => {
-    const p = PLACES.find(x => x.id === pid);
-    if (p) marker.setIcon(makeMarkerIcon(p.type));
-  });
-};
-
-// ——— Bootstrap ———
+// ---------- Démarrage ----------
 
 function startVille() {
   try { initVille(); } catch (e) { console.error('Ville failed:', e); }
