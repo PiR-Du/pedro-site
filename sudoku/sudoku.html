@@ -1,62 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Solveur de Sudoku — Pierre Duchesne</title>
-  <meta name="description" content="Résolution automatique de grilles de Sudoku par backtracking, exécutée en Python dans le navigateur via Pyodide." />
-  <meta property="og:title" content="Solveur de Sudoku" />
-  <meta property="og:description" content="Algorithme de résolution par backtracking Python exécuté en temps réel dans le navigateur." />
-  <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=7" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solveur de Sudoku, Pierre Duchesne</title>
+  <meta name="description" content="Résolution automatique de grilles de Sudoku par backtracking, exécutée en Python dans le navigateur via Pyodide.">
+  <meta property="og:title" content="Solveur de Sudoku">
+  <meta property="og:description" content="Algorithme de résolution par backtracking Python exécuté en temps réel dans le navigateur.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#efefec" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="../js/theme-init.js"></script>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/utilities.css">
 </head>
+
 <body data-root=".." data-page="sudoku">
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
 
-  <div id="site-header"></div>
-
-  <main>
-    <section class="sudoku-page">
-      <header class="page-header" style="padding-left:0;padding-right:0;">
-        <div class="page-header-inner" style="max-width:100%;">
-          <div class="page-header-meta">
-            <span class="page-header-num">06</span>
-            <span class="eyebrow">./projets/sudoku</span>
-          </div>
-          <div class="page-header-rule" aria-hidden="true"></div>
-          <h1 class="page-header-title">Solveur de Sudoku</h1>
-          <p class="page-header-lead">Backtracking en Python, exécuté dans votre navigateur via <span class="mono">Pyodide</span>.</p>
-        </div>
-      </header>
-
-      <div class="status-bar loading" id="status">
-        <span class="dot"></span>
-        <span id="status-msg">Chargement de Python...</span>
+  <site-header>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-header__brand" href="../index.html">Pierre Duchesne</a>
+        <a class="link text-sm" href="../index.html#outils">Sommaire</a>
       </div>
+    </header>
+  </site-header>
 
-      <div class="sudoku-layout">
-        <div class="grid-wrapper">
-          <div class="grid" id="grid" role="grid" aria-label="Grille de Sudoku"></div>
+  <main id="contenu">
+    <header class="page-head">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <span class="folio sm-col-1-2 md-col-1-2 col-1-2">06</span>
+          <span class="eyebrow sm-col-3-4 md-col-5-8 col-10-12 align-end">Jeux</span>
+        </div>
+        <hr class="rule rule--strong col-1-12" data-reveal>
+        <h1 class="title-1 col-1-7 md-col-1-6">Solveur de Sudoku</h1>
+        <p class="lead col-8-12 md-col-1-6">Backtracking en Python, exécuté dans votre navigateur avec <span class="mono">Pyodide</span>.</p>
+      </div>
+    </header>
+
+    <div class="tool">
+      <div class="container grid">
+        <div class="tool__main col-1-7 md-col-1-5">
+          <p class="status" id="status" role="status"><span id="status-msg">Saisissez votre grille, Python se charge au premier calcul</span></p>
+          <div class="sudoku" id="grid" role="group" aria-label="Grille de Sudoku, 9 lignes sur 9 colonnes"></div>
+          <noscript><p class="empty">Le solveur nécessite JavaScript.</p></noscript>
         </div>
 
-        <div class="controls-panel">
+        <div class="tool__aside col-9-12 md-col-6-8">
+          <h2 class="eyebrow">Saisie</h2>
           <div class="numpad" id="numpad"></div>
-
-          <div class="actions">
-            <button class="btn btn-primary" id="btn-solve" disabled>Résoudre</button>
-            <button class="btn btn-outline btn-danger" id="btn-reset">Effacer tout</button>
+          <div class="stack stack--1">
+            <button type="button" class="btn btn--primary btn--block" id="btn-solve">Résoudre</button>
+            <button type="button" class="btn btn--danger btn--block" id="btn-reset">Effacer tout</button>
           </div>
+          <p class="hint">Flèches pour naviguer, <span class="kbd">1</span> à <span class="kbd">9</span> pour saisir, <span class="kbd">Suppr</span> pour effacer.</p>
         </div>
       </div>
-
-      <p class="hint">Astuce : flèches pour naviguer, 1-9 pour saisir, Suppr pour effacer.</p>
-    </section>
+    </div>
   </main>
 
-  <div id="site-footer"></div>
+  <site-footer>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>© 2026 Pierre Duchesne</p>
+        <p class="eyebrow">Data · Maths · Code</p>
+      </div>
+    </footer>
+  </site-footer>
 
-  <script src="../shared-layout.js?v=5"></script>
+  <script src="../js/site.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="../js/main.js"></script>
 </body>
+
 </html>
