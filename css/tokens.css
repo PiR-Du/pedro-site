@@ -1,0 +1,170 @@
+/* =========================================================
+   tokens.css
+   Source unique de vérité. Aucune valeur de couleur, d'espacement,
+   de taille ou de durée ne doit exister ailleurs que dans ce fichier.
+   Ordre de chargement : tokens, base, layout, components, utilities.
+   ========================================================= */
+
+@layer tokens, base, layout, components, utilities;
+
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* ---------- Couleur : rôles sémantiques (clair, sombre) ----------
+       60 % fond, 30 % texte et structure, 10 % accent. */
+    --color-bg: light-dark(#efefec, #121211);
+    --color-surface: light-dark(#e5e5e1, #1d1d1b);
+    --color-surface-sunken: light-dark(#f6f6f3, #0a0a09);
+    --color-text: light-dark(#111111, #ecece8);
+    --color-text-muted: light-dark(#4a4a46, #a9a9a2);
+    --color-border: light-dark(#c6c6c0, #34342f);
+    --color-border-strong: light-dark(#77776f, #7c7c74);
+    --color-accent: light-dark(#c8102e, #ff5a47);
+    --color-on-accent: light-dark(#f6f6f3, #121211);
+    --color-success: light-dark(#1f6b3a, #5fbf82);
+    --color-danger: var(--color-accent);
+    --color-overlay: light-dark(rgb(17 17 17 / 0.56), rgb(0 0 0 / 0.72));
+
+    /* Aplat inversé : encre en clair, papier en sombre */
+    --color-inverse-bg: var(--color-text);
+    --color-inverse-text: var(--color-bg);
+
+    /* Séries de données (joueurs, catégories). Usage : graphiques et pastilles uniquement. */
+    --color-data-1: light-dark(#c8102e, #ff5a47);
+    --color-data-2: light-dark(#111111, #ecece8);
+    --color-data-3: light-dark(#1f4fa8, #4d8dff);
+    --color-data-4: light-dark(#1f6b3a, #3fbf6f);
+    --color-data-5: light-dark(#9c4a00, #f08c1a);
+    --color-data-6: light-dark(#6b6b63, #a9a9a2);
+    --color-data-7: light-dark(#7a2e8e, #c56be0);
+    --color-data-8: light-dark(#0f6e73, #22b8c2);
+
+    /* ---------- Espacement : grille de 8 pt ---------- */
+    --space-half: 0.25rem;  /*   4 px, ajustements fins uniquement */
+    --space-1: 0.5rem;      /*   8 px */
+    --space-2: 1rem;        /*  16 px */
+    --space-3: 1.5rem;      /*  24 px */
+    --space-4: 2rem;        /*  32 px */
+    --space-5: 2.5rem;      /*  40 px */
+    --space-6: 3rem;        /*  48 px */
+    --space-8: 4rem;        /*  64 px */
+    --space-10: 5rem;       /*  80 px */
+    --space-12: 6rem;       /*  96 px */
+    --space-16: 8rem;       /* 128 px */
+    --space-20: 10rem;      /* 160 px */
+
+    /* Rythme vertical des sections, fluide entre deux paliers de la grille */
+    --section-gap: clamp(var(--space-8), 8vw, var(--space-16));
+
+    /* ---------- Grille ---------- */
+    --grid-columns: 4;
+    --grid-gutter: var(--space-2);
+    --grid-margin: var(--space-2);
+    --container-max: 90rem;      /* 1440 px, marges comprises */
+    --measure: 68ch;             /* longueur de ligne cible : 60 à 75 caractères */
+    --measure-narrow: 44ch;
+
+    /* ---------- Typographie ----------
+       Échelle modulaire Major Third (ratio 1,25), base 16 px. */
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+    --text-sm: 0.8rem;       /* 12,80 px  (16 ÷ 1,25) */
+    --text-base: 1rem;       /* 16,00 px */
+    --text-lg: 1.25rem;      /* 20,00 px */
+    --text-xl: 1.5625rem;    /* 25,00 px */
+    /* Paliers fluides : la borne haute est le palier nominal, la borne basse un palier inférieur de l'échelle */
+    --text-2xl: clamp(1.5625rem, 1.425rem + 0.587vw, 1.953rem);  /* 25,00 à  31,25 px */
+    --text-3xl: clamp(1.953rem, 1.781rem + 0.733vw, 2.441rem);   /* 31,25 à  39,06 px */
+    --text-4xl: clamp(2.441rem, 2.226rem + 0.918vw, 3.052rem);   /* 39,06 à  48,83 px */
+    --text-5xl: clamp(2.441rem, 1.957rem + 2.064vw, 3.815rem);   /* 39,06 à  61,04 px */
+    --text-6xl: clamp(3.052rem, 2.448rem + 2.578vw, 4.768rem);   /* 48,83 à  76,29 px */
+    --text-7xl: clamp(3.052rem, 2.028rem + 4.369vw, 5.96rem);    /* 48,83 à  95,37 px */
+    --text-8xl: clamp(3.815rem, 2.535rem + 5.463vw, 7.451rem);   /* 61,04 à 119,21 px */
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-bold: 700;
+
+    /* Interlignages : multiples de 8 (4 toléré) pour le texte courant, ratio pour les titres fluides */
+    --leading-sm: 1.25rem;    /* 20 px pour 12,8 px */
+    --leading-base: 1.5rem;   /* 24 px pour 16 px, soit 1,5 */
+    --leading-lg: 2rem;       /* 32 px pour 20 px, soit 1,6 */
+    --leading-xl: 2rem;       /* 32 px pour 25 px, soit 1,28 */
+    --leading-display: 1.05;
+    --leading-heading: 1.15;
+
+    --tracking-display: -0.04em;
+    --tracking-heading: -0.02em;
+    --tracking-normal: 0;
+    --tracking-label: 0.08em;
+
+    /* ---------- Formes ---------- */
+    --radius: 0;
+    --border-width: 1px;
+    --border-width-strong: 2px;
+    --border: var(--border-width) solid var(--color-border);
+    --border-strong: var(--border-width) solid var(--color-text);
+    --focus-ring: var(--border-width-strong) solid var(--color-accent);
+    --focus-offset: 2px;
+
+    /* ---------- Tailles de composants (multiples de 8) ---------- */
+    --control-height: 3rem;       /* 48 px, cible tactile */
+    --control-height-sm: 2.5rem;  /* 40 px */
+    --header-height: 4rem;        /* 64 px */
+    --sidebar-width: 17.5rem;     /* 280 px */
+    --drawer-width: 30rem;        /* 480 px */
+    --icon-size: 1rem;
+    --swatch-size: 1.5rem;
+
+    /* ---------- Mouvement ---------- */
+    --duration-fast: 200ms;
+    --duration-base: 400ms;
+    --duration-slow: 600ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --reveal-distance: var(--space-2);
+    --reveal-stagger: 80ms;
+    --overlay-opacity: 0.12;
+    --disabled-opacity: 0.4;
+
+    /* ---------- Empilement ---------- */
+    --z-header: 100;
+    --z-drawer: 200;
+    --z-modal: 300;
+    --z-toast: 400;
+  }
+
+  /* Choix manuel du thème : l'attribut prime sur la préférence système */
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  /* Tablette : 8 colonnes */
+  @media (min-width: 48rem) {
+    :root {
+      --grid-columns: 8;
+      --grid-gutter: var(--space-3);
+      --grid-margin: var(--space-4);
+    }
+  }
+
+  /* Bureau : 12 colonnes */
+  @media (min-width: 64rem) {
+    :root {
+      --grid-columns: 12;
+      --grid-margin: var(--space-8);
+    }
+  }
+
+  /* Sans mouvement : durées nulles, contenu visible immédiatement */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-fast: 0ms;
+      --duration-base: 0ms;
+      --duration-slow: 0ms;
+      --reveal-distance: 0;
+      --reveal-stagger: 0ms;
+    }
+  }
+}
