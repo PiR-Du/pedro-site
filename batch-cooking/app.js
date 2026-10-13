@@ -1,17 +1,36 @@
 const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 let currentMode = 'meal';
+let allIngredients = [];
 
 function init() {
   const ingredients = new Set();
   MEALS.forEach(m => m.ingredients.forEach(i => ingredients.add(i)));
-  window.allIngredients = Array.from(ingredients).sort();
+  allIngredients = Array.from(ingredients).sort();
   setMode('meal');
+
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+  document.getElementById('plan-form').addEventListener('submit', e => {
+    e.preventDefault();
+    generatePlan();
+  });
+}
+
+function makeSelect(id, label, options, placeholder) {
+  const select = document.createElement('select');
+  select.className = 'select';
+  select.id = id;
+  select.setAttribute('aria-label', label);
+  if (placeholder) select.add(new Option(placeholder, ''));
+  options.forEach(([value, text]) => select.add(new Option(text, value)));
+  return select;
 }
 
 function setMode(mode) {
   currentMode = mode;
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === mode);
+  document.querySelectorAll('[data-mode]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
   });
 
   const container = document.getElementById('selectors-container');
@@ -20,30 +39,13 @@ function setMode(mode) {
 
   if (mode === 'meal') {
     label.textContent = "Quel plat vous fait envie ?";
-    const select = document.createElement('select');
-    select.id = 'main-select';
-    MEALS.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = m.title;
-      select.appendChild(opt);
-    });
-    container.appendChild(select);
+    container.appendChild(makeSelect('main-select', 'Plat de départ', MEALS.map(m => [m.id, m.title])));
   } else {
-    label.textContent = "De quels ingrédients disposez-vous ? (choisissez-en jusqu'à 3)";
+    label.textContent = "De quels ingrédients disposez-vous ? (jusqu'à trois)";
+    const options = allIngredients.map(ing => [ing, ing.charAt(0).toUpperCase() + ing.slice(1)]);
     for (let i = 0; i < 3; i++) {
-      const select = document.createElement('select');
-      select.className = 'ingredient-select';
-      const emptyOpt = document.createElement('option');
-      emptyOpt.value = "";
-      emptyOpt.textContent = "-- Choisir un ingrédient --";
-      select.appendChild(emptyOpt);
-      window.allIngredients.forEach(ing => {
-        const opt = document.createElement('option');
-        opt.value = ing;
-        opt.textContent = ing.charAt(0).toUpperCase() + ing.slice(1);
-        select.appendChild(opt);
-      });
+      const select = makeSelect(`ingredient-${i + 1}`, `Ingrédient ${i + 1}`, options, 'Choisir un ingrédient');
+      select.classList.add('ingredient-select');
       container.appendChild(select);
     }
   }
@@ -63,11 +65,10 @@ function generatePlan() {
       .sort((a, b) => b.score - a.score);
     plan.push(...others.slice(0, 4));
   } else {
-    const selects = document.querySelectorAll('.ingredient-select');
-    const selected = Array.from(selects).map(s => s.value).filter(v => v !== "");
+    const selected = Array.from(document.querySelectorAll('.ingredient-select')).map(s => s.value).filter(Boolean);
     if (selected.length === 0) {
-      if (typeof showToast === 'function') showToast('Choisissez au moins un ingrédient.', 'error');
-      else alert('Choisissez au moins un ingrédient.');
+      showToast('Choisissez au moins un ingrédient.', 'error');
+      document.querySelector('.ingredient-select').focus();
       return;
     }
     plan = MEALS
@@ -81,34 +82,27 @@ function generatePlan() {
 
 function renderPlan(plan) {
   const container = document.getElementById('plan-result');
-  container.innerHTML = '';
+  const shared = getSharedIngredients(plan);
 
-  const sharedIngredients = getSharedIngredients(plan);
+  container.innerHTML = `
+    <ol class="plan">
+      ${plan.map((meal, i) => `
+      <li class="plan__day">
+        <span class="eyebrow">${DAYS[i]}</span>
+        <h3 class="plan__meal">${escapeHtml(meal.title)}</h3>
+        <p class="plan__ingredients">${meal.ingredients.map(escapeHtml).join(', ')}</p>
+      </li>`).join('')}
+    </ol>
+    ${shared.length ? `
+    <div class="drawer__section">
+      <h3 class="eyebrow">Ingrédients mutualisés</h3>
+      <div class="cluster cluster--1">${shared.map(i => `<span class="tag">${escapeHtml(i)}</span>`).join('')}</div>
+    </div>` : ''}`;
 
-  plan.forEach((meal, i) => {
-    const card = document.createElement('div');
-    card.className = 'day-card';
-    card.innerHTML = `
-      <div class="day-label">${DAYS[i]}</div>
-      <div class="meal-info">
-        <h3>${meal.title}</h3>
-        <p class="meal-ingredients">${meal.ingredients.join(' · ')}</p>
-      </div>`;
-    container.appendChild(card);
-  });
-
-  if (sharedIngredients.length > 0) {
-    const summary = document.createElement('div');
-    summary.className = 'batch-shared-summary';
-    summary.innerHTML = `
-      <p class="eyebrow" style="margin-bottom:0.5rem;">Ingrédients mutualisés</p>
-      <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
-        ${sharedIngredients.map(i => `<span class="lp-tech-tag">${i}</span>`).join('')}
-      </div>`;
-    container.appendChild(summary);
-  }
-
-  container.scrollIntoView({ behavior: 'smooth' });
+  const title = document.getElementById('plan-title');
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  title.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+  title.focus({ preventScroll: true });
 }
 
 function getSharedIngredients(plan) {
