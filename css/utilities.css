@@ -1,0 +1,25 @@
+/* =========================================================
+   utilities.css
+   Le strict nécessaire. Tout le reste appartient à un composant.
+   ========================================================= */
+
+@layer utilities {
+  /* Visible pour les lecteurs d'écran uniquement */
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mono { font-family: var(--font-mono); }
+  .muted { color: var(--color-text-muted); }
+  .accent { color: var(--color-accent); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .measure { max-inline-size: var(--measure); }
+  .align-end { justify-self: end; text-align: end; }
+  .is-hidden { display: none; }
+}
