@@ -1,0 +1,154 @@
+/* =========================================================
+   layout.css
+   Conteneur, grille modulaire (4 / 8 / 12 colonnes), placements.
+   Les classes .col-A-B placent un bloc de la colonne A à la colonne B incluse.
+   ========================================================= */
+
+@layer layout {
+  /* Boîte de contenu : toutes les grilles de la page partagent ces marges */
+  .container {
+    inline-size: 100%;
+    max-inline-size: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--grid-margin);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-4);
+    align-items: start;
+  }
+
+  /* Bande : réexpose les colonnes du parent pour que chaque enfant s'accroche aux mêmes lignes */
+  .grid__band {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-3);
+    align-items: start;
+  }
+
+  .grid--flush { row-gap: 0; }
+  .grid--baseline { align-items: baseline; }
+  .grid--end { align-items: end; }
+
+  /* Mobile (4 colonnes) : pleine largeur par défaut */
+  [class*="col-"] {
+    grid-column: 1 / -1;
+    min-inline-size: 0;
+  }
+
+  .sm-col-1-2 { grid-column: 1 / 3; }
+  .sm-col-3-4 { grid-column: 3 / 5; }
+
+  /* Tablette (8 colonnes) */
+  @media (min-width: 48rem) {
+    .md-col-1-2 { grid-column: 1 / 3; }
+    .md-col-1-3 { grid-column: 1 / 4; }
+    .md-col-1-4 { grid-column: 1 / 5; }
+    .md-col-1-5 { grid-column: 1 / 6; }
+    .md-col-1-6 { grid-column: 1 / 7; }
+    .md-col-3-8 { grid-column: 3 / 9; }
+    .md-col-4-8 { grid-column: 4 / 9; }
+    .md-col-5-8 { grid-column: 5 / 9; }
+    .md-col-7-8 { grid-column: 7 / 9; }
+  }
+
+  /* Bureau (12 colonnes) */
+  @media (min-width: 64rem) {
+    .col-1-2 { grid-column: 1 / 3; }
+    .col-1-3 { grid-column: 1 / 4; }
+    .col-1-4 { grid-column: 1 / 5; }
+    .col-1-5 { grid-column: 1 / 6; }
+    .col-1-6 { grid-column: 1 / 7; }
+    .col-1-7 { grid-column: 1 / 8; }
+    .col-1-8 { grid-column: 1 / 9; }
+    .col-1-9 { grid-column: 1 / 10; }
+    .col-3-12 { grid-column: 3 / 13; }
+    .col-4-6 { grid-column: 4 / 7; }
+    .col-4-9 { grid-column: 4 / 10; }
+    .col-4-12 { grid-column: 4 / 13; }
+    .col-5-8 { grid-column: 5 / 9; }
+    .col-5-12 { grid-column: 5 / 13; }
+    .col-6-12 { grid-column: 6 / 13; }
+    .col-7-9 { grid-column: 7 / 10; }
+    .col-7-12 { grid-column: 7 / 13; }
+    .col-9-12 { grid-column: 9 / 13; }
+    .col-10-12 { grid-column: 10 / 13; }
+  }
+
+  /* Section : rythme vertical et filet de séparation */
+  .section {
+    padding-block: var(--section-gap);
+  }
+
+  .section--ruled {
+    border-block-start: var(--border-strong);
+  }
+
+  .section--tight {
+    padding-block: var(--space-6);
+  }
+
+  /* Flux vertical : espace constant entre enfants directs */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .stack--1 { gap: var(--space-1); }
+  .stack--2 { gap: var(--space-2); }
+  .stack--4 { gap: var(--space-4); }
+  .stack--6 { gap: var(--space-6); }
+  .stack--8 { gap: var(--space-8); }
+
+  /* Rangée : éléments en ligne, retour à la ligne permis */
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .cluster--1 { gap: var(--space-1); }
+  .cluster--between { justify-content: space-between; }
+  .cluster--baseline { align-items: baseline; }
+
+  /* Calque de contrôle de la grille (touche G), dans la même boîte que le contenu */
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-toast);
+    pointer-events: none;
+    display: none;
+  }
+
+  .grid-overlay.is-visible {
+    display: block;
+  }
+
+  .grid-overlay > .grid {
+    block-size: 100%;
+    align-items: stretch;
+  }
+
+  .grid-overlay__col {
+    background-color: var(--color-accent);
+    opacity: var(--overlay-opacity);
+  }
+
+  .grid-overlay__col:nth-child(n + 5) { display: none; }
+
+  @media (min-width: 48rem) {
+    .grid-overlay__col:nth-child(n + 5) { display: block; }
+    .grid-overlay__col:nth-child(n + 9) { display: none; }
+  }
+
+  @media (min-width: 64rem) {
+    .grid-overlay__col:nth-child(n + 9) { display: block; }
+  }
+}
