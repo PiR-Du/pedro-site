@@ -1,0 +1,124 @@
+[
+  {
+    "page": "index",
+    "perf": 81,
+    "a11y": 100,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "3.6 s",
+    "cls": "0",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console"
+    ]
+  },
+  {
+    "page": "mediatheque",
+    "perf": 73,
+    "a11y": 92,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.0 s",
+    "cls": "1.02",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console",
+      "aria-hidden-focus",
+      "color-contrast"
+    ]
+  },
+  {
+    "page": "ville",
+    "perf": 82,
+    "a11y": 88,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.6 s",
+    "cls": "0.233",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console",
+      "aria-command-name",
+      "select-name",
+      "target-size"
+    ]
+  },
+  {
+    "page": "encyclopedia",
+    "perf": 85,
+    "a11y": 91,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.6 s",
+    "cls": "0.175",
+    "tbt": "10 ms",
+    "failed": [
+      "errors-in-console",
+      "aria-tooltip-name",
+      "color-contrast"
+    ]
+  },
+  {
+    "page": "batch-cooking",
+    "perf": 90,
+    "a11y": 88,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.0 s",
+    "cls": "0.171",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console",
+      "color-contrast",
+      "select-name"
+    ]
+  },
+  {
+    "page": "score",
+    "perf": 88,
+    "a11y": 89,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.6 s",
+    "cls": "0.132",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console",
+      "aria-dialog-name",
+      "aria-prohibited-attr",
+      "heading-order",
+      "landmark-one-main"
+    ]
+  },
+  {
+    "page": "sudoku",
+    "perf": 67,
+    "a11y": 89,
+    "bp": 77,
+    "seo": 100,
+    "lcp": "2.0 s",
+    "cls": "0.067",
+    "tbt": "9,050 ms",
+    "failed": [
+      "errors-in-console",
+      "deprecations",
+      "aria-required-children",
+      "color-contrast"
+    ]
+  },
+  {
+    "page": "web",
+    "perf": 89,
+    "a11y": 92,
+    "bp": 96,
+    "seo": 100,
+    "lcp": "2.0 s",
+    "cls": "0.18",
+    "tbt": "0 ms",
+    "failed": [
+      "errors-in-console",
+      "aria-hidden-focus",
+      "color-contrast"
+    ]
+  }
+]
