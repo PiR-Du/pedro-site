@@ -682,6 +682,19 @@
     transform: none;
   }
 
+  /* Variante autonome : se joue dès l'affichage, sans observateur */
+  .reveal-lines--auto .reveal-lines__line > span {
+    animation: line-up var(--duration-slow) var(--ease-out) both;
+  }
+
+  .reveal-lines--auto .reveal-lines__line:nth-child(2) > span {
+    animation-delay: var(--reveal-stagger);
+  }
+
+  @keyframes line-up {
+    from { transform: translateY(100%); }
+  }
+
   /* Décalage en cascade des enfants d'un groupe */
   [data-reveal-group] > :nth-child(2) { --reveal-index: 1; }
   [data-reveal-group] > :nth-child(3) { --reveal-index: 2; }
@@ -1327,12 +1340,12 @@
     text-underline-offset: var(--space-half);
   }
 
-  /* ---------- Batch cooking : plan de la semaine ---------- */
-  .plan {
+  /* ---------- Registre : libellé à gauche, titre et texte à droite (plan de repas, trophées) ---------- */
+  .ledger {
     border-block-end: var(--border-strong);
   }
 
-  .plan__day {
+  .ledger__row {
     display: grid;
     grid-template-columns: var(--space-12) minmax(0, 1fr);
     column-gap: var(--grid-gutter);
@@ -1341,14 +1354,14 @@
     border-block-start: var(--border-strong);
   }
 
-  .plan__meal {
+  .ledger__title {
     font-size: var(--text-2xl);
     font-weight: var(--weight-bold);
     line-height: var(--leading-heading);
     letter-spacing: var(--tracking-heading);
   }
 
-  .plan__ingredients {
+  .ledger__text {
     grid-column: 2;
     color: var(--color-text-muted);
   }

@@ -1,247 +1,272 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoardNight — Suivi de Scores</title>
-<meta name="description" content="Compagnon de soirée jeux : suivez les scores en temps réel, visualisez la progression et célébrez les victoires." />
-<meta property="og:title" content="BoardNight — Suivi de Scores" />
-<meta property="og:description" content="Saisie rapide, graphiques élégants et trophées épiques pour vos soirées jeux de société." />
-<meta property="og:type" content="website" />
-<link rel="stylesheet" href="../style.css?v=7">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BoardNight, suivi de scores</title>
+  <meta name="description" content="Compagnon de soirée jeux : suivez les scores en temps réel, visualisez la progression et célébrez les victoires.">
+  <meta property="og:title" content="BoardNight, suivi de scores">
+  <meta property="og:description" content="Saisie rapide, graphiques et trophées pour vos soirées jeux de société.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#efefec" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="../js/theme-init.js"></script>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/utilities.css">
 </head>
+
 <body data-root=".." data-page="score">
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
 
-<div id="site-header"></div>
-
-<!-- VIEWS -->
-
-<!-- WELCOME -->
-<div id="view-welcome" class="view active">
-    <div class="welcome-hero">
-      <div class="welcome-hero-meta">
-        <span class="page-header-num">05</span>
-        <span class="eyebrow">./score</span>
+  <site-header>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-header__brand" href="../index.html">Pierre Duchesne</a>
+        <a class="link text-sm" href="../index.html#outils">Sommaire</a>
       </div>
-      <div class="welcome-hero-rule" aria-hidden="true"></div>
-      <h1>Notez chaque manche,<br>célébrez chaque victoire</h1>
-      <p>Compagnon de suivi de score pour vos soirées jeux. Saisie rapide, graphiques élégants, trophées épiques.</p>
-    </div>
+    </header>
+  </site-header>
 
-    <!-- Resume banner (shown if mid-game save exists) -->
-    <div id="resume-banner" class="resume-banner" style="display:none" role="status">
-      <div class="resume-info">
-        <span class="resume-icon" aria-hidden="true">▶</span>
-        <div>
-          <div class="resume-game-name"></div>
-          <div class="resume-round mono"></div>
+  <main id="contenu">
+
+    <!-- ACCUEIL -->
+    <section id="view-welcome" class="view is-active" aria-labelledby="welcome-title">
+      <header class="page-head">
+        <div class="container grid">
+          <div class="grid__band grid--baseline">
+            <span class="folio sm-col-1-2 md-col-1-2 col-1-2">05</span>
+            <span class="eyebrow sm-col-3-4 md-col-5-8 col-10-12 align-end">Jeux</span>
+          </div>
+          <hr class="rule rule--strong col-1-12" data-reveal>
+          <h1 class="title-1 view__title col-1-8 md-col-1-6" id="welcome-title" tabindex="-1">Notez chaque manche, célébrez chaque victoire.</h1>
+          <p class="lead col-9-12 md-col-1-6">Suivi de scores pour vos soirées jeux : saisie rapide, classement en direct, graphiques et trophées.</p>
+        </div>
+      </header>
+
+      <div class="tool">
+        <div class="container grid">
+          <div class="tool__aside col-1-5 md-col-1-4">
+            <div id="resume-banner" class="notice" role="status" hidden>
+              <p><strong class="resume-game-name"></strong><br><span class="muted resume-round"></span></p>
+              <div class="btn-group">
+                <button type="button" class="btn btn--primary btn--sm" data-action="resume">Reprendre</button>
+                <button type="button" class="btn btn--sm" data-action="discard">Ignorer</button>
+              </div>
+            </div>
+            <div class="stack stack--1">
+              <button type="button" class="btn btn--primary btn--block" data-action="new-game">Nouvelle partie</button>
+              <p class="hint">Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
+            </div>
+            <div class="stack stack--1">
+              <button type="button" class="btn btn--block" data-action="history">Historique</button>
+              <p class="hint">Sessions passées, classement des joueurs et victoires.</p>
+            </div>
+            <noscript><p class="empty">Le suivi de scores nécessite JavaScript.</p></noscript>
+          </div>
+
+          <section class="tool__main col-7-12 md-col-5-8" aria-labelledby="recent-title">
+            <h2 class="eyebrow" id="recent-title">Parties récentes</h2>
+            <ul class="results" id="recent-games-list"></ul>
+          </section>
         </div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="showView('game')">Reprendre</button>
-      <button class="btn btn-outline btn-sm" onclick="discardCurrentGame()">Ignorer</button>
-    </div>
+    </section>
 
-    <div class="welcome-cards">
-      <div class="welcome-card" onclick="showView('setup'); initSetup()" role="button" tabindex="0"
-        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('setup');initSetup()}">
-        <div class="welcome-card-icon" aria-hidden="true">+</div>
-        <h3>Nouvelle Partie</h3>
-        <p>Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
-      </div>
-      <div class="welcome-card" onclick="showView('history')" role="button" tabindex="0"
-        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showView('history')}">
-        <div class="welcome-card-icon" aria-hidden="true">≡</div>
-        <h3>Historique</h3>
-        <p>Consultez vos sessions passées, le classement des joueurs et les taux de victoire.</p>
-      </div>
-    </div>
-    <div class="history-list" id="recent-games-list" aria-label="Parties récentes"></div>
-</div>
+    <!-- CONFIGURATION -->
+    <section id="view-setup" class="view" aria-labelledby="setup-title">
+      <div class="tool">
+        <div class="container grid">
+          <header class="col-1-4 md-col-1-3 stack stack--1">
+            <span class="eyebrow">Nouvelle session</span>
+            <h2 class="title-2 view__title" id="setup-title" tabindex="-1">Configurez votre partie</h2>
+          </header>
 
-<!-- SETUP -->
-<div id="view-setup" class="view">
-    <div class="setup-header">
-      <div class="eyebrow">Nouvelle Session</div>
-      <h2>Configurez votre partie</h2>
-    </div>
-    <div class="field">
-      <label for="game-name-input">Nom du Jeu</label>
-      <input id="game-name-input" type="text" placeholder="ex: Catan, Wingspan, Les Aventuriers du Rail…" value="Soirée Jeux">
-    </div>
-    <div class="field">
-      <label for="score-direction">Sens du Score</label>
-      <select id="score-direction">
-        <option value="high">Le plus haut score gagne</option>
-        <option value="low">Le plus bas score gagne</option>
-      </select>
-    </div>
-    <div class="players-section">
-      <h3>Joueurs <span class="player-count-note">(2–8)</span></h3>
-      <div id="player-list"></div>
-      <button class="add-player-btn" id="add-player-btn" onclick="addPlayerRow()">
-        <span aria-hidden="true">+</span> Ajouter un joueur
-      </button>
-    </div>
-    <div class="setup-footer">
-      <button class="btn btn-outline" onclick="showView('welcome')">← Retour</button>
-      <button class="btn btn-primary" onclick="startGame()">Lancer la partie →</button>
-    </div>
-</div>
-
-<!-- GAME -->
-<div id="view-game" class="view">
-    <div class="game-header">
-      <div class="game-title">
-        <h2 id="game-display-name">Jeu</h2>
-        <div class="round-info mono" id="round-info">Manche 1 en cours · 0 manches jouées</div>
-      </div>
-      <div class="game-header-actions">
-        <button class="btn btn-outline btn-sm" onclick="undoLastRound()" title="Annuler la dernière manche">↩ Undo</button>
-        <button class="btn btn-primary btn-sm" onclick="endGame()">Fin &amp; Résultats</button>
-      </div>
-      <button class="btn btn-danger btn-sm game-abandon-btn" onclick="abandonGame()">Abandonner</button>
-    </div>
-
-    <div class="game-layout">
-      <!-- Left column -->
-      <div>
-        <!-- Leaderboard -->
-        <div class="leaderboard-panel">
-          <div class="panel-head">
-            <h3>Classement</h3>
-            <div class="badge"><span class="dot" aria-hidden="true"></span>Direct</div>
-          </div>
-          <div id="leaderboard" aria-live="polite" aria-label="Classement en direct"></div>
+          <form class="col-5-12 md-col-4-8 stack stack--4" id="setup-form">
+            <div class="field">
+              <label class="label" for="game-name-input">Nom du jeu</label>
+              <input class="input" id="game-name-input" type="text" placeholder="Catan, Wingspan, Les Aventuriers du Rail" value="Soirée Jeux">
+            </div>
+            <div class="field">
+              <label class="label" for="score-direction">Sens du score</label>
+              <select class="select" id="score-direction">
+                <option value="high">Le plus haut score gagne</option>
+                <option value="low">Le plus bas score gagne</option>
+              </select>
+            </div>
+            <fieldset class="field">
+              <legend class="label">Joueurs <span class="label__optional">(2 à 8)</span></legend>
+              <div id="player-list"></div>
+              <button type="button" class="btn btn--block" id="add-player-btn" data-action="add-player">Ajouter un joueur</button>
+            </fieldset>
+            <div class="btn-group">
+              <button type="button" class="btn btn--quiet" data-action="welcome">Retour</button>
+              <button type="submit" class="btn btn--primary">Lancer la partie</button>
+            </div>
+          </form>
         </div>
+      </div>
+    </section>
 
-        <!-- Live Stats -->
-        <div class="stats-mini">
-          <div class="panel-head">
-            <h3 class="panel-title">Stats en Direct</h3>
-            <span class="panel-note">Actualisé après chaque manche</span>
-          </div>
-          <div class="stats-grid" id="live-stats-grid">
-            <p class="empty-message" style="grid-column:1/-1">Jouez une manche pour voir les stats</p>
-          </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="chart-panel">
-          <div class="chart-panel-head">
-            <h3 class="panel-title">Graphique</h3>
-            <div class="chart-tabs" role="tablist" aria-label="Type de graphique">
-              <button class="chart-tab active" role="tab" aria-selected="true" onclick="switchChart('line',this)">Cumulé</button>
-              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('bar',this)">Manches</button>
-              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('rank',this)">Rang</button>
-              <button class="chart-tab" role="tab" aria-selected="false" onclick="switchChart('gap',this)">Écarts</button>
+    <!-- PARTIE -->
+    <section id="view-game" class="view" aria-labelledby="game-display-name">
+      <div class="tool">
+        <div class="container grid">
+          <div class="grid__band grid--end">
+            <div class="col-1-7 md-col-1-4 stack stack--1">
+              <p class="eyebrow" id="round-info">Manche 1 en cours</p>
+              <h2 class="title-2 view__title" id="game-display-name" tabindex="-1">Jeu</h2>
+            </div>
+            <div class="col-8-12 md-col-5-8 btn-group">
+              <button type="button" class="btn btn--sm" data-action="undo">Annuler la dernière manche</button>
+              <button type="button" class="btn btn--danger btn--sm" data-action="abandon">Abandonner</button>
+              <button type="button" class="btn btn--primary btn--sm" data-action="end">Terminer la partie</button>
             </div>
           </div>
-          <canvas id="main-chart" aria-label="Graphique de progression des scores" role="img"></canvas>
-          <div id="chart-no-data" class="empty-message empty-message-large">
-            Validez les scores d'une manche pour voir le graphique
-          </div>
-        </div>
 
-        <!-- Round history -->
-        <div class="round-history">
-          <div class="panel-head">
-            <h3 class="panel-title">Historique des Manches</h3>
-            <span class="panel-note">Cliquez sur un score pour éditer</span>
-          </div>
-          <div id="round-history-wrap">
-            <p class="empty-message">Aucune manche pour le moment</p>
+          <form class="col-1-5 md-col-1-4 stack" id="round-form">
+            <h3 class="eyebrow">Scores, manche <span id="current-round-num">1</span></h3>
+            <div id="score-inputs"></div>
+            <button type="button" class="btn btn--sm btn--block" id="copy-last-round-btn" data-action="copy-round" hidden>Copier la manche précédente</button>
+            <button type="submit" class="btn btn--primary btn--block">Valider la manche</button>
+            <p class="hint"><span class="kbd">Tab</span> et flèches pour naviguer, <span class="kbd">Entrée</span> pour valider.</p>
+          </form>
+
+          <div class="col-7-12 md-col-5-8 stack stack--6">
+            <section class="stack stack--2" aria-labelledby="standings-title">
+              <h3 class="eyebrow" id="standings-title">Classement en direct</h3>
+              <ol class="standings" id="leaderboard" aria-live="polite"></ol>
+            </section>
+
+            <section class="stack stack--2" aria-labelledby="stats-title">
+              <h3 class="eyebrow" id="stats-title">Statistiques</h3>
+              <div id="live-stats-grid">
+                <p class="empty">Jouez une manche pour voir les statistiques.</p>
+              </div>
+            </section>
+
+            <section class="stack stack--2" aria-labelledby="chart-title">
+              <div class="tool__bar">
+                <h3 class="eyebrow" id="chart-title">Graphique</h3>
+                <div class="segmented" role="group" aria-label="Type de graphique">
+                  <button type="button" class="segmented__item" aria-pressed="true" data-action="chart" data-mode="line">Cumulé</button>
+                  <button type="button" class="segmented__item" aria-pressed="false" data-action="chart" data-mode="bar">Manches</button>
+                  <button type="button" class="segmented__item" aria-pressed="false" data-action="chart" data-mode="rank">Rang</button>
+                  <button type="button" class="segmented__item" aria-pressed="false" data-action="chart" data-mode="gap">Écarts</button>
+                </div>
+              </div>
+              <div class="chart" id="chart-wrap" hidden>
+                <canvas id="main-chart" role="img" aria-label="Graphique de progression des scores. Le tableau des manches ci-dessous donne les mêmes valeurs."></canvas>
+              </div>
+              <p id="chart-no-data" class="empty">Validez une manche pour voir le graphique.</p>
+            </section>
+
+            <section class="stack stack--2" aria-labelledby="rounds-title">
+              <h3 class="eyebrow" id="rounds-title">Historique des manches</h3>
+              <div id="round-history-wrap" class="table-scroll">
+                <p class="empty">Aucune manche pour le moment.</p>
+              </div>
+              <p class="hint">Un clic sur un score permet de le corriger.</p>
+            </section>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Right column -->
-      <div>
-        <!-- Score Input -->
-        <div class="score-input-panel">
-          <div class="panel-head">
-            <h3>Scores — Manche <span id="current-round-num">1</span></h3>
+    <!-- RÉSULTATS -->
+    <section id="view-awards" class="view" aria-labelledby="awards-title">
+      <div class="tool">
+        <div class="container grid">
+          <div class="grid__band">
+            <header class="col-1-12 stack stack--1">
+              <p class="eyebrow">Partie terminée · <span id="awards-game-name"></span></p>
+              <h2 class="display view__title reveal-lines reveal-lines--auto" id="awards-title" tabindex="-1">
+                <span class="reveal-lines__line"><span id="awards-winner">Résultats</span></span>
+                <span class="reveal-lines__line"><span>l'emporte.</span></span>
+              </h2>
+            </header>
           </div>
-          <div id="score-inputs"></div>
-          <button id="copy-last-round-btn" class="copy-round-btn" onclick="copyLastRound()" style="display:none">
-            Copier la manche précédente
-          </button>
-          <button class="submit-round-btn" onclick="submitRound()">
-            Valider la Manche
-          </button>
-          <div class="score-hint mono" aria-hidden="true">Tab / ↑↓ pour naviguer · Enter pour valider</div>
+
+          <div class="grid__band stats" id="awards-summary"></div>
+
+          <section class="col-1-5 md-col-1-4 stack stack--2" aria-labelledby="podium-title">
+            <h3 class="eyebrow" id="podium-title">Podium</h3>
+            <ol class="podium" id="podium"></ol>
+          </section>
+
+          <section class="col-7-12 md-col-5-8 stack stack--2" aria-labelledby="trophies-title">
+            <h3 class="eyebrow" id="trophies-title">Trophées</h3>
+            <ul class="ledger" id="awards-grid"></ul>
+          </section>
+
+          <div class="col-1-12 btn-group">
+            <button type="button" class="btn" data-action="history">Voir l'historique</button>
+            <button type="button" class="btn btn--primary" data-action="new-game">Nouvelle partie</button>
+          </div>
         </div>
       </div>
-    </div>
-</div>
+    </section>
 
-<!-- AWARDS -->
-<div id="view-awards" class="view">
-  <div class="ceremony-header">
-    <div class="eyebrow">Partie Terminée</div>
-    <h2>Résultats Finaux</h2>
-    <p id="awards-game-name"></p>
-  </div>
-  <div class="awards-summary" id="awards-summary"></div>
-  <div class="podium" id="podium" aria-label="Podium final"></div>
-  <div class="awards-section">
-    <div class="eyebrow awards-eyebrow">Cérémonie des Trophées</div>
-    <div class="awards-grid" id="awards-grid" aria-live="polite"></div>
-  </div>
-  <div class="awards-footer">
-    <button class="btn btn-outline" onclick="showView('history')">Voir l'Historique</button>
-    <button class="btn btn-primary" onclick="showView('setup'); initSetup()">Nouvelle Partie</button>
-  </div>
-</div>
-
-<!-- HISTORY -->
-<div id="view-history" class="view">
-    <div class="history-page-head">
-      <div class="flex-fill">
-        <div class="eyebrow">Tout temps</div>
-        <h2>Historique des Parties</h2>
+    <!-- HISTORIQUE -->
+    <section id="view-history" class="view" aria-labelledby="history-title">
+      <div class="tool">
+        <div class="container grid">
+          <div class="grid__band grid--end">
+            <header class="col-1-7 md-col-1-5 stack stack--1">
+              <span class="eyebrow">Depuis le début</span>
+              <h2 class="title-2 view__title" id="history-title" tabindex="-1">Historique des parties</h2>
+            </header>
+            <div class="col-8-12 md-col-7-8 btn-group">
+              <button type="button" class="btn btn--sm" data-action="welcome">Accueil</button>
+            </div>
+          </div>
+          <div class="grid__band stats" id="global-stats"></div>
+          <ul class="results col-1-12" id="history-games-list"></ul>
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="showView('welcome')">← Accueil</button>
-    </div>
-    <div class="global-stats" id="global-stats"></div>
-    <div id="history-games-list">
-      <p class="empty-message empty-message-xl">Aucune partie jouée. Lancez votre première partie !</p>
-    </div>
-</div>
+    </section>
 
-<!-- Avatar Modal -->
-<div class="modal-overlay" id="avatar-modal" role="dialog" aria-modal="true" aria-label="Choisir un avatar et une couleur">
-  <div class="modal">
-    <h3>Choisir Avatar &amp; Couleur</h3>
-    <div class="eyebrow modal-eyebrow">Avatar</div>
-    <div class="avatar-grid" id="avatar-grid" role="listbox" aria-label="Avatars disponibles"></div>
-    <div class="eyebrow modal-eyebrow">Couleur</div>
-    <div class="color-picker" id="color-picker" role="listbox" aria-label="Couleurs disponibles"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary modal-primary" onclick="confirmAvatar()">Confirmer</button>
-      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+  </main>
+
+  <!-- Couleur du joueur -->
+  <dialog class="modal" id="avatar-modal" aria-labelledby="avatar-modal-title" data-dismissable>
+    <h2 class="title-4" id="avatar-modal-title">Couleur du joueur</h2>
+    <div class="color-picker" id="color-picker"></div>
+    <div class="btn-group">
+      <button type="button" class="btn btn--primary" data-action="confirm-color">Confirmer</button>
+      <button type="button" class="btn btn--quiet" data-close-dialog>Annuler</button>
     </div>
-  </div>
-</div>
+  </dialog>
 
-<!-- Confirm Dialog -->
-<div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
-  <div class="modal modal-sm">
-    <p id="confirm-msg" class="confirm-msg"></p>
-    <div class="modal-actions">
-      <button id="confirm-ok" class="btn btn-primary">Confirmer</button>
-      <button id="confirm-cancel" class="btn btn-outline">Annuler</button>
+  <!-- Confirmation -->
+  <dialog class="modal" id="confirm-overlay" aria-labelledby="confirm-msg">
+    <p id="confirm-msg" class="title-4"></p>
+    <div class="btn-group">
+      <button type="button" id="confirm-ok" class="btn btn--primary">Confirmer</button>
+      <button type="button" class="btn btn--quiet" data-close-dialog>Annuler</button>
     </div>
-  </div>
-</div>
+  </dialog>
 
-<!-- Toast container -->
-<div class="toast-container" id="toasts" aria-live="polite" aria-atomic="false"></div>
-<!-- Confetti -->
-<div class="confetti-container" id="confetti" aria-hidden="true"></div>
+  <site-footer>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>© 2026 Pierre Duchesne</p>
+        <p class="eyebrow">Data · Maths · Code</p>
+      </div>
+    </footer>
+  </site-footer>
 
-<script src="app.js"></script>
-<script src="../shared-layout.js?v=5"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="../js/site.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="../js/main.js"></script>
 </body>
+
 </html>

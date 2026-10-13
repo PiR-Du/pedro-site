@@ -1,43 +1,65 @@
 // ============================================================
-// STATE
+// ÉTAT
 // ============================================================
-const AVATARS = ['🦊','🐻','🦁','🐼','🐯','🦄','🐸','🐙','🦋','🦖','🤖','👾','🎩','🎭','🔥','⭐','🌊','🍄','🎪','🎲'];
-const COLORS = ['#7c3aed','#2563eb','#059669','#dc2626','#d97706','#db2777','#0891b2','#65a30d'];
-const COLOR_NAMES = ['Violet','Bleu','Vert','Rouge','Ambre','Rose','Cyan','Citron'];
+// Chaque joueur porte une série de données (1 à 8), définie dans css/tokens.css.
+const SERIES_NAMES = ['Rouge', 'Encre', 'Bleu', 'Vert', 'Ocre', 'Gris', 'Prune', 'Sarcelle'];
+// Couleurs des parties enregistrées avant la refonte, converties vers une série.
+const LEGACY_COLORS = ['#7c3aed', '#2563eb', '#059669', '#dc2626', '#d97706', '#db2777', '#0891b2', '#65a30d'];
 
 let state = {
   currentGame: null,
   history: JSON.parse(localStorage.getItem('boardnight_history') || '[]'),
   setupPlayers: [],
   avatarEditIdx: null,
-  pendingAvatar: null,
-  pendingColor: null,
+  pendingSeries: null,
   activeChart: null,
   chartMode: 'line',
 };
 
 // ============================================================
-// UTILITY
+// UTILITAIRES
 // ============================================================
-function showView(v) {
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  const statusBadge = document.getElementById('game-status-badge');
-  if (statusBadge) statusBadge.style.display = state.currentGame ? '' : 'none';
-  if (v === 'welcome') renderWelcome();
-  if (v === 'history') renderHistory();
-  if (v === 'game') { renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); renderLiveStats(); }
-  if (v === 'awards') renderAwards();
-  window.scrollTo(0,0);
+function seriesOf(player, fallbackIdx = 0) {
+  if (player.series) return player.series;
+  const legacy = LEGACY_COLORS.indexOf(player.color);
+  return ((legacy >= 0 ? legacy : (player.idx ?? fallbackIdx)) % 8) + 1;
 }
 
-function toast(msg, type='default', dur=2800) {
-  const c = document.getElementById('toasts');
-  const t = document.createElement('div');
-  t.className = 'toast' + (type !== 'default' ? ' toast-'+type : '');
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, dur);
+function avatarHtml(player, fallbackIdx = 0) {
+  const initial = (player.name || '?').trim().charAt(0) || '?';
+  return `<span class="avatar swatch--${seriesOf(player, fallbackIdx)}" aria-hidden="true">${escapeHtml(initial)}</span>`;
+}
+
+function playerCell(player, fallbackIdx = 0) {
+  return `<span class="player-cell">${avatarHtml(player, fallbackIdx)}${escapeHtml(player.name)}</span>`;
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('fr-FR');
+}
+
+function plural(n, word) {
+  return `${n} ${word}${n > 1 ? 's' : ''}`;
+}
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('is-active'));
+  const view = document.getElementById('view-' + v);
+  view.classList.add('is-active');
+  if (v === 'welcome') renderWelcome();
+  if (v === 'history') renderHistory();
+  if (v === 'game') {
+    document.getElementById('game-display-name').textContent = state.currentGame.name;
+    updateRoundInfo(); renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); renderLiveStats();
+  }
+  if (v === 'awards') renderAwards();
+  window.scrollTo(0, 0);
+  // Le titre de la vue reçoit le focus : le changement est annoncé aux lecteurs d'écran
+  view.querySelector('.view__title')?.focus({ preventScroll: true });
+}
+
+function toast(msg, type = 'default', dur = 2800) {
+  showToast(msg, type === 'error' ? 'error' : 'default', dur);
 }
 
 function saveHistory() { localStorage.setItem('boardnight_history', JSON.stringify(state.history)); }
@@ -46,103 +68,84 @@ function saveCurrentGame() {
   else localStorage.removeItem('boardnight_current');
 }
 
-function variance(arr) {
-  if (arr.length < 2) return 0;
-  const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
-  return arr.reduce((s,x)=>s+(x-mean)**2,0)/arr.length;
-}
-
 // ============================================================
-// STYLED CONFIRM DIALOG
+// CONFIRMATION
 // ============================================================
-function showConfirm(msg, onConfirm, confirmLabel='Confirmer', danger=false) {
-  const overlay = document.getElementById('confirm-overlay');
-  state._confirmTrigger = document.activeElement;
+function showConfirm(msg, onConfirm, confirmLabel = 'Confirmer', danger = false) {
+  const dialog = document.getElementById('confirm-overlay');
   document.getElementById('confirm-msg').textContent = msg;
   const btn = document.getElementById('confirm-ok');
   btn.textContent = confirmLabel;
-  btn.className = 'btn ' + (danger ? 'btn-danger-solid' : 'btn-primary');
-  overlay.classList.add('open');
-  trapFocus('confirm-overlay');
-  btn.onclick = () => {
-    overlay.classList.remove('open');
-    releaseFocus('confirm-overlay', state._confirmTrigger);
-    onConfirm();
-  };
-  document.getElementById('confirm-cancel').onclick = () => {
-    overlay.classList.remove('open');
-    releaseFocus('confirm-overlay', state._confirmTrigger);
-  };
+  btn.className = 'btn ' + (danger ? 'btn--danger' : 'btn--primary');
+  btn.onclick = () => { dialog.close(); onConfirm(); };
+  dialog.showModal();
 }
 
 // ============================================================
-// WELCOME
+// ACCUEIL
 // ============================================================
+function gameRow(g, idx) {
+  const top3 = (g.finalRanked || []).slice(0, 3);
+  return `
+    <li class="result">
+      <span class="eyebrow">${formatDate(g.date)}</span>
+      <h3 class="result__title"><button type="button" class="entry__link" data-action="review" data-index="${idx}">${escapeHtml(g.name)}</button></h3>
+      <p class="result__body">${top3.map((p, r) => `${r + 1}. ${escapeHtml(p.name)} ${p.total}`).join(' · ')}</p>
+      <span class="eyebrow result__meta">${plural(g.players?.length || 0, 'joueur')} · ${plural(g.rounds?.length || 0, 'manche')}</span>
+    </li>`;
+}
+
 function renderWelcome() {
   const list = document.getElementById('recent-games-list');
-  if (!state.history.length) { list.innerHTML = ''; return; }
-  list.innerHTML = `<div class="eyebrow recent-title">Parties Récentes</div>` +
-    state.history.slice(-5).reverse().map((g,i) => {
-      const realIdx = state.history.length - 1 - i;
-      const top3 = (g.finalRanked || []).slice(0,3);
-      return `
-      <div class="history-item" onclick="reviewGame(${realIdx})">
-        <div class="history-mini-podium">${top3.map((p,r)=>`<span class="mini-pod-avatar" title="${p.name}">${p.avatar||'?'}</span>`).join('')}</div>
-        <div class="history-item-info">
-          <strong>${g.name}</strong>
-          <span>${g.players.length} joueurs · ${g.rounds.length} manches · ${new Date(g.date).toLocaleDateString('fr-FR')}</span>
-        </div>
-        <span class="history-item-badge">${g.winner}</span>
-      </div>`;
-    }).join('');
+  list.innerHTML = state.history.length
+    ? state.history.slice(-5).reverse().map((g, i) => gameRow(g, state.history.length - 1 - i)).join('')
+    : '<li class="empty">Aucune partie enregistrée pour le moment.</li>';
 }
 
 // ============================================================
-// SETUP
+// CONFIGURATION
 // ============================================================
 function initSetup() {
-  // Suggest last used players
+  // Reprend les joueurs de la dernière partie
   const last = state.history[state.history.length - 1];
   if (last && last.players && last.players.length >= 2) {
-    state.setupPlayers = last.players.map(p => ({...p}));
+    state.setupPlayers = last.players.map((p, i) => ({ name: p.name, series: seriesOf(p, i) }));
   } else {
-    state.setupPlayers = [
-      {name:'Joueur 1', avatar: AVATARS[0], color: COLORS[0]},
-      {name:'Joueur 2', avatar: AVATARS[1], color: COLORS[1]},
-    ];
+    state.setupPlayers = [{ name: 'Joueur 1', series: 1 }, { name: 'Joueur 2', series: 3 }];
   }
   renderSetupPlayers();
 }
 
 function renderSetupPlayers() {
   const list = document.getElementById('player-list');
-  list.innerHTML = state.setupPlayers.map((p,i) => `
-    <div class="player-row" id="player-row-${i}">
-      <div class="player-avatar-btn" onclick="openAvatarModal(${i})" title="Changer l'avatar">${p.avatar}</div>
-      <div class="player-color-dot" style="background:${p.color}"></div>
-      <input class="player-name-input" type="text" value="${p.name}" placeholder="Nom du joueur"
-        oninput="state.setupPlayers[${i}].name=this.value">
-      <button class="btn btn-icon btn-danger" onclick="removePlayer(${i})" title="Supprimer">✕</button>
+  list.innerHTML = state.setupPlayers.map((p, i) => `
+    <div class="player-row">
+      <button type="button" class="avatar swatch--${p.series}" data-action="pick-color" data-index="${i}" aria-label="Changer la couleur de ${escapeHtml(p.name)}, actuellement ${SERIES_NAMES[p.series - 1]}">${escapeHtml(p.name.trim().charAt(0) || '?')}</button>
+      <input class="input" type="text" value="${escapeHtml(p.name)}" placeholder="Nom du joueur" aria-label="Nom du joueur ${i + 1}" data-index="${i}">
+      <button type="button" class="btn btn--quiet btn--sm" data-action="remove-player" data-index="${i}">Retirer<span class="sr-only"> ${escapeHtml(p.name)}</span></button>
     </div>`).join('');
-  document.getElementById('add-player-btn').style.display = state.setupPlayers.length >= 8 ? 'none' : '';
+  document.getElementById('add-player-btn').hidden = state.setupPlayers.length >= 8;
 }
 
 function addPlayerRow() {
   if (state.setupPlayers.length >= 8) return;
   const i = state.setupPlayers.length;
-  state.setupPlayers.push({name:`Joueur ${i+1}`, avatar: AVATARS[i % AVATARS.length], color: COLORS[i % COLORS.length]});
+  const used = state.setupPlayers.map(p => p.series);
+  const free = [1, 3, 4, 5, 7, 8, 2, 6].find(s => !used.includes(s)) || (i % 8) + 1;
+  state.setupPlayers.push({ name: `Joueur ${i + 1}`, series: free });
   renderSetupPlayers();
+  document.querySelector(`#player-list .input[data-index="${i}"]`)?.select();
 }
 
 function removePlayer(i) {
-  if (state.setupPlayers.length <= 2) { toast('Il faut au moins 2 joueurs'); return; }
+  if (state.setupPlayers.length <= 2) { toast('Il faut au moins 2 joueurs.', 'error'); return; }
   state.setupPlayers.splice(i, 1);
   renderSetupPlayers();
 }
 
 function startGame() {
   const names = state.setupPlayers.map(p => p.name.trim()).filter(Boolean);
-  if (names.length < 2) { toast('Ajoutez au moins 2 joueurs'); return; }
+  if (names.length < 2) { toast('Ajoutez au moins 2 joueurs.', 'error'); return; }
   const gameName = document.getElementById('game-name-input').value.trim() || 'Soirée Jeux';
   const direction = document.getElementById('score-direction').value;
 
@@ -151,123 +154,562 @@ function startGame() {
     name: gameName,
     direction,
     date: new Date().toISOString(),
-    players: state.setupPlayers.map(p => ({...p, name: p.name.trim()||p.avatar})),
+    players: state.setupPlayers.map((p, i) => ({ ...p, name: p.name.trim() || `Joueur ${i + 1}` })),
     rounds: [],
     currentRound: 1,
   };
 
   saveCurrentGame();
   showView('game');
-  document.getElementById('game-display-name').textContent = gameName;
-  updateRoundInfo();
 }
 
 // ============================================================
-// AVATAR MODAL
-// ============================================================
-// ============================================================
-// FOCUS TRAP UTILITY
-// ============================================================
-function trapFocus(overlayId) {
-  const overlay = document.getElementById(overlayId);
-  if (!overlay) return;
-  const focusable = Array.from(overlay.querySelectorAll(
-    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  ));
-  if (!focusable.length) return;
-  focusable[0].focus();
-
-  overlay._trapHandler = (e) => {
-    if (e.key !== 'Tab') return;
-    if (!overlay.classList.contains('open')) return;
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
-      e.preventDefault();
-      (e.shiftKey ? last : first).focus();
-    }
-  };
-  document.addEventListener('keydown', overlay._trapHandler);
-}
-
-function releaseFocus(overlayId, returnTo) {
-  const overlay = document.getElementById(overlayId);
-  if (overlay && overlay._trapHandler) {
-    document.removeEventListener('keydown', overlay._trapHandler);
-    overlay._trapHandler = null;
-  }
-  if (returnTo) returnTo.focus();
-}
-
-// ============================================================
-// AVATAR MODAL
+// COULEUR DU JOUEUR
 // ============================================================
 function openAvatarModal(i) {
   state.avatarEditIdx = i;
-  state.pendingAvatar = state.setupPlayers[i].avatar;
-  state.pendingColor = state.setupPlayers[i].color;
-  state._modalTrigger = document.activeElement;
-
-  const grid = document.getElementById('avatar-grid');
-  grid.innerHTML = AVATARS.map(a => `
-    <button class="avatar-option${a===state.pendingAvatar?' selected':''}" role="option" aria-selected="${a===state.pendingAvatar}"
-      onclick="selectAvatar('${a}',this)">${a}</button>`).join('');
-  const cp = document.getElementById('color-picker');
-  cp.innerHTML = COLORS.map((c,ci) => `
-    <button class="color-swatch${c===state.pendingColor?' selected':''}" style="background:${c}"
-      role="option" aria-selected="${c===state.pendingColor}" aria-label="${COLOR_NAMES[ci]}"
-      onclick="selectColor('${c}',this)"></button>`).join('');
-
-  const overlay = document.getElementById('avatar-modal');
-  overlay.classList.add('open');
-  trapFocus('avatar-modal');
+  state.pendingSeries = state.setupPlayers[i].series;
+  document.getElementById('color-picker').innerHTML = SERIES_NAMES.map((name, si) => `
+    <button type="button" class="color-picker__option" data-action="select-color" data-series="${si + 1}" aria-pressed="${si + 1 === state.pendingSeries}">
+      <span class="swatch swatch--${si + 1}"></span>${name}
+    </button>`).join('');
+  document.getElementById('avatar-modal').showModal();
 }
 
-function selectAvatar(a, el) {
-  state.pendingAvatar = a;
-  document.querySelectorAll('.avatar-option').forEach(e => { e.classList.remove('selected'); e.setAttribute('aria-selected', 'false'); });
-  el.classList.add('selected'); el.setAttribute('aria-selected', 'true');
-}
-
-function selectColor(c, el) {
-  state.pendingColor = c;
-  document.querySelectorAll('.color-swatch').forEach(e => { e.classList.remove('selected'); e.setAttribute('aria-selected', 'false'); });
-  el.classList.add('selected'); el.setAttribute('aria-selected', 'true');
+function selectColor(el) {
+  state.pendingSeries = Number(el.dataset.series);
+  document.querySelectorAll('.color-picker__option').forEach(o => o.setAttribute('aria-pressed', String(o === el)));
 }
 
 function confirmAvatar() {
-  const i = state.avatarEditIdx;
-  state.setupPlayers[i].avatar = state.pendingAvatar;
-  state.setupPlayers[i].color = state.pendingColor;
-  closeModal();
+  state.setupPlayers[state.avatarEditIdx].series = state.pendingSeries;
+  document.getElementById('avatar-modal').close();
   renderSetupPlayers();
 }
 
-function closeModal() {
-  releaseFocus('avatar-modal', state._modalTrigger);
-  document.getElementById('avatar-modal').classList.remove('open');
-}
-
-document.getElementById('avatar-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-// Close modals on Escape
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  if (document.getElementById('avatar-modal').classList.contains('open')) { closeModal(); return; }
-  if (document.getElementById('confirm-overlay').classList.contains('open')) {
-    document.getElementById('confirm-overlay').classList.remove('open');
-    releaseFocus('confirm-overlay', state._confirmTrigger);
-  }
-});
-
 // ============================================================
-// GAME VIEW
+// PARTIE
 // ============================================================
 function updateRoundInfo() {
   const g = state.currentGame;
-  document.getElementById('round-info').textContent = `Manche ${g.currentRound} en cours · ${g.rounds.length} manches terminées`;
+  document.getElementById('round-info').textContent = `Manche ${g.currentRound} en cours · ${plural(g.rounds.length, 'manche')} terminée${g.rounds.length > 1 ? 's' : ''}`;
   document.getElementById('current-round-num').textContent = g.currentRound;
+}
+
+function renderLeaderboard() {
+  const g = state.currentGame; if (!g) return;
+  const ranked = getRanked(g);
+  const leaderTotal = ranked[0].total;
+  document.getElementById('leaderboard').innerHTML = ranked.map((p, rank) => {
+    const prev = g.rounds.length > 1 ? getPrevRank(g, p.idx) : rank + 1;
+    const delta = prev - (rank + 1);
+    const trend = [];
+    if (rank > 0 && g.rounds.length > 0) {
+      const gap = g.direction === 'high' ? leaderTotal - p.total : p.total - leaderTotal;
+      trend.push(`écart ${gap}`);
+    }
+    if (g.rounds.length > 1 && delta !== 0) trend.push(delta > 0 ? `+${delta} place${delta > 1 ? 's' : ''}` : `−${Math.abs(delta)} place${delta < -1 ? 's' : ''}`);
+    return `
+      <li class="standing${rank === 0 ? ' standing--leader' : ''}">
+        <span class="folio">${rank + 1}</span>
+        ${avatarHtml(p)}
+        <span class="standing__name">${escapeHtml(p.name)}</span>
+        <span class="standing__trend">${trend.join(' · ')}</span>
+        <span class="standing__score">${p.total}</span>
+      </li>`;
+  }).join('');
+}
+
+function renderScoreInputs() {
+  const g = state.currentGame; if (!g) return;
+  document.getElementById('score-inputs').innerHTML = g.players.map((p, i) => `
+    <div class="score-row">
+      ${avatarHtml(p, i)}
+      <label class="score-row__name" for="score-${i}">${escapeHtml(p.name)}</label>
+      <div class="stepper">
+        <button type="button" class="stepper__btn" data-step="-1" data-index="${i}" aria-label="Retirer 1 point à ${escapeHtml(p.name)}">−</button>
+        <button type="button" class="stepper__btn" data-step="1" data-index="${i}" aria-label="Ajouter 1 point à ${escapeHtml(p.name)}">+</button>
+      </div>
+      <input class="input" type="number" inputmode="numeric" id="score-${i}" value="0" data-index="${i}">
+    </div>`).join('');
+
+  document.getElementById('copy-last-round-btn').hidden = g.rounds.length === 0;
+}
+
+function copyLastRound() {
+  const g = state.currentGame; if (!g || !g.rounds.length) return;
+  const last = g.rounds[g.rounds.length - 1];
+  g.players.forEach((_, i) => { document.getElementById('score-' + i).value = last[i] ?? 0; });
+  toast('Scores copiés depuis la manche précédente.');
+}
+
+function submitRound() {
+  const g = state.currentGame; if (!g) return;
+  const scores = g.players.map((_, i) => parseInt(document.getElementById('score-' + i).value) || 0);
+  g.rounds.push(scores);
+  g.currentRound++;
+  saveCurrentGame();
+  updateRoundInfo();
+  renderLeaderboard();
+  renderRoundHistory();
+  renderChart();
+  renderLiveStats();
+  g.players.forEach((_, i) => { document.getElementById('score-' + i).value = 0; });
+  document.getElementById('copy-last-round-btn').hidden = false;
+  // Le premier champ reprend le focus pour enchaîner la manche suivante
+  document.getElementById('score-0')?.focus();
+
+  checkDramaticMoments(g);
+  toast(`Manche ${g.currentRound - 1} enregistrée.`, 'success');
+}
+
+function undoLastRound() {
+  const g = state.currentGame;
+  if (!g || !g.rounds.length) { toast('Aucune manche à annuler.'); return; }
+  showConfirm(
+    `Annuler la manche ${g.rounds.length} ? Les scores seront perdus.`,
+    () => {
+      g.rounds.pop();
+      g.currentRound--;
+      saveCurrentGame();
+      updateRoundInfo();
+      renderLeaderboard();
+      renderRoundHistory();
+      renderChart();
+      renderLiveStats();
+      document.getElementById('copy-last-round-btn').hidden = g.rounds.length === 0;
+      toast('Manche annulée.');
+    },
+    'Annuler la manche',
+    true
+  );
+}
+
+function renderRoundHistory() {
+  const g = state.currentGame; if (!g) return;
+  const wrap = document.getElementById('round-history-wrap');
+  if (!g.rounds.length) {
+    wrap.innerHTML = '<p class="empty">Aucune manche pour le moment.</p>';
+    return;
+  }
+  const totals = getTotals(g);
+  // Meilleur score de chaque manche
+  const roundBests = g.rounds.map(r => g.direction === 'high' ? Math.max(...r) : Math.min(...r));
+  wrap.innerHTML = `<table class="score-table">
+    <thead>
+      <tr>
+        <th scope="col">Joueur</th>
+        ${g.rounds.map((_, i) => `<th scope="col">M${i + 1}</th>`).join('')}
+        <th scope="col">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${g.players.map((p, pi) => `
+        <tr>
+          <th scope="row">${playerCell(p, pi)}</th>
+          ${g.rounds.map((r, ri) => {
+            const val = r[pi] ?? 0;
+            return `<td><button type="button" class="score-table__cell${val === roundBests[ri] ? ' is-best' : ''}" data-action="edit-cell" data-player="${pi}" data-round="${ri}" aria-label="${escapeHtml(p.name)}, manche ${ri + 1} : ${val}. Corriger">${val}</button></td>`;
+          }).join('')}
+          <td class="score-table__total">${totals.find(t => t.idx === pi)?.total ?? 0}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function editCell(playerIdx, roundIdx, trigger) {
+  const g = state.currentGame; if (!g) return;
+  const cell = trigger.closest('td');
+  const cur = g.rounds[roundIdx][playerIdx] ?? 0;
+  cell.innerHTML = `<input class="input" type="number" inputmode="numeric" value="${cur}" aria-label="Nouveau score">`;
+  const input = cell.querySelector('input');
+  let cancelled = false;
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { cancelled = true; input.blur(); }
+  });
+  input.addEventListener('blur', () => {
+    if (!cancelled) g.rounds[roundIdx][playerIdx] = parseInt(input.value) || 0;
+    saveCurrentGame();
+    renderRoundHistory();
+    renderLeaderboard();
+    renderChart();
+    renderLiveStats();
+  });
+  input.select();
+}
+
+// ============================================================
+// STATISTIQUES EN DIRECT
+// ============================================================
+function renderLiveStats() {
+  const g = state.currentGame; if (!g) return;
+  const panel = document.getElementById('live-stats-grid');
+  if (!panel) return;
+
+  if (!g.rounds.length) {
+    panel.innerHTML = '<p class="empty">Jouez une manche pour voir les statistiques.</p>';
+    return;
+  }
+
+  const totals = getTotals(g);
+  const ranked = getRanked(g);
+  const n = g.players.length;
+  const nRounds = g.rounds.length;
+
+  const leader = ranked[0];
+  const second = ranked[1];
+  const gap = Math.abs(leader.total - second.total);
+
+  // Manches remportées (meilleur score de la manche)
+  const roundWins = Array(n).fill(0);
+  g.rounds.forEach(r => {
+    const best = g.direction === 'high' ? Math.max(...r) : Math.min(...r);
+    r.forEach((v, i) => { if (v === best) roundWins[i]++; });
+  });
+  const topWinner = totals.reduce((a, b) => roundWins[a.idx] >= roundWins[b.idx] ? a : b);
+
+  // Le plus régulier (variance la plus basse)
+  const variances = totals.map(p => ({ ...p, v: variance(p.perRound) }));
+  const mostConsistent = variances.reduce((a, b) => a.v <= b.v ? a : b);
+
+  // Élan : 2 dernières manches comparées aux 2 précédentes
+  let momentum = null;
+  if (nRounds >= 4) {
+    const momScores = totals.map(p => {
+      const last2 = p.perRound.slice(-2).reduce((a, b) => a + b, 0);
+      const prev2 = p.perRound.slice(-4, -2).reduce((a, b) => a + b, 0);
+      return { ...p, mom: last2 - prev2 };
+    });
+    momentum = momScores.reduce((a, b) => (g.direction === 'high' ? a.mom >= b.mom : a.mom <= b.mom) ? a : b);
+  }
+
+  // Série de manches gagnées en cours
+  let streak = 0; let streakPlayer = null;
+  for (let ri = nRounds - 1; ri >= 0; ri--) {
+    const r = g.rounds[ri];
+    const best = g.direction === 'high' ? Math.max(...r) : Math.min(...r);
+    const winnerIdx = r.indexOf(best);
+    if (streak === 0) { streak = 1; streakPlayer = winnerIdx; }
+    else if (winnerIdx === streakPlayer) streak++;
+    else break;
+  }
+
+  // Remontée : places gagnées depuis la première manche
+  let biggestClimber = null;
+  if (nRounds >= 2) {
+    const afterR1 = g.players.map((_, i) => g.rounds[0][i]);
+    const sortedR1 = [...afterR1].sort((a, b) => g.direction === 'high' ? b - a : a - b);
+    const initialRanks = afterR1.map(v => sortedR1.indexOf(v) + 1);
+    const climbers = ranked.map((p, currentRank) => ({ ...p, gain: initialRanks[p.idx] - (currentRank + 1) }));
+    biggestClimber = climbers.reduce((a, b) => a.gain >= b.gain ? a : b);
+  }
+
+  const stats = [
+    { label: 'En tête', value: leader.name, sub: leader.total + ' pts' },
+    { label: 'Écart avec le 2e', value: gap + ' pts', sub: second.name + ' à ' + second.total },
+    { label: 'Manches remportées', value: topWinner.name, sub: roundWins[topWinner.idx] + ' sur ' + nRounds },
+    { label: 'Plus régulier', value: mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
+  ];
+
+  if (streak >= 2 && streakPlayer !== null) {
+    stats.push({ label: 'Série en cours', value: g.players[streakPlayer].name, sub: streak + " manches d'affilée" });
+  }
+  if (momentum && nRounds >= 4) {
+    stats.push({ label: 'Élan', value: momentum.name, sub: (momentum.mom > 0 ? '+' : '') + momentum.mom + ' sur les 2 dernières' });
+  }
+  if (biggestClimber && biggestClimber.gain > 0) {
+    stats.push({ label: 'Remontée', value: biggestClimber.name, sub: '+' + plural(biggestClimber.gain, 'place') });
+  }
+
+  panel.innerHTML = `<dl class="spec">${stats.map(s => `
+    <dt class="spec__term">${s.label}</dt>
+    <dd class="spec__value"><strong>${escapeHtml(s.value)}</strong> <span class="muted">${escapeHtml(s.sub)}</span></dd>`).join('')}</dl>`;
+}
+
+// ============================================================
+// GRAPHIQUE
+// ============================================================
+function renderChart() {
+  const g = state.currentGame; if (!g) return;
+  const noData = document.getElementById('chart-no-data');
+  const wrap = document.getElementById('chart-wrap');
+  const canvas = document.getElementById('main-chart');
+  if (state.activeChart) { state.activeChart.destroy(); state.activeChart = null; }
+  const hasData = g.rounds.length > 0 && typeof Chart !== 'undefined';
+  noData.hidden = hasData;
+  wrap.hidden = !hasData;
+  if (!hasData) return;
+
+  const labels = g.rounds.map((_, i) => `M${i + 1}`);
+  const mode = state.chartMode;
+  const colors = g.players.map((p, i) => cssColor(`--color-data-${seriesOf(p, i)}`));
+  const partialTotals = ri => g.players.map((_, i) => g.rounds.slice(0, ri + 1).reduce((s, r) => s + (r[i] ?? 0), 0));
+  const lineSet = (p, pi, data) => ({
+    label: p.name, data,
+    borderColor: colors[pi], backgroundColor: colors[pi],
+    tension: 0, fill: false, pointStyle: 'rect', pointRadius: 4, borderWidth: 2,
+  });
+
+  let type = 'line';
+  let datasets;
+  let options = chartOptions();
+
+  if (mode === 'line') {
+    datasets = g.players.map((p, pi) => {
+      let cum = 0;
+      return lineSet(p, pi, g.rounds.map(r => { cum += r[pi] ?? 0; return cum; }));
+    });
+  } else if (mode === 'bar') {
+    type = 'bar';
+    datasets = g.players.map((p, pi) => ({
+      label: p.name, data: g.rounds.map(r => r[pi] ?? 0),
+      backgroundColor: colors[pi], borderWidth: 0, borderRadius: 0,
+    }));
+  } else if (mode === 'rank') {
+    datasets = g.players.map((p, pi) => lineSet(p, pi, g.rounds.map((_, ri) => {
+      const partial = partialTotals(ri);
+      const sorted = [...partial].sort((a, b) => g.direction === 'high' ? b - a : a - b);
+      return sorted.indexOf(partial[pi]) + 1;
+    })));
+    options.scales.y = { ...options.scales.y, reverse: true, min: 1, max: g.players.length, ticks: { ...options.scales.y.ticks, stepSize: 1 } };
+  } else {
+    datasets = g.players.map((p, pi) => lineSet(p, pi, g.rounds.map((_, ri) => {
+      const partial = partialTotals(ri);
+      const leader = g.direction === 'high' ? Math.max(...partial) : Math.min(...partial);
+      return g.direction === 'high' ? partial[pi] - leader : leader - partial[pi];
+    })));
+  }
+
+  state.activeChart = new Chart(canvas, { type, data: { labels, datasets }, options });
+}
+
+function chartOptions() {
+  const text = cssColor('--color-text-muted');
+  const grid = cssColor('--color-border');
+  const font = { family: "'JetBrains Mono', monospace", size: 12 };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', align: 'start', labels: { font, color: text, usePointStyle: true, pointStyle: 'rect', padding: 16, boxWidth: 8, boxHeight: 8 } },
+    },
+    scales: {
+      x: { grid: { color: grid }, border: { color: text }, ticks: { font, color: text } },
+      y: { grid: { color: grid }, border: { color: text }, ticks: { font, color: text } },
+    },
+    animation: { duration: reduced ? 0 : 400 },
+  };
+}
+
+function switchChart(mode, el) {
+  state.chartMode = mode;
+  document.querySelectorAll('[data-action="chart"]').forEach(t => t.setAttribute('aria-pressed', String(t === el)));
+  renderChart();
+}
+
+// ============================================================
+// FIN DE PARTIE
+// ============================================================
+function endGame() {
+  const g = state.currentGame;
+  if (!g) return;
+  if (!g.rounds.length) { toast("Jouez au moins une manche d'abord.", 'error'); return; }
+  showConfirm(
+    `Terminer la partie « ${g.name} » ?`,
+    () => {
+      const ranked = getRanked(g);
+      g.winner = ranked[0].name;
+      g.finalRanked = ranked;
+      g.stats = computeStats(g);
+      state.history.push({ ...g });
+      saveHistory();
+      saveCurrentGame();
+      showView('awards');
+    },
+    'Terminer la partie'
+  );
+}
+
+function abandonGame() {
+  showConfirm(
+    'Abandonner la partie ? La progression sera perdue.',
+    () => {
+      state.currentGame = null;
+      saveCurrentGame();
+      document.getElementById('resume-banner').hidden = true;
+      showView('welcome');
+    },
+    'Abandonner',
+    true
+  );
+}
+
+// ============================================================
+// RÉSULTATS
+// ============================================================
+function statHtml(value, label) {
+  return `<p class="stat"><span class="numeral numeral--sm">${escapeHtml(value)}</span><span class="eyebrow">${label}</span></p>`;
+}
+
+function renderAwards() {
+  const g = state.currentGame;
+  if (!g || !g.finalRanked) return;
+
+  document.getElementById('awards-game-name').textContent = g.name + ', ' + formatDate(g.date);
+  document.getElementById('awards-winner').textContent = g.finalRanked[0].name;
+
+  document.getElementById('podium').innerHTML = g.finalRanked.slice(0, 3).map((p, i) => `
+    <li class="podium__place">
+      <span class="podium__rank" aria-hidden="true">${i + 1}</span>
+      <span class="podium__name"><span class="sr-only">Rang ${i + 1} : </span>${playerCell(p)}</span>
+      <span class="podium__score">${p.total} pts</span>
+    </li>`).join('');
+
+  document.getElementById('awards-grid').innerHTML = generateAwards(g).map(a => `
+    <li class="ledger__row">
+      <span class="eyebrow">${escapeHtml(a.player)}</span>
+      <h4 class="ledger__title">${a.title}</h4>
+      <p class="ledger__text">${escapeHtml(a.desc)}</p>
+    </li>`).join('');
+
+  const allScores = g.rounds.flatMap(r => r);
+  const gap = Math.abs(g.finalRanked[0].total - (g.finalRanked[1]?.total ?? 0));
+  document.getElementById('awards-summary').innerHTML =
+    statHtml(g.rounds.length, 'Manches') +
+    statHtml(g.players.length, 'Joueurs') +
+    statHtml(Math.max(...allScores), 'Record de manche') +
+    statHtml(gap, "Points d'écart final");
+}
+
+// ============================================================
+// HISTORIQUE
+// ============================================================
+function renderHistory() {
+  const allPlayers = {};
+  state.history.forEach(g => {
+    g.players?.forEach(p => {
+      if (!allPlayers[p.name]) allPlayers[p.name] = { wins: 0, games: 0 };
+      allPlayers[p.name].games++;
+    });
+    if (g.winner) {
+      if (!allPlayers[g.winner]) allPlayers[g.winner] = { wins: 0, games: 0 };
+      allPlayers[g.winner].wins++;
+    }
+  });
+  const topPlayer = Object.entries(allPlayers).sort((a, b) => b[1].wins - a[1].wins)[0];
+  const totalRounds = state.history.reduce((s, g) => s + (g.rounds?.length || 0), 0);
+
+  document.getElementById('global-stats').innerHTML =
+    statHtml(state.history.length, 'Parties jouées') +
+    statHtml(totalRounds, 'Manches au total') +
+    statHtml(Object.keys(allPlayers).length, 'Joueurs') +
+    (topPlayer ? statHtml(topPlayer[1].wins, `Victoires de ${escapeHtml(topPlayer[0])}`) : '');
+
+  document.getElementById('history-games-list').innerHTML = state.history.length
+    ? state.history.slice().reverse().map((g, i) => gameRow(g, state.history.length - 1 - i)).join('')
+    : '<li class="empty">Aucune partie jouée. Lancez votre première partie.</li>';
+}
+
+function reviewGame(idx) {
+  const g = state.history[idx];
+  if (!g) return;
+  state.currentGame = { ...g, _readonly: true };
+  state.currentGame.finalRanked = state.currentGame.finalRanked || getRanked(g);
+  state.currentGame.stats = state.currentGame.stats || computeStats(g);
+  showView('awards');
+}
+
+function discardCurrentGame() {
+  state.currentGame = null;
+  localStorage.removeItem('boardnight_current');
+  document.getElementById('resume-banner').hidden = true;
+}
+
+// ============================================================
+// ÉVÉNEMENTS
+// ============================================================
+const ACTIONS = {
+  'new-game': () => { showView('setup'); initSetup(); },
+  'history': () => showView('history'),
+  'welcome': () => showView('welcome'),
+  'resume': () => showView('game'),
+  'discard': discardCurrentGame,
+  'add-player': addPlayerRow,
+  'remove-player': el => removePlayer(Number(el.dataset.index)),
+  'pick-color': el => openAvatarModal(Number(el.dataset.index)),
+  'select-color': selectColor,
+  'confirm-color': confirmAvatar,
+  'undo': undoLastRound,
+  'end': endGame,
+  'abandon': abandonGame,
+  'copy-round': copyLastRound,
+  'chart': el => switchChart(el.dataset.mode, el),
+  'review': el => reviewGame(Number(el.dataset.index)),
+  'edit-cell': el => editCell(Number(el.dataset.player), Number(el.dataset.round), el),
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el && ACTIONS[el.dataset.action]) ACTIONS[el.dataset.action](el);
+});
+
+document.getElementById('setup-form').addEventListener('submit', e => { e.preventDefault(); startGame(); });
+document.getElementById('round-form').addEventListener('submit', e => { e.preventDefault(); submitRound(); });
+
+document.getElementById('player-list').addEventListener('input', e => {
+  if (e.target.matches('.input')) state.setupPlayers[Number(e.target.dataset.index)].name = e.target.value;
+});
+
+// Pas-à-pas : appui long à la souris ou au doigt, activation simple au clavier
+const scoreInputs = document.getElementById('score-inputs');
+scoreInputs.addEventListener('pointerdown', e => {
+  const btn = e.target.closest('[data-step]');
+  if (btn) startStep(Number(btn.dataset.index), Number(btn.dataset.step));
+});
+scoreInputs.addEventListener('click', e => {
+  const btn = e.target.closest('[data-step]');
+  if (btn && e.detail === 0) stepScore(Number(btn.dataset.index), Number(btn.dataset.step));
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(type => scoreInputs.addEventListener(type, stopStep, true));
+scoreInputs.addEventListener('keydown', e => {
+  if (e.target.matches('.input')) scoreKeyNav(e, Number(e.target.dataset.index), state.currentGame.players.length);
+});
+
+// Le graphique reprend les couleurs du thème quand celui-ci change
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-theme-toggle]') && state.currentGame) setTimeout(renderChart, 0);
+});
+
+// ============================================================
+// DÉMARRAGE
+// ============================================================
+// Reprise d'une partie en cours
+(function restoreSession() {
+  const saved = localStorage.getItem('boardnight_current');
+  if (!saved) return;
+  try {
+    const g = JSON.parse(saved);
+    if (g && g.id && !g._readonly && !g.winner && g.rounds) {
+      state.currentGame = g;
+      const banner = document.getElementById('resume-banner');
+      banner.hidden = false;
+      banner.querySelector('.resume-game-name').textContent = g.name;
+      banner.querySelector('.resume-round').textContent = `Manche ${g.currentRound}, ${plural(g.rounds.length, 'manche')} terminée${g.rounds.length > 1 ? 's' : ''}`;
+    }
+  } catch (e) { localStorage.removeItem('boardnight_current'); }
+})();
+
+initSetup();
+renderWelcome();
+
+// ============================================================
+// CALCULS (classement, statistiques, trophées)
+// ============================================================
+function variance(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
+  return arr.reduce((s,x)=>s+(x-mean)**2,0)/arr.length;
 }
 
 function getTotals(g) {
@@ -288,34 +730,6 @@ function getRanked(g) {
   });
 }
 
-function renderLeaderboard() {
-  const g = state.currentGame; if(!g) return;
-  const ranked = getRanked(g);
-  const leader = document.getElementById('leaderboard');
-  const leaderTotal = ranked[0].total;
-  leader.innerHTML = ranked.map((p,rank) => {
-    const prev = g.rounds.length > 1 ? getPrevRank(g, p.idx) : rank+1;
-    const delta = prev - (rank+1);
-    let deltaHtml = '';
-    if (g.rounds.length > 0) {
-      if (delta > 0) deltaHtml = `<span class="standing-delta delta-up">▲${delta}</span>`;
-      else if (delta < 0) deltaHtml = `<span class="standing-delta delta-down">▼${Math.abs(delta)}</span>`;
-      else deltaHtml = `<span class="standing-delta delta-same">—</span>`;
-    }
-    const gap = rank > 0 ? (g.direction === 'high' ? leaderTotal - p.total : p.total - leaderTotal) : 0;
-    const gapHtml = rank > 0 && g.rounds.length > 0 ? `<span class="standing-gap">-${gap}</span>` : '';
-    return `
-      <div class="player-standing${rank===0?' rank-1':''}">
-        <div class="rank-number">${rank===0?'':''}${rank+1}</div>
-        <div class="standing-avatar">${p.avatar}</div>
-        <div class="standing-name" style="color:${p.color}">${p.name}</div>
-        ${gapHtml}
-        ${deltaHtml}
-        <div class="standing-score">${p.total}</div>
-      </div>`;
-  }).join('');
-}
-
 // Fixed: stable sort + compare by value not reference
 function getPrevRank(g, playerIdx) {
   if (g.rounds.length < 2) return 0;
@@ -324,29 +738,6 @@ function getPrevRank(g, playerIdx) {
   const sorted = g.players.map((_,i) => ({i, v: totals[i]}))
     .sort((a,b) => g.direction==='high' ? b.v-a.v || a.i-b.i : a.v-b.v || a.i-b.i);
   return sorted.findIndex(x => x.i === playerIdx) + 1;
-}
-
-function renderScoreInputs() {
-  const g = state.currentGame; if(!g) return;
-  const container = document.getElementById('score-inputs');
-  const prevRound = g.rounds.length > 0 ? g.rounds[g.rounds.length-1] : null;
-  container.innerHTML = g.players.map((p,i) => `
-    <div class="score-row">
-      <div class="score-player-name">
-        <span>${p.avatar}</span>
-        <span style="color:${p.color}">${p.name}</span>
-      </div>
-      <div class="score-stepper">
-        <button class="stepper-btn" onpointerdown="startStep(${i},-1)" onpointerup="stopStep()" onpointerleave="stopStep()">−</button>
-        <button class="stepper-btn" onpointerdown="startStep(${i},1)" onpointerup="stopStep()" onpointerleave="stopStep()">+</button>
-      </div>
-      <input class="score-input-field" type="number" inputmode="numeric" id="score-${i}" value="0" placeholder="0"
-        onkeydown="scoreKeyNav(event,${i},${g.players.length})">
-    </div>`).join('');
-
-  // Show "copy last round" button if available
-  const copyBtn = document.getElementById('copy-last-round-btn');
-  if (copyBtn) copyBtn.style.display = prevRound ? 'flex' : 'none';
 }
 
 // Stepper with long-press acceleration
@@ -380,38 +771,11 @@ function scoreKeyNav(e, i, total) {
   }
 }
 
-function copyLastRound() {
-  const g = state.currentGame; if(!g || !g.rounds.length) return;
-  const last = g.rounds[g.rounds.length-1];
-  g.players.forEach((_,i) => { document.getElementById('score-'+i).value = last[i] ?? 0; });
-  toast('Scores copiés depuis la manche précédente');
-}
-
-function submitRound() {
-  const g = state.currentGame; if(!g) return;
-  const scores = g.players.map((_,i) => parseInt(document.getElementById('score-'+i).value) || 0);
-  g.rounds.push(scores);
-  g.currentRound++;
-  saveCurrentGame();
-  updateRoundInfo();
-  renderLeaderboard();
-  renderRoundHistory();
-  renderChart();
-  renderLiveStats();
-  g.players.forEach((_,i) => { document.getElementById('score-'+i).value = 0; });
-  // Focus first input for fast next-round entry
-  document.getElementById('score-0')?.focus();
-
-  // Dramatic moment detection
-  checkDramaticMoments(g);
-  toast(`Manche ${g.currentRound-1} enregistrée ✓`, 'success');
-}
-
 function checkDramaticMoments(g) {
   if (g.rounds.length < 2) return;
   const ranked = getRanked(g);
   const prev = getPrevRank(g, ranked[0].idx);
-  if (prev > 1) toast(`${ranked[0].name} prend la tête !`, 'event', 3500);
+  if (prev > 1) toast(`${ranked[0].name} prend la tête.`, 'default', 3500);
   const lastRound = g.rounds[g.rounds.length-1];
   const maxScore = Math.max(...lastRound);
   if (maxScore > 0) {
@@ -419,364 +783,11 @@ function checkDramaticMoments(g) {
     const prevMax = allPrev.length ? Math.max(...allPrev) : 0;
     if (maxScore > prevMax * 1.5 && maxScore > 20) {
       const hero = g.players[lastRound.indexOf(maxScore)];
-      setTimeout(() => toast(`${hero.name} explose le record de manche !`, 'event', 3500), 1200);
+      setTimeout(() => toast(`${hero.name} bat le record de manche.`, 'default', 3500), 1200);
     }
   }
 }
 
-function undoLastRound() {
-  const g = state.currentGame; if(!g || !g.rounds.length) return;
-  showConfirm(
-    `Annuler la manche ${g.rounds.length} ? Les scores seront perdus.`,
-    () => {
-      g.rounds.pop();
-      g.currentRound--;
-      saveCurrentGame();
-      updateRoundInfo();
-      renderLeaderboard();
-      renderRoundHistory();
-      renderChart();
-      renderLiveStats();
-      toast('Manche annulée');
-    },
-    'Annuler la manche',
-    true
-  );
-}
-
-function renderRoundHistory() {
-  const g = state.currentGame; if(!g) return;
-  const wrap = document.getElementById('round-history-wrap');
-  if (!g.rounds.length) {
-    wrap.innerHTML = '<p class="empty-message">Aucune manche pour le moment</p>';
-    return;
-  }
-  const totals = getTotals(g);
-  // Highlight best score per round
-  const roundBests = g.rounds.map(r => g.direction === 'high' ? Math.max(...r) : Math.min(...r));
-  wrap.innerHTML = `<table class="history-table">
-    <thead>
-      <tr>
-        <th>Joueur</th>
-        ${g.rounds.map((_,i)=>`<th>M${i+1}</th>`).join('')}
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${g.players.map((p,pi)=>`
-        <tr>
-          <td><span style="color:${p.color}">${p.avatar} ${p.name}</span></td>
-          ${g.rounds.map((r,ri)=>{
-            const val = r[pi]??0;
-            const isBest = val === roundBests[ri];
-            return `<td class="editable-cell mono${isBest?' cell-best':''}" onclick="editCell(${pi},${ri})" title="Cliquer pour éditer">${val}</td>`;
-          }).join('')}
-          <td class="mono total-row">${totals.find(t=>t.idx===pi)?.total??0}</td>
-        </tr>`).join('')}
-    </tbody>
-  </table>`;
-}
-
-function editCell(playerIdx, roundIdx) {
-  const g = state.currentGame; if(!g) return;
-  const cells = document.querySelectorAll('.history-table tbody tr')[playerIdx]?.querySelectorAll('td');
-  if (!cells) return;
-  const cell = cells[roundIdx + 1];
-  const cur = g.rounds[roundIdx][playerIdx] ?? 0;
-  cell.innerHTML = `<input class="inline-edit" type="number" inputmode="numeric" value="${cur}"
-    onblur="commitEdit(${playerIdx},${roundIdx},this)"
-    onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value='${cur}';this.blur();}" autofocus>`;
-  cell.querySelector('input').select();
-}
-
-function commitEdit(pi, ri, input) {
-  const g = state.currentGame; if(!g) return;
-  g.rounds[ri][pi] = parseInt(input.value) || 0;
-  saveCurrentGame();
-  renderRoundHistory();
-  renderLeaderboard();
-  renderChart();
-  renderLiveStats();
-}
-
-// ============================================================
-// LIVE STATS
-// ============================================================
-function renderLiveStats() {
-  const g = state.currentGame; if(!g) return;
-  const panel = document.getElementById('live-stats-grid');
-  if (!panel) return;
-
-  if (!g.rounds.length) {
-    panel.innerHTML = '<p class="empty-message" style="grid-column:1/-1">Jouez une manche pour voir les stats</p>';
-    return;
-  }
-
-  const totals = getTotals(g);
-  const ranked = getRanked(g);
-  const n = g.players.length;
-  const nRounds = g.rounds.length;
-
-  // Leader
-  const leader = ranked[0];
-  // Gap leader vs 2nd
-  const second = ranked[1];
-  const gap = Math.abs(leader.total - second.total);
-
-  // Most wins (best score per round)
-  const roundWins = Array(n).fill(0);
-  g.rounds.forEach(r => {
-    const best = g.direction === 'high' ? Math.max(...r) : Math.min(...r);
-    r.forEach((v,i) => { if(v === best) roundWins[i]++; });
-  });
-  const topWinner = totals.reduce((a,b) => roundWins[a.idx] >= roundWins[b.idx] ? a : b);
-
-  // Most consistent (lowest variance, min 3 rounds)
-  const variances = totals.map(p => ({...p, v: variance(p.perRound)}));
-  const mostConsistent = variances.reduce((a,b) => a.v <= b.v ? a : b);
-
-  // Biggest momentum (last 2 rounds vs prev 2)
-  let momentum = null;
-  if (nRounds >= 4) {
-    const momScores = totals.map(p => {
-      const last2 = p.perRound.slice(-2).reduce((a,b)=>a+b,0);
-      const prev2 = p.perRound.slice(-4,-2).reduce((a,b)=>a+b,0);
-      return {...p, mom: last2 - prev2};
-    });
-    momentum = momScores.reduce((a,b) => (g.direction==='high'?a.mom>=b.mom:a.mom<=b.mom) ? a : b);
-  }
-
-  // Current winning streak
-  let streak = 0; let streakPlayer = null;
-  for (let ri = nRounds-1; ri >= 0; ri--) {
-    const r = g.rounds[ri];
-    const best = g.direction==='high' ? Math.max(...r) : Math.min(...r);
-    const winnerIdx = r.indexOf(best);
-    if (streak === 0) { streak=1; streakPlayer=winnerIdx; }
-    else if (winnerIdx === streakPlayer) streak++;
-    else break;
-  }
-
-  // Comeback: who gained most ranks since round 1
-  let biggestClimber = null;
-  if (nRounds >= 2) {
-    const afterR1 = g.players.map((_,i) => g.rounds[0][i]);
-    const sortedR1 = [...afterR1].sort((a,b) => g.direction==='high'?b-a:a-b);
-    const initialRanks = afterR1.map(v => sortedR1.indexOf(v)+1);
-    const climbers = ranked.map((p,currentRank) => ({
-      ...p,
-      gain: initialRanks[p.idx] - (currentRank+1)
-    }));
-    biggestClimber = climbers.reduce((a,b) => a.gain >= b.gain ? a : b);
-  }
-
-  const stats = [
-    { label: 'En tête', value: leader.avatar + ' ' + leader.name, sub: leader.total + ' pts' },
-    { label: 'Écart avec le 2ème', value: gap + ' pts', sub: second.name + ' à ' + second.total },
-    { label: 'Manches remportées', value: topWinner.avatar + ' ' + topWinner.name, sub: roundWins[topWinner.idx] + ' / ' + nRounds },
-    { label: 'Plus régulier', value: mostConsistent.avatar + ' ' + mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
-  ];
-
-  if (streak >= 2 && streakPlayer !== null) {
-    stats.push({ label: 'Série en cours', value: g.players[streakPlayer].avatar + ' ' + g.players[streakPlayer].name, sub: streak + ' manches d\'affilée' });
-  }
-
-  if (momentum && nRounds >= 4) {
-    const sign = momentum.mom > 0 ? '+' : '';
-    stats.push({ label: 'Momentum', value: momentum.avatar + ' ' + momentum.name, sub: sign + momentum.mom + ' sur les 2 dern.' });
-  }
-
-  if (biggestClimber && biggestClimber.gain > 0) {
-    stats.push({ label: 'Remontée', value: biggestClimber.avatar + ' ' + biggestClimber.name, sub: '+' + biggestClimber.gain + ' place(s)' });
-  }
-
-  panel.innerHTML = stats.map(s => `
-    <div class="stat-pill">
-      <div class="label">${s.label}</div>
-      <div class="value">${s.value}</div>
-      <div class="sub">${s.sub}</div>
-    </div>`).join('');
-}
-
-// ============================================================
-// CHART
-// ============================================================
-function renderChart() {
-  const g = state.currentGame; if(!g) return;
-  const noData = document.getElementById('chart-no-data');
-  const canvas = document.getElementById('main-chart');
-  if (!g.rounds.length) {
-    noData.style.display = '';
-    canvas.style.display = 'none';
-    if (state.activeChart) { state.activeChart.destroy(); state.activeChart = null; }
-    return;
-  }
-  noData.style.display = 'none';
-  canvas.style.display = '';
-
-  if (state.activeChart) { state.activeChart.destroy(); state.activeChart = null; }
-
-  const labels = g.rounds.map((_,i) => `M${i+1}`);
-  const mode = state.chartMode;
-
-  if (mode === 'line') {
-    // Cumulative
-    const datasets = g.players.map((p,pi) => {
-      let cum = 0;
-      return {
-        label: `${p.avatar} ${p.name}`,
-        data: g.rounds.map(r => { cum += r[pi]??0; return cum; }),
-        borderColor: p.color,
-        backgroundColor: p.color + '18',
-        tension: 0.35, fill: false,
-        pointBackgroundColor: p.color, pointRadius: 4, borderWidth: 2.5,
-      };
-    });
-    state.activeChart = new Chart(canvas, {
-      type: 'line', data: { labels, datasets },
-      options: chartOptions('Progression Cumulée'),
-    });
-
-  } else if (mode === 'bar') {
-    // Per-round gains
-    const datasets = g.players.map((p,pi) => ({
-      label: `${p.avatar} ${p.name}`,
-      data: g.rounds.map(r => r[pi]??0),
-      backgroundColor: p.color + 'cc',
-      borderColor: p.color,
-      borderWidth: 1, borderRadius: 4,
-    }));
-    state.activeChart = new Chart(canvas, {
-      type: 'bar', data: { labels, datasets },
-      options: chartOptions('Gains par Manche'),
-    });
-
-  } else if (mode === 'rank') {
-    // Rank per round (bump chart)
-    const n = g.players.length;
-    const datasets = g.players.map((p,pi) => {
-      const ranks = g.rounds.map((_,ri) => {
-        const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
-        const sorted = [...partial].sort((a,b) => g.direction==='high'?b-a:a-b);
-        // Stable rank: find position of this player's value
-        return sorted.indexOf(partial[pi]) + 1;
-      });
-      return {
-        label: `${p.avatar} ${p.name}`,
-        data: ranks,
-        borderColor: p.color,
-        backgroundColor: p.color + '22',
-        tension: 0.2, fill: false,
-        pointBackgroundColor: p.color, pointRadius: 5, borderWidth: 2.5,
-      };
-    });
-    state.activeChart = new Chart(canvas, {
-      type: 'line', data: { labels, datasets },
-      options: {
-        ...chartOptions('Classement par Manche'),
-        scales: {
-          ...chartOptions().scales,
-          y: {
-            ...chartOptions().scales?.y,
-            reverse: true,
-            min: 1, max: n,
-            ticks: { stepSize: 1, font: { family: "'JetBrains Mono'", size: 10 } },
-            grid: { color: 'oklch(0.92 0.01 290)' },
-          }
-        }
-      }
-    });
-
-  } else if (mode === 'gap') {
-    // Gap vs leader
-    const datasets = g.players.map((p,pi) => {
-      const data = g.rounds.map((_,ri) => {
-        const partial = g.players.map((_2,i2) => g.rounds.slice(0,ri+1).reduce((s,r)=>s+(r[i2]??0),0));
-        const leader = g.direction==='high' ? Math.max(...partial) : Math.min(...partial);
-        return g.direction==='high' ? partial[pi] - leader : leader - partial[pi];
-      });
-      return {
-        label: `${p.avatar} ${p.name}`,
-        data,
-        borderColor: p.color,
-        backgroundColor: p.color + '18',
-        tension: 0.3, fill: false,
-        pointBackgroundColor: p.color, pointRadius: 4, borderWidth: 2.5,
-      };
-    });
-    state.activeChart = new Chart(canvas, {
-      type: 'line', data: { labels, datasets },
-      options: chartOptions('Écart avec le Leader'),
-    });
-  }
-}
-
-function chartOptions(title) {
-  return {
-    responsive: true, maintainAspectRatio: true,
-    plugins: {
-      legend: { position: 'top', labels: { font: { family: "'JetBrains Mono'", size: 11 }, usePointStyle: true, padding: 12, boxWidth: 8 }},
-      title: title ? { display: false } : undefined,
-    },
-    scales: {
-      x: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } }},
-      y: { grid: { color: 'oklch(0.92 0.01 290)' }, ticks: { font: { family: "'JetBrains Mono'", size: 10 } }}
-    },
-    animation: { duration: 350 },
-  };
-}
-
-function switchChart(mode, el) {
-  state.chartMode = mode;
-  document.querySelectorAll('.chart-tab').forEach(t => {
-    t.classList.remove('active');
-    t.setAttribute('aria-selected', 'false');
-  });
-  el.classList.add('active');
-  el.setAttribute('aria-selected', 'true');
-  renderChart();
-}
-
-// ============================================================
-// END GAME
-// ============================================================
-function endGame() {
-  const g = state.currentGame;
-  if (!g) return;
-  if (!g.rounds.length) { toast('Jouez au moins une manche d\'abord !'); return; }
-  showConfirm(
-    `Terminer la partie "${g.name}" ?`,
-    () => {
-      const ranked = getRanked(g);
-      g.winner = ranked[0].name;
-      g.finalRanked = ranked;
-      g.stats = computeStats(g);
-      state.history.push({...g});
-      saveHistory();
-      saveCurrentGame();
-      showView('awards');
-      launchConfetti();
-    },
-    'Terminer la partie'
-  );
-}
-
-function abandonGame() {
-  showConfirm(
-    'Abandonner la partie ? La progression sera perdue.',
-    () => {
-      state.currentGame = null;
-      saveCurrentGame();
-      showView('welcome');
-    },
-    'Abandonner',
-    true
-  );
-}
-
-// ============================================================
-// STATS COMPUTATION
-// ============================================================
 function computeStats(g) {
   const totals = getTotals(g);
   const ranked = getRanked(g);
@@ -923,59 +934,6 @@ function computeStats(g) {
   };
 }
 
-// ============================================================
-// AWARDS VIEW
-// ============================================================
-function renderAwards() {
-  const g = state.currentGame;
-  if (!g || !g.finalRanked) return;
-
-  document.getElementById('awards-game-name').textContent = g.name + ' · ' + new Date(g.date).toLocaleDateString('fr-FR');
-
-  // Podium
-  const podium = document.getElementById('podium');
-  const top = g.finalRanked.slice(0,3);
-  const medals = ['🥇','🥈','🥉'];
-  const ranks = ['1er','2ème','3ème'];
-  podium.innerHTML = top.map((p,i) => `
-    <div class="podium-slot${i===0?' p1':''}">
-      <span class="podium-avatar">${p.avatar}</span>
-      <div class="podium-medal">${medals[i]}</div>
-      <div class="podium-rank">${ranks[i]}</div>
-      <div class="podium-name" style="color:${p.color}">${p.name}</div>
-      <div class="podium-score">${p.total}</div>
-    </div>`).join('');
-
-  // Awards
-  const awards = generateAwards(g);
-  const grid = document.getElementById('awards-grid');
-  grid.innerHTML = awards.map((a, i) => `
-    <div class="award-card" style="animation-delay:${i*0.08}s">
-      <span class="award-emoji">${a.emoji}</span>
-      <div class="award-title">${a.title}</div>
-      <div class="award-player">${a.player}</div>
-      <div class="award-desc">${a.desc}</div>
-    </div>`).join('');
-
-  // Game summary stats
-  renderAwardsSummary(g);
-}
-
-function renderAwardsSummary(g) {
-  const el = document.getElementById('awards-summary');
-  if (!el) return;
-  const nRounds = g.rounds.length;
-  const allScores = g.rounds.flatMap(r => r);
-  const maxScore = Math.max(...allScores);
-  const gap = Math.abs(g.finalRanked[0].total - g.finalRanked[1]?.total);
-  el.innerHTML = `
-    <div class="summary-stat"><span>${nRounds}</span><small>manches</small></div>
-    <div class="summary-stat"><span>${g.players.length}</span><small>joueurs</small></div>
-    <div class="summary-stat"><span>${maxScore}</span><small>record de manche</small></div>
-    <div class="summary-stat"><span>${gap}</span><small>pts d'écart final</small></div>
-  `;
-}
-
 function generateAwards(g) {
   const ranked = g.finalRanked;
   const stats = g.stats;
@@ -983,87 +941,87 @@ function generateAwards(g) {
   const awards = [];
 
   // Champion (always first, always displayed)
-  awards.push({ priority: 0, emoji:'🏆', title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté avec ${ranked[0].total} pts. À la prochaine.` });
+  awards.push({ priority: 0, title:'Le Champion', player: ranked[0].name, desc: `Vainqueur incontesté avec ${ranked[0].total} pts. À la prochaine.` });
 
   // Last place
   if (ranked.length > 1) {
     const snail = ranked[ranked.length-1];
-    awards.push({ priority: 1, emoji:'🐌', title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
+    awards.push({ priority: 1, title:'L\'Escargot', player: snail.name, desc: `Dernière place avec ${snail.total} pts. L'important c'est le voyage.` });
   }
 
-  // Tyrant — led the most rounds
+  // Tyrant : led the most rounds
   if (stats.tyrant) {
     const tyrantCount = stats.leadCounts[stats.tyrant];
-    awards.push({ priority: 2, emoji:'👑', title:'Le Tyran', player: stats.tyrant, desc: `En tête pendant ${tyrantCount} manche${tyrantCount>1?'s':''}. Le pouvoir est addictif.` });
+    awards.push({ priority: 2, title:'Le Tyran', player: stats.tyrant, desc: `En tête pendant ${tyrantCount} manche${tyrantCount>1?'s':''}. Le pouvoir est addictif.` });
   }
 
-  // Gambler — highest variance (distinct from wall)
+  // Gambler : highest variance (distinct from wall)
   if (stats.gambler && stats.gambler.name !== stats.wall?.name) {
-    awards.push({ priority: 3, emoji:'🎲', title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles sur chaque manche. Vit pour le chaos.` });
+    awards.push({ priority: 3, title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles sur chaque manche. Vit pour le chaos.` });
   }
 
-  // Wall — most consistent (distinct from gambler)
+  // Wall : most consistent (distinct from gambler)
   if (stats.wall && stats.wall.name !== stats.gambler?.name) {
     const wallIsWinner = ranked[0].name === stats.wall.name;
-    awards.push({ priority: 4, emoji:'🧱', title:'Le Mur', player: stats.wall.name, desc: wallIsWinner ? `Régularité absolue ET victoire. Le combo parfait.` : `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
+    awards.push({ priority: 4, title:'Le Mur', player: stats.wall.name, desc: wallIsWinner ? `Régularité absolue ET victoire. Le combo parfait.` : `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
   }
 
   // Comeback
   if (stats.comeback && g.rounds.length > 2) {
-    awards.push({ priority: 5, emoji:'🚀', title:'La Fusée', player: stats.comeback.name, desc: `La plus grosse remontée en seconde moitié de partie. Pas de panique, juste du talent.` });
+    awards.push({ priority: 5, title:'La Fusée', player: stats.comeback.name, desc: `La plus grosse remontée en seconde moitié de partie. Pas de panique, juste du talent.` });
   }
 
   // Sniper
   if (stats.sniper) {
-    awards.push({ priority: 6, emoji:'🎯', title:'Le Sniper', player: stats.sniper.name, desc: `Meilleure manche à la toute dernière round. Le timing, c'est tout.` });
+    awards.push({ priority: 6, title:'Le Sniper', player: stats.sniper.name, desc: `Meilleur score lors de la toute dernière manche. Le timing, c'est tout.` });
   }
 
   // Big Bang
   if (stats.bigBang) {
-    awards.push({ priority: 7, emoji:'💥', title:'Le Big Bang', player: stats.bigBang.name, desc: `Le plus haut score sur une seule manche. Un tour légendaire.` });
+    awards.push({ priority: 7, title:'Le Big Bang', player: stats.bigBang.name, desc: `Le plus haut score sur une seule manche. Un tour légendaire.` });
   }
 
   // Collapse
   if (stats.collapse && g.rounds.length > 2) {
-    awards.push({ priority: 8, emoji:'📉', title:'L\'Effondrement', player: stats.collapse.name, desc: `La plus grosse chute entre deux manches. Ce qui monte doit redescendre.` });
+    awards.push({ priority: 8, title:'L\'Effondrement', player: stats.collapse.name, desc: `La plus grosse chute entre deux manches. Ce qui monte doit redescendre.` });
   }
 
   // Reversal
   if (stats.reversal) {
-    awards.push({ priority: 9, emoji:'⚡', title:'Le Retournement', player: stats.reversal.name, desc: `Derrière pendant la majorité de la partie, vainqueur à la fin. Magistral.` });
+    awards.push({ priority: 9, title:'Le Retournement', player: stats.reversal.name, desc: `Derrière pendant la majorité de la partie, vainqueur à la fin. Magistral.` });
   }
 
   // Clutch
   if (stats.clutch) {
-    awards.push({ priority: 10, emoji:'🧊', title:'Le Sang-Froid', player: stats.clutch.name, desc: `Meilleures deux dernières manches combinées. La pression fait les diamants.` });
+    awards.push({ priority: 10, title:'Le Sang-Froid', player: stats.clutch.name, desc: `Meilleures deux dernières manches combinées. La pression fait les diamants.` });
   }
 
-  // Tourist — fixed condition: always in bottom half every round
+  // Tourist : fixed condition: always in bottom half every round
   if (stats.tourist) {
-    awards.push({ priority: 11, emoji:'🧳', title:'Le Touriste', player: stats.tourist.name, desc: `Jamais sorti du bas du classement. Juste content d'être là.` });
+    awards.push({ priority: 11, title:'Le Touriste', player: stats.tourist.name, desc: `Jamais sorti du bas du classement. Juste content d'être là.` });
   }
 
   // Sleeper
   if (stats.sleeper) {
-    awards.push({ priority: 12, emoji:'👻', title:'La Menace Fantôme', player: stats.sleeper.name, desc: `Discret en première moitié, explosif en seconde. On n'aurait pas dû les ignorer.` });
+    awards.push({ priority: 12, title:'La Menace Fantôme', player: stats.sleeper.name, desc: `Discret en première moitié, explosif en seconde. On n'aurait pas dû les ignorer.` });
   }
 
   // Phoenix
   if (stats.phoenix) {
-    awards.push({ priority: 13, emoji:'🔥', title:'Le Phoenix', player: stats.phoenix.name, desc: `Dernier à mi-partie, champion à la fin. Renaître des cendres, c'est un art.` });
+    awards.push({ priority: 13, title:'Le Phoenix', player: stats.phoenix.name, desc: `Dernier à mi-partie, champion à la fin. Renaître des cendres, c'est un art.` });
   }
 
   // Low-score direction bonus
   if (g.direction === 'low') {
-    awards.push({ priority: 14, emoji:'🎭', title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Le plus bas score remporte la mise.` });
+    awards.push({ priority: 14, title:'Le Minimaliste', player: ranked[0].name, desc: `Moins c'est mieux. Le plus bas score remporte la mise.` });
   }
 
-  // Champion du presque — 2nd place within 5%
+  // Champion du presque : 2nd place within 5%
   if (ranked.length >= 2) {
     const winner = ranked[0]; const runnerUp = ranked[1];
     const pct = Math.abs(winner.total - runnerUp.total) / Math.max(1, Math.abs(winner.total));
     if (pct < 0.05) {
-      awards.push({ priority: 15, emoji:'🏅', title:'Champion du Presque', player: runnerUp.name, desc: `${Math.abs(winner.total - runnerUp.total)} point(s) d'écart. La victoire vous frôlait.` });
+      awards.push({ priority: 15, title:'Champion du Presque', player: runnerUp.name, desc: `${Math.abs(winner.total - runnerUp.total)} point(s) d'écart. La victoire vous frôlait.` });
     }
   }
 
@@ -1071,138 +1029,9 @@ function generateAwards(g) {
   const roundWinLeader = g.players.reduce((a,b) => stats.roundWins[a.idx] >= stats.roundWins[b.idx] ? a : b,
     {...g.players[0], idx: 0});
   if (stats.roundWins[roundWinLeader.idx] >= Math.ceil(g.rounds.length * 0.5)) {
-    awards.push({ priority: 16, emoji:'⚔️', title:'Le Dominateur', player: roundWinLeader.name, desc: `A remporté ${stats.roundWins[roundWinLeader.idx]} manche${stats.roundWins[roundWinLeader.idx]>1?'s':''} sur ${g.rounds.length}. Une présence écrasante.` });
+    awards.push({ priority: 16, title:'Le Dominateur', player: roundWinLeader.name, desc: `A remporté ${stats.roundWins[roundWinLeader.idx]} manche${stats.roundWins[roundWinLeader.idx]>1?'s':''} sur ${g.rounds.length}. Une présence écrasante.` });
   }
 
   // Sort by priority and return all
   return awards.sort((a,b) => a.priority - b.priority);
 }
-
-// ============================================================
-// HISTORY VIEW
-// ============================================================
-function renderHistory() {
-  const container = document.getElementById('history-games-list');
-  const gstats = document.getElementById('global-stats');
-
-  const total = state.history.length;
-  const allPlayers = {};
-  state.history.forEach(g => {
-    g.players?.forEach(p => {
-      if (!allPlayers[p.name]) allPlayers[p.name] = {wins:0, games:0, podiums:0};
-      allPlayers[p.name].games++;
-    });
-    if (g.winner) {
-      if (!allPlayers[g.winner]) allPlayers[g.winner] = {wins:0, games:0, podiums:0};
-      allPlayers[g.winner].wins++;
-    }
-    (g.finalRanked||[]).slice(0,3).forEach(p => {
-      if (allPlayers[p.name]) allPlayers[p.name].podiums++;
-    });
-  });
-  const topPlayer = Object.entries(allPlayers).sort((a,b)=>b[1].wins-a[1].wins)[0];
-  const totalRounds = state.history.reduce((s,g)=>s+(g.rounds?.length||0),0);
-  const uniquePlayers = Object.keys(allPlayers).length;
-
-  gstats.innerHTML = `
-    <div class="gstat"><div class="num">${total}</div><div class="lbl">Parties jouées</div></div>
-    <div class="gstat"><div class="num">${totalRounds}</div><div class="lbl">Manches totales</div></div>
-    <div class="gstat"><div class="num">${uniquePlayers}</div><div class="lbl">Joueurs uniques</div></div>
-    <div class="gstat"><div class="num">${topPlayer ? topPlayer[0].slice(0,10) : '—'}</div><div class="lbl">Plus de victoires${topPlayer?' ('+topPlayer[1].wins+')':''}</div></div>`;
-
-  if (!state.history.length) {
-    container.innerHTML = '<p class="empty-message empty-message-xl">Aucune partie jouée. Lancez votre première partie !</p>';
-    return;
-  }
-
-  container.innerHTML = state.history.slice().reverse().map((g,i) => {
-    const realIdx = state.history.length - 1 - i;
-    const top3 = (g.finalRanked || []).slice(0,3);
-    return `
-      <div class="history-game-card" onclick="reviewGame(${realIdx})">
-        <div class="hgc-head">
-          <span class="hgc-name">${g.name}</span>
-          <span class="hgc-date">${new Date(g.date).toLocaleDateString('fr-FR')} · ${g.rounds?.length||0} manches</span>
-          <span class="history-item-badge">${g.winner||'?'}</span>
-        </div>
-        <div class="hgc-podium">
-          ${top3.map((p,r)=>`<span class="hgc-podium-chip" style="color:${p.color}">${['#1','#2','#3'][r]} ${p.avatar} ${p.name} <span class="mono" style="opacity:.6">${p.total}</span></span>`).join('')}
-        </div>
-        <div class="hgc-players">
-          ${(g.players||[]).map(p=>`
-            <div class="hgc-player-chip">
-              <div style="width:0.5rem;height:0.5rem;border-radius:9999px;background:${p.color}"></div>
-              ${p.avatar} ${p.name}
-            </div>`).join('')}
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function reviewGame(idx) {
-  const g = state.history[idx];
-  if (!g) return;
-  state.currentGame = {...g, _readonly: true};
-  state.currentGame.finalRanked = state.currentGame.finalRanked || getRanked(g);
-  state.currentGame.stats = state.currentGame.stats || computeStats(g);
-  showView('awards');
-}
-
-// ============================================================
-// CONFETTI
-// ============================================================
-function launchConfetti() {
-  const container = document.getElementById('confetti');
-  container.innerHTML = '';
-  const colors = ['#7c3aed','#2563eb','#059669','#d97706','#db2777','#f59e0b','#10b981','#ef4444'];
-  const shapes = ['2px','4px','6px','8px'];
-  for (let i=0; i<120; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    const size = shapes[Math.floor(Math.random()*shapes.length)];
-    el.style.cssText = `
-      left:${Math.random()*100}%;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      animation-duration:${1.8+Math.random()*2.5}s;
-      animation-delay:${Math.random()*1.2}s;
-      width:${6+Math.random()*8}px;
-      height:${6+Math.random()*8}px;
-      border-radius:${Math.random()>0.5?'50%':size};
-      transform:rotate(${Math.random()*360}deg);
-    `;
-    container.appendChild(el);
-    el.addEventListener('animationend', () => el.remove());
-  }
-}
-
-// ============================================================
-// INIT
-// ============================================================
-// Restore mid-game session if available
-(function restoreSession() {
-  const saved = localStorage.getItem('boardnight_current');
-  if (saved) {
-    try {
-      const g = JSON.parse(saved);
-      if (g && g.id && !g._readonly && g.rounds) {
-        state.currentGame = g;
-        const banner = document.getElementById('resume-banner');
-        if (banner) {
-          banner.style.display = 'flex';
-          banner.querySelector('.resume-game-name').textContent = g.name;
-          banner.querySelector('.resume-round').textContent = `Manche ${g.currentRound} · ${g.rounds.length} terminées`;
-        }
-      }
-    } catch(e) { localStorage.removeItem('boardnight_current'); }
-  }
-})();
-
-function discardCurrentGame() {
-  state.currentGame = null;
-  localStorage.removeItem('boardnight_current');
-  const banner = document.getElementById('resume-banner');
-  if (banner) banner.style.display = 'none';
-}
-
-initSetup();
-renderWelcome();
