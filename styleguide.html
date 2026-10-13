@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide de style, Pierre Duchesne</title>
+  <meta name="description" content="Système de design du site : tokens, grille, typographie, couleur, atomes et molécules.">
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preload" href="fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/styleguide.css">
+</head>
+
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+  <header class="sg-bar">
+    <div class="container sg-bar__inner">
+      <a class="link link--plain" href="index.html"><strong>Pierre Duchesne</strong> <span class="muted">/ Guide de style</span></a>
+      <div class="cluster cluster--1">
+        <button type="button" class="btn btn--sm" data-grid-toggle>Grille <span class="kbd" aria-hidden="true">G</span></button>
+        <button type="button" class="btn btn--sm" data-theme-toggle>Thème</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenu">
+
+    <!-- 00 : ouverture -->
+    <section class="section">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <span class="folio col-1-2 md-col-1-2">00</span>
+          <span class="eyebrow col-10-12 md-col-5-8 align-end">Version 1, octobre 2026</span>
+        </div>
+        <hr class="rule rule--strong col-1-12" data-reveal>
+        <h1 class="display col-1-9 reveal-lines" data-reveal="lines">
+          <span class="reveal-lines__line"><span>Système</span></span>
+          <span class="reveal-lines__line"><span>de design.</span></span>
+        </h1>
+        <div class="col-7-12 md-col-4-8 stack" data-reveal>
+          <p class="lead">Une grille, une famille de caractères, une encre, un accent. La hiérarchie vient de la taille et de la graisse, la séparation vient des filets et du blanc.</p>
+          <nav class="sg-toc text-sm" aria-label="Sommaire du guide">
+            <a href="#couleur">01 Couleur</a>
+            <a href="#typographie">02 Typographie</a>
+            <a href="#espacement">03 Espacement</a>
+            <a href="#grille">04 Grille</a>
+            <a href="#atomes">05 Atomes</a>
+            <a href="#molecules">06 Molécules</a>
+            <a href="#mouvement">07 Mouvement</a>
+            <a href="#situation">08 En situation</a>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 : couleur -->
+    <section class="section section--ruled" id="couleur">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">01</span>
+          <h2 class="title-2">Couleur</h2>
+          <p class="muted">Règle 60, 30, 10. Les variables portent des rôles, jamais des noms de teintes. Le thème sombre applique la même répartition.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8 stack stack--6">
+          <div class="stack stack--2">
+            <h3 class="eyebrow">Répartition</h3>
+            <div class="sg-ratio" role="img" aria-label="Répartition : 60 % fond, 30 % encre et structure, 10 % accent">
+              <div class="sg-ratio__part sg-ratio__part--60 mono text-sm">60 % fond</div>
+              <div class="sg-ratio__part sg-ratio__part--30 mono text-sm">30 % encre</div>
+              <div class="sg-ratio__part sg-ratio__part--10 mono text-sm">10 %</div>
+            </div>
+          </div>
+
+          <div class="stack stack--2">
+            <h3 class="eyebrow">Rôles</h3>
+            <div class="sg-palette">
+              <div class="stack stack--1"><div class="sg-chip sg-chip--bg"></div><p class="text-sm"><strong>Fond</strong><br><code>--color-bg</code><br><span class="muted">#EFEFEC / #121211</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--surface"></div><p class="text-sm"><strong>Surface</strong><br><code>--color-surface</code><br><span class="muted">#E5E5E1 / #1D1D1B</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--sunken"></div><p class="text-sm"><strong>Champ</strong><br><code>--color-surface-sunken</code><br><span class="muted">#F6F6F3 / #0A0A09</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--border"></div><p class="text-sm"><strong>Filet</strong><br><code>--color-border</code><br><span class="muted">#C6C6C0 / #34342F</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--text"></div><p class="text-sm"><strong>Texte</strong><br><code>--color-text</code><br><span class="muted">#111111 / #ECECE8</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--muted"></div><p class="text-sm"><strong>Texte atténué</strong><br><code>--color-text-muted</code><br><span class="muted">#4A4A46 / #A9A9A2</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--border-strong"></div><p class="text-sm"><strong>Filet de contrôle</strong><br><code>--color-border-strong</code><br><span class="muted">#77776F / #7C7C74</span></p></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--accent"></div><p class="text-sm"><strong>Accent</strong><br><code>--color-accent</code><br><span class="muted">#C8102E / #FF5A47</span></p></div>
+            </div>
+          </div>
+
+          <div class="stack stack--2">
+            <h3 class="eyebrow">Contrastes WCAG 2.2</h3>
+            <table>
+              <thead>
+                <tr><th scope="col">Couple</th><th scope="col">Clair</th><th scope="col">Sombre</th><th scope="col">Niveau</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Texte sur fond</td><td>16,39</td><td>15,83</td><td>AAA</td></tr>
+                <tr><td>Texte sur surface</td><td>14,95</td><td>14,25</td><td>AAA</td></tr>
+                <tr><td>Texte atténué sur fond</td><td>7,73</td><td>7,93</td><td>AAA</td></tr>
+                <tr><td>Texte atténué sur surface</td><td>7,05</td><td>7,14</td><td>AAA</td></tr>
+                <tr><td>Accent sur fond</td><td>5,11</td><td>6,07</td><td>AA</td></tr>
+                <tr><td>Accent sur surface</td><td>4,66</td><td>5,47</td><td>AA</td></tr>
+                <tr><td>Texte sur accent (bouton)</td><td>5,43</td><td>6,07</td><td>AA</td></tr>
+                <tr><td>Filet de contrôle sur fond</td><td>3,92</td><td>4,46</td><td>3:1 requis</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="stack stack--2">
+            <h3 class="eyebrow">Séries de données</h3>
+            <p class="muted">Réservées aux graphiques et aux pastilles (joueurs, catégories). Jamais en fond de bloc, jamais en dégradé.</p>
+            <div class="sg-palette sg-palette--data">
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-1"></div><code>1</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-2"></div><code>2</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-3"></div><code>3</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-4"></div><code>4</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-5"></div><code>5</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-6"></div><code>6</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-7"></div><code>7</code></div>
+              <div class="stack stack--1"><div class="sg-chip sg-chip--data-8"></div><code>8</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 : typographie -->
+    <section class="section section--ruled" id="typographie">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">02</span>
+          <h2 class="title-2">Typographie</h2>
+          <p class="muted">Inter, graisses 400, 500 et 700. JetBrains Mono pour les folios et les détails techniques. Échelle Major Third, ratio 1,25, base 16 px.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8">
+          <div class="sg-type-row"><code>--text-8xl<br>61 à 119 px</code><span class="sg-type-row__sample sg-type--8xl">Bazar</span></div>
+          <div class="sg-type-row"><code>--text-7xl<br>49 à 95 px</code><span class="sg-type-row__sample sg-type--7xl">Bien rangé</span></div>
+          <div class="sg-type-row"><code>--text-6xl<br>49 à 76 px</code><span class="sg-type-row__sample sg-type--6xl">Médiathèque</span></div>
+          <div class="sg-type-row"><code>--text-5xl<br>39 à 61 px</code><span class="sg-type-row__sample sg-type--5xl">Que faire en ville</span></div>
+          <div class="sg-type-row"><code>--text-4xl<br>39 à 49 px</code><span class="sg-type-row__sample sg-type--4xl">Encyclopédie</span></div>
+          <div class="sg-type-row"><code>--text-3xl<br>31 à 39 px</code><span class="sg-type-row__sample sg-type--3xl">Batch cooking</span></div>
+          <div class="sg-type-row"><code>--text-2xl<br>25 à 31 px</code><span class="sg-type-row__sample sg-type--2xl">Solveur de Sudoku</span></div>
+          <div class="sg-type-row"><code>--text-xl<br>25 px</code><span class="sg-type-row__sample sg-type--xl">Sites web à découvrir</span></div>
+          <div class="sg-type-row"><code>--text-lg<br>20 px</code><span class="sg-type-row__sample sg-type--lg">Connaissances, outils et curiosités</span></div>
+          <div class="sg-type-row"><code>--text-base<br>16 px</code><span class="sg-type-row__sample sg-type--base">Construit pour moi, ouvert par envie</span></div>
+          <div class="sg-type-row"><code>--text-sm<br>12,8 px</code><span class="sg-type-row__sample sg-type--sm">Légendes, étiquettes, métadonnées</span></div>
+        </div>
+
+        <div class="grid__band section--tight">
+          <div class="col-1-4 md-col-1-3 stack stack--1">
+            <h3 class="eyebrow">Contraste d'échelle</h3>
+            <p class="muted text-sm">Un titre d'affiche à côté d'un petit texte : l'écart est voulu.</p>
+          </div>
+          <p class="display col-5-12 md-col-4-8"><span data-count="87">87</span> <span class="eyebrow">lieux cartographiés</span></p>
+        </div>
+
+        <div class="grid__band">
+          <div class="col-1-4 md-col-1-3">
+            <h3 class="eyebrow">Corps de texte</h3>
+          </div>
+          <div class="col-5-12 md-col-4-8 stack">
+            <p>Le corps de texte est composé en 16 px sur 24 px d'interlignage, soit un rapport de 1,5. La longueur de ligne est plafonnée à 68 caractères par le token <code>--measure</code>, ce qui la maintient entre 60 et 75 caractères quel que soit l'écran. Le texte est ferré à gauche, en drapeau à droite.</p>
+            <p class="muted">Le texte atténué garde un contraste de 7,7 pour 1 sur le fond : il reste lisible au niveau AAA. Un <a href="#typographie">lien dans le texte</a> est souligné en permanence, sa couleur change au survol sans aucune transition.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 : espacement -->
+    <section class="section section--ruled" id="espacement">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">03</span>
+          <h2 class="title-2">Espacement</h2>
+          <p class="muted">Grille de 8 pt. Onze paliers, plus un demi-palier de 4 px réservé aux ajustements fins. Aucune autre valeur n'est admise.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8">
+          <div class="sg-space-row"><code>--space-half</code><span class="tabular">4</span><span class="sg-space-bar sg-space-bar--half"></span></div>
+          <div class="sg-space-row"><code>--space-1</code><span class="tabular">8</span><span class="sg-space-bar sg-space-bar--1"></span></div>
+          <div class="sg-space-row"><code>--space-2</code><span class="tabular">16</span><span class="sg-space-bar sg-space-bar--2"></span></div>
+          <div class="sg-space-row"><code>--space-3</code><span class="tabular">24</span><span class="sg-space-bar sg-space-bar--3"></span></div>
+          <div class="sg-space-row"><code>--space-4</code><span class="tabular">32</span><span class="sg-space-bar sg-space-bar--4"></span></div>
+          <div class="sg-space-row"><code>--space-5</code><span class="tabular">40</span><span class="sg-space-bar sg-space-bar--5"></span></div>
+          <div class="sg-space-row"><code>--space-6</code><span class="tabular">48</span><span class="sg-space-bar sg-space-bar--6"></span></div>
+          <div class="sg-space-row"><code>--space-8</code><span class="tabular">64</span><span class="sg-space-bar sg-space-bar--8"></span></div>
+          <div class="sg-space-row"><code>--space-10</code><span class="tabular">80</span><span class="sg-space-bar sg-space-bar--10"></span></div>
+          <div class="sg-space-row"><code>--space-12</code><span class="tabular">96</span><span class="sg-space-bar sg-space-bar--12"></span></div>
+          <div class="sg-space-row"><code>--space-16</code><span class="tabular">128</span><span class="sg-space-bar sg-space-bar--16"></span></div>
+          <div class="sg-space-row"><code>--space-20</code><span class="tabular">160</span><span class="sg-space-bar sg-space-bar--20"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 : grille -->
+    <section class="section section--ruled" id="grille">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">04</span>
+          <h2 class="title-2">Grille</h2>
+        </header>
+        <div class="col-5-12 md-col-4-8 stack">
+          <p class="muted">12 colonnes sur bureau, 8 sur tablette, 4 sur mobile. Gouttières de 24 px (16 sur mobile), marges de 64, 32 et 16 px. Largeur maximale de 1440 px. La touche <span class="kbd">G</span> superpose la grille réelle à la page.</p>
+        </div>
+
+        <div class="grid__band sg-grid-demo">
+          <div class="sg-cell sg-cell--unit">1</div><div class="sg-cell sg-cell--unit">2</div><div class="sg-cell sg-cell--unit">3</div><div class="sg-cell sg-cell--unit">4</div>
+          <div class="sg-cell sg-cell--unit">5</div><div class="sg-cell sg-cell--unit">6</div><div class="sg-cell sg-cell--unit">7</div><div class="sg-cell sg-cell--unit">8</div>
+          <div class="sg-cell sg-cell--unit">9</div><div class="sg-cell sg-cell--unit">10</div><div class="sg-cell sg-cell--unit">11</div><div class="sg-cell sg-cell--unit">12</div>
+        </div>
+        <div class="grid__band sg-grid-demo">
+          <div class="sg-cell sg-cell--ink col-1-5 md-col-1-3">.col-1-5 : titre</div>
+          <div class="sg-cell col-7-12 md-col-4-8">.col-7-12 : texte</div>
+        </div>
+        <div class="grid__band sg-grid-demo">
+          <div class="sg-cell col-1-3 md-col-1-2">.col-1-3</div>
+          <div class="sg-cell sg-cell--accent col-4-9 md-col-3-8">.col-4-9</div>
+          <div class="sg-cell col-10-12">.col-10-12</div>
+        </div>
+        <div class="grid__band sg-grid-demo">
+          <div class="sg-cell col-1-8 md-col-1-5">.col-1-8</div>
+          <div class="sg-cell sg-cell--ink col-9-12 md-col-7-8">.col-9-12</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 : atomes -->
+    <section class="section section--ruled" id="atomes">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">05</span>
+          <h2 class="title-2">Atomes</h2>
+          <p class="muted">Coins droits, aucun effet d'ombre. Le survol inverse ou recolore instantanément, rien ne bouge.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8">
+          <div class="sg-block">
+            <h3 class="eyebrow">Boutons</h3>
+            <div class="btn-group">
+              <button type="button" class="btn btn--primary">Générer ma semaine</button>
+              <button type="button" class="btn">Voir l'historique</button>
+              <button type="button" class="btn btn--danger">Abandonner</button>
+              <button type="button" class="btn btn--quiet">Annuler</button>
+              <button type="button" class="btn" disabled>Indisponible</button>
+            </div>
+            <div class="btn-group">
+              <button type="button" class="btn btn--primary btn--sm">Reprendre</button>
+              <button type="button" class="btn btn--sm">Ignorer</button>
+              <a class="btn btn--sm" href="#atomes">Lien en bouton</a>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Liens</h3>
+            <div class="cluster">
+              <a class="link" href="#atomes">Lien standard</a>
+              <a class="link link--accent" href="#atomes">Lien accentué</a>
+              <a class="link link--plain" href="#atomes">Lien nu, souligné au survol</a>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Champs</h3>
+            <div class="field-row">
+              <input class="input" type="text" placeholder="Champ de texte" aria-label="Champ de texte">
+              <select class="select" aria-label="Liste déroulante">
+                <option>Toutes les villes</option>
+                <option>Toulouse</option>
+                <option>Madrid</option>
+                <option>Paris</option>
+              </select>
+            </div>
+            <textarea class="textarea" placeholder="Zone de texte" aria-label="Zone de texte"></textarea>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Étiquettes et filtres</h3>
+            <div class="cluster cluster--1">
+              <span class="tag">Film</span>
+              <span class="tag tag--solid">Jeu de société</span>
+              <span class="tag tag--accent">Coup de cœur</span>
+            </div>
+            <div class="chip-group">
+              <button type="button" class="chip" aria-pressed="true">Tout voir</button>
+              <button type="button" class="chip" aria-pressed="false">Entre amis</button>
+              <button type="button" class="chip" aria-pressed="false">Festif</button>
+              <button type="button" class="chip" aria-pressed="false">Tranquille</button>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Folio, étiquette, grand chiffre</h3>
+            <div class="cluster cluster--baseline">
+              <span class="folio">07</span>
+              <span class="eyebrow">Sites favoris</span>
+              <span class="numeral numeral--sm">30</span>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Filets</h3>
+            <hr class="rule">
+            <hr class="rule rule--strong">
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Icônes, touches, pastilles</h3>
+            <p class="muted text-sm">Quatre pictogrammes en trait droit, dessinés pour le site. L'absence d'icône reste la règle.</p>
+            <div class="cluster">
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h12M9 3l5 5-5 5"/></svg>
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"/></svg>
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg>
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 3 10 10M13 3 3 13"/></svg>
+              <span class="kbd">G</span><span class="kbd">Tab</span><span class="kbd">Entrée</span>
+              <span class="cluster cluster--1"><span class="swatch swatch--1"></span><span class="swatch swatch--3"></span><span class="swatch swatch--4"></span><span class="swatch swatch--5"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 : molécules -->
+    <section class="section section--ruled" id="molecules">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">06</span>
+          <h2 class="title-2">Molécules</h2>
+          <p class="muted">La carte disparaît. Elle est remplacée par l'entrée éditoriale, le tableau typographique et le grand chiffre.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8">
+          <div class="sg-block">
+            <h3 class="eyebrow">Champ complet</h3>
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="sg-name">Nom du lieu</label>
+                <input class="input" id="sg-name" type="text" placeholder="Le Perchoir" aria-describedby="sg-name-hint">
+                <p class="hint" id="sg-name-hint">Tel qu'il apparaît sur la devanture.</p>
+              </div>
+              <div class="field field--invalid">
+                <label class="label" for="sg-url">Adresse du site <span class="label__optional">(obligatoire)</span></label>
+                <input class="input" id="sg-url" type="url" value="pudding" aria-invalid="true" aria-describedby="sg-url-error">
+                <p class="error" id="sg-url-error">Erreur : l'adresse doit commencer par https://</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Sélecteur segmenté et groupe de boutons</h3>
+            <div class="cluster cluster--between">
+              <div class="segmented" role="group" aria-label="Vue">
+                <button type="button" class="segmented__item" aria-pressed="true">Carte</button>
+                <button type="button" class="segmented__item" aria-pressed="false">Liste</button>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn--quiet">Retour</button>
+                <button type="button" class="btn btn--primary">Lancer la partie</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Élément de navigation</h3>
+            <div>
+              <a class="nav-item" href="#molecules" aria-current="page"><span class="folio">01</span><span class="nav-item__title">Médiathèque</span><span class="nav-item__desc">Films, séries, livres, musique</span></a>
+              <a class="nav-item" href="#molecules"><span class="folio">02</span><span class="nav-item__title">Que faire en ville ?</span><span class="nav-item__desc">Carte interactive de lieux à découvrir</span></a>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Statistiques</h3>
+            <div class="field-row">
+              <div class="stat"><span class="numeral" data-count="58">58</span><span class="eyebrow">Références culturelles</span></div>
+              <div class="stat"><span class="numeral" data-count="51">51</span><span class="eyebrow">Recettes</span></div>
+            </div>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">Tableau typographique</h3>
+            <dl class="spec">
+              <dt class="spec__term">Adresse</dt><dd class="spec__value">12 rue des Filatiers, Toulouse</dd>
+              <dt class="spec__term">Horaires</dt><dd class="spec__value">Du mardi au samedi, 18 h à 2 h</dd>
+              <dt class="spec__term">Budget</dt><dd class="spec__value">€€</dd>
+            </dl>
+          </div>
+
+          <div class="sg-block">
+            <h3 class="eyebrow">États</h3>
+            <p class="status status--loading">Chargement de Python</p>
+            <p class="status status--ready">Prêt, saisissez votre grille</p>
+            <p class="status status--error">Erreur : aucune solution pour cette grille</p>
+            <div class="notice">
+              <p><strong>Catan</strong> <span class="muted">Manche 4 en cours</span></p>
+              <div class="btn-group">
+                <button type="button" class="btn btn--primary btn--sm">Reprendre</button>
+                <button type="button" class="btn btn--sm">Ignorer</button>
+              </div>
+            </div>
+            <p class="empty">Aucun lieu ne correspond à ces filtres.</p>
+            <div class="cluster">
+              <p class="toast sg-static-toast">« Hades » envoyé, merci.</p>
+              <p class="toast toast--error sg-static-toast">Erreur lors de l'envoi. Réessayez plus tard.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- L'entrée éditoriale occupe toute la grille -->
+        <div class="grid__band">
+          <h3 class="eyebrow col-1-12">Entrée éditoriale (remplace la carte)</h3>
+        </div>
+        <ol class="grid__band grid--flush entry-list" data-reveal-group>
+          <li class="entry" data-reveal>
+            <span class="folio entry__folio">01</span>
+            <h4 class="entry__title"><a class="link link--plain" href="#molecules">Médiathèque</a></h4>
+            <p class="entry__body">Recommandations culturelles filtrables : films, séries, livres, musique, jeux.</p>
+            <span class="eyebrow entry__meta">58 références</span>
+          </li>
+          <li class="entry" data-reveal>
+            <span class="folio entry__folio">02</span>
+            <h4 class="entry__title"><a class="link link--plain" href="#molecules">Que faire en ville ?</a></h4>
+            <p class="entry__body">Carte interactive de lieux testés et approuvés à Toulouse, Paris et Madrid.</p>
+            <span class="eyebrow entry__meta">87 lieux</span>
+          </li>
+          <li class="entry" data-reveal>
+            <span class="folio entry__folio">03</span>
+            <h4 class="entry__title"><a class="link link--plain" href="#molecules">Encyclopédie</a></h4>
+            <p class="entry__body">Carte mentale collaborative de connaissances, organisée par profils contributeurs.</p>
+            <span class="eyebrow entry__meta">20 savoirs</span>
+          </li>
+        </ol>
+
+        <div class="grid__band">
+          <h3 class="eyebrow col-1-12">Entrée compacte (résultats, listes longues)</h3>
+        </div>
+        <ul class="grid__band grid--flush entry-list">
+          <li class="entry entry--compact">
+            <span class="tag entry__folio">Film</span>
+            <h4 class="entry__title">Everything Everywhere All At Once</h4>
+            <p class="entry__body">Action, chaotique</p>
+            <span class="eyebrow entry__meta">Par Pedro</span>
+          </li>
+          <li class="entry entry--compact">
+            <span class="tag entry__folio">Livre</span>
+            <h4 class="entry__title">Les Thanatonautes</h4>
+            <p class="entry__body">Aventure, mystérieux</p>
+            <span class="eyebrow entry__meta">Par Pedro</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 07 : mouvement -->
+    <section class="section section--ruled" id="mouvement">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">07</span>
+          <h2 class="title-2">Mouvement</h2>
+          <p class="muted">Trois primitives : apparition au défilement, révélation de texte par lignes, compteur. Durées de 200, 400 et 600 ms. Aucune animation au survol.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8 stack stack--6">
+          <dl class="spec">
+            <dt class="spec__term">--duration-fast</dt><dd class="spec__value">200 ms : messages, panneaux</dd>
+            <dt class="spec__term">--duration-base</dt><dd class="spec__value">400 ms : tiroirs, changements de vue</dd>
+            <dt class="spec__term">--duration-slow</dt><dd class="spec__value">600 ms : apparitions, compteurs</dd>
+            <dt class="spec__term">--ease-out</dt><dd class="spec__value">cubic-bezier(0.16, 1, 0.3, 1)</dd>
+            <dt class="spec__term">--ease-in-out</dt><dd class="spec__value">cubic-bezier(0.65, 0, 0.35, 1)</dd>
+            <dt class="spec__term">Sans JS</dt><dd class="spec__value">Tout le contenu est visible, rien n'est masqué</dd>
+            <dt class="spec__term">Mouvement réduit</dt><dd class="spec__value">Durées à zéro, compteurs à leur valeur finale</dd>
+            <dt class="spec__term">Changement de page</dt><dd class="spec__value">View Transitions API, fondu natif</dd>
+          </dl>
+
+          <div class="stack stack--2">
+            <hr class="rule rule--strong" data-reveal>
+            <p class="title-1 reveal-lines" data-reveal="lines">
+              <span class="reveal-lines__line"><span>Notez chaque manche,</span></span>
+              <span class="reveal-lines__line"><span>célébrez chaque victoire.</span></span>
+            </p>
+          </div>
+
+          <div class="field-row" data-reveal-group>
+            <div class="stat" data-reveal><span class="numeral" data-count="87">87</span><span class="eyebrow">Lieux cartographiés</span></div>
+            <div class="stat" data-reveal><span class="numeral" data-count="20">20</span><span class="eyebrow">Savoirs partagés</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 : en situation -->
+    <section class="section section--ruled" id="situation">
+      <div class="container grid">
+        <header class="col-1-4 md-col-1-3 stack stack--2">
+          <span class="folio">08</span>
+          <h2 class="title-2">En situation</h2>
+          <p class="muted">La palette appliquée à un vrai fragment de page, en positif puis en aplat inversé.</p>
+        </header>
+
+        <div class="col-5-12 md-col-4-8 stack stack--6">
+          <article class="stack">
+            <div class="cluster cluster--between cluster--baseline">
+              <span class="folio">04</span>
+              <span class="eyebrow">Batch cooking</span>
+            </div>
+            <hr class="rule rule--strong">
+            <h3 class="title-1">Organisez votre semaine.</h3>
+            <p class="lead">Choisissez un plat ou un ingrédient de départ. Le générateur propose cinq repas qui partagent un maximum d'ingrédients.</p>
+            <div class="btn-group">
+              <button type="button" class="btn btn--primary">Générer ma semaine</button>
+              <button type="button" class="btn">Proposer un plat</button>
+            </div>
+          </article>
+
+          <div class="sg-inverse stack">
+            <span class="eyebrow">Aplat inversé</span>
+            <p class="title-3">L'encre devient le fond. L'accent reste le seul point de couleur.</p>
+            <p><a class="link" href="#situation">Voir les 51 recettes</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="section--ruled">
+    <div class="container cluster cluster--between section--tight">
+      <p class="text-sm">© 2026 Pierre Duchesne</p>
+      <p class="eyebrow">Data · Maths · Code</p>
+    </div>
+  </footer>
+
+  <div class="grid-overlay" aria-hidden="true">
+    <div class="container grid">
+      <div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div>
+      <div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div>
+      <div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div><div class="grid-overlay__col"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/motion.js"></script>
+</body>
+
+</html>
