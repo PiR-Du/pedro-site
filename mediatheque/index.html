@@ -3,181 +3,169 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Médiathèque — Pierre Duchesne</title>
-  <meta name="description" content="Recommandations de films, séries, livres, musique et jeux — filtrées par ambiance, genre et contributeur." />
-  <meta property="og:title" content="La Médiathèque" />
-  <meta property="og:description" content="Des recommandations culturelles avec contexte et filtres utiles." />
-  <meta property="og:type" content="website" />
-  <link rel="stylesheet" href="../style.css?v=7">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Médiathèque, Pierre Duchesne</title>
+  <meta name="description" content="Recommandations de films, séries, livres, musique et jeux, filtrées par ambiance, genre et contributeur.">
+  <meta property="og:title" content="La Médiathèque">
+  <meta property="og:description" content="Des recommandations culturelles avec contexte et filtres utiles.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#efefec" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="../js/theme-init.js"></script>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/utilities.css">
 </head>
 
 <body data-page="mediatheque" data-root="..">
-  <div id="site-header"></div>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
 
-  <main>
-    <header class="page-header">
-      <div class="page-header-inner">
-        <div class="page-header-meta">
-          <span class="page-header-num">01</span>
-          <span class="eyebrow">./mediatheque</span>
+  <site-header>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-header__brand" href="../index.html">Pierre Duchesne</a>
+        <a class="link text-sm" href="../index.html#outils">Sommaire</a>
+      </div>
+    </header>
+  </site-header>
+
+  <main id="contenu">
+    <header class="page-head">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <span class="folio sm-col-1-2 md-col-1-2 col-1-2">01</span>
+          <span class="eyebrow sm-col-3-4 md-col-5-8 col-10-12 align-end">Découvrir</span>
         </div>
-        <div class="page-header-rule" aria-hidden="true"></div>
-        <h1 class="page-header-title">La Médiathèque</h1>
-        <p class="page-header-lead">Films, séries, livres, musique et jeux — recommandés et filtrés.</p>
+        <hr class="rule rule--strong col-1-12" data-reveal>
+        <h1 class="title-1 col-1-7 md-col-1-6">La Médiathèque</h1>
+        <p class="lead col-8-12 md-col-1-6">Films, séries, livres, musique et jeux, recommandés et filtrés.</p>
       </div>
     </header>
 
-    <div class="muse-container">
-      <!-- Sidebar -->
-      <aside class="muse-sidebar" aria-label="Filtres">
-        <div class="filter-group">
-          <label for="filter-type">Type de média</label>
-          <select class="filter-select" id="filter-type">
-            <option value="all">Tout voir</option>
-            <option value="Film">Films</option>
-            <option value="Série">Séries</option>
-            <option value="Livre">Livres</option>
-            <option value="Musique">Musique</option>
-            <option value="Jeu Vidéo">Jeux Vidéo</option>
-            <option value="Jeu de Société">Jeux de Société</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="filter-contributor">Recommandé par</label>
-          <select class="filter-select" id="filter-contributor">
-            <option value="all">Tout le monde</option>
-          </select>
-        </div>
-
-        <div class="filter-group hidden-filter" id="filter-group-platform">
-          <label for="filter-platform">Plateforme</label>
-          <select class="filter-select" id="filter-platform">
-            <option value="all">Toutes les plateformes</option>
-          </select>
-        </div>
-
-        <div id="contextual-filters" class="hidden-filter">
-          <div class="filter-group" style="margin-bottom:1.5rem;">
-            <label for="filter-genre">Genre</label>
-            <select class="filter-select" id="filter-genre">
-              <option value="all">Tous les genres</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-ambiance">Ambiance</label>
-            <select class="filter-select" id="filter-ambiance">
-              <option value="all">Toutes les ambiances</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Formulaire de recommandation -->
-        <button class="contribute-trigger" onclick="toggleContributePanel('form-mediatheque')" aria-expanded="false" aria-controls="form-mediatheque">
-          + Recommander un contenu
-        </button>
-
-        <div class="contribute-panel" id="form-mediatheque" role="form" aria-label="Ajouter une recommandation">
-          <div class="contribute-panel-header">
-            <h4>Nouvelle recommandation</h4>
-            <button class="contribute-close-btn" onclick="toggleContributePanel('form-mediatheque')" aria-label="Fermer">×</button>
-          </div>
-
-          <div class="cf-field">
-            <label for="mf-contributor">Votre nom</label>
-            <input type="text" id="mf-contributor" placeholder="ex: Pierre">
-          </div>
-
-          <div class="cf-field">
-            <label for="mf-type">Type</label>
-            <select id="mf-type">
-              <option value="Film">Film</option>
-              <option value="Série">Série</option>
-              <option value="Livre">Livre</option>
+    <div class="tool">
+      <div class="container grid">
+        <aside class="tool__aside tool__aside--sticky col-1-3 md-col-1-3" aria-label="Filtres">
+          <div class="field">
+            <label class="label" for="filter-type">Type de média</label>
+            <select class="select" id="filter-type">
+              <option value="all">Tout voir</option>
+              <option value="Film">Films</option>
+              <option value="Série">Séries</option>
+              <option value="Livre">Livres</option>
               <option value="Musique">Musique</option>
-              <option value="Jeu Vidéo">Jeu Vidéo</option>
-              <option value="Jeu de Société">Jeu de Société</option>
+              <option value="Jeu Vidéo">Jeux vidéo</option>
+              <option value="Jeu de Société">Jeux de société</option>
             </select>
           </div>
 
-          <div class="cf-field">
-            <label for="mf-title">Titre</label>
-            <input type="text" id="mf-title" placeholder="Nom de l'œuvre">
+          <div class="field">
+            <label class="label" for="filter-contributor">Recommandé par</label>
+            <select class="select" id="filter-contributor">
+              <option value="all">Tout le monde</option>
+            </select>
           </div>
 
-          <div class="cf-field">
-            <label for="mf-genre">Genre principal</label>
-            <input type="text" id="mf-genre" placeholder="ex: SF, Rock, Fantasy…">
+          <div class="field" id="filter-group-platform" hidden>
+            <label class="label" for="filter-platform">Plateforme</label>
+            <select class="select" id="filter-platform">
+              <option value="all">Toutes les plateformes</option>
+            </select>
           </div>
 
-          <div class="cf-field">
-            <label for="mf-ambiance">Ambiance</label>
-            <input type="text" id="mf-ambiance" placeholder="ex: Cozy, Dark, Épique…">
+          <div class="stack" id="contextual-filters" hidden>
+            <div class="field">
+              <label class="label" for="filter-genre">Genre</label>
+              <select class="select" id="filter-genre">
+                <option value="all">Tous les genres</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="filter-ambiance">Ambiance</label>
+              <select class="select" id="filter-ambiance">
+                <option value="all">Toutes les ambiances</option>
+              </select>
+            </div>
           </div>
 
-          <div class="cf-field">
-            <label for="mf-pitch">Pitch court</label>
-            <textarea id="mf-pitch" placeholder="De quoi s'agit-il ?"></textarea>
+          <details class="disclosure">
+            <summary class="disclosure__summary">Recommander un contenu</summary>
+            <form class="disclosure__body" data-contribute="recommendation" data-label-field="title" novalidate>
+              <div class="field">
+                <label class="label" for="mf-contributor">Votre nom</label>
+                <input class="input" type="text" id="mf-contributor" name="contributor" data-default="Anonyme" autocomplete="given-name" placeholder="Pierre">
+              </div>
+              <div class="field">
+                <label class="label" for="mf-type">Type</label>
+                <select class="select" id="mf-type" name="type">
+                  <option value="Film">Film</option>
+                  <option value="Série">Série</option>
+                  <option value="Livre">Livre</option>
+                  <option value="Musique">Musique</option>
+                  <option value="Jeu Vidéo">Jeu vidéo</option>
+                  <option value="Jeu de Société">Jeu de société</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="mf-title">Titre</label>
+                <input class="input" type="text" id="mf-title" name="title" required placeholder="Nom de l'œuvre">
+              </div>
+              <div class="field">
+                <label class="label" for="mf-genre">Genre principal</label>
+                <input class="input" type="text" id="mf-genre" name="main_genre" data-default="Divers" placeholder="SF, rock, fantasy">
+              </div>
+              <div class="field">
+                <label class="label" for="mf-ambiance">Ambiance</label>
+                <input class="input" type="text" id="mf-ambiance" name="ambiance" placeholder="Cozy, sombre, épique">
+              </div>
+              <div class="field">
+                <label class="label" for="mf-pitch">Pitch court</label>
+                <textarea class="textarea" id="mf-pitch" name="pitch" placeholder="De quoi s'agit-il ?"></textarea>
+              </div>
+              <button class="btn btn--primary btn--block" type="submit">Proposer</button>
+              <p class="hint">Envoyé à Pierre, intégré manuellement.</p>
+            </form>
+          </details>
+        </aside>
+
+        <div class="tool__main col-4-12 md-col-4-8">
+          <div class="field">
+            <label class="label" for="media-search">Rechercher</label>
+            <input class="input" type="search" id="media-search" placeholder="Un titre, un artiste, un auteur">
           </div>
-
-          <button class="cf-submit" onclick="submitMediaReco(this)">Proposer →</button>
-          <p class="cf-note">Envoyé à Pierre · intégré manuellement</p>
-        </div>
-      </aside>
-
-      <!-- Grid Content -->
-      <div class="grid-content">
-        <div style="margin-bottom: 2rem;">
-          <label for="media-search" class="sr-only">Rechercher dans la médiathèque</label>
-          <input type="search" id="media-search" class="mediatheque-search"
-            placeholder="Rechercher un titre, un artiste, un auteur...">
-        </div>
-
-        <div class="media-grid" id="main-grid" aria-live="polite" aria-label="Résultats">
+          <p class="eyebrow" id="media-count" role="status"></p>
+          <ul class="results" id="main-grid" aria-label="Résultats"></ul>
+          <noscript><p class="empty">La liste des recommandations nécessite JavaScript.</p></noscript>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Detail Drawer -->
-  <div id="detail-drawer" role="dialog" aria-modal="true" aria-label="Détail" aria-hidden="true">
-    <button class="close-drawer" onclick="closeDrawer()" aria-label="Fermer le détail">×</button>
-    <div id="drawer-content"></div>
-  </div>
+  <dialog class="drawer" id="detail-drawer" aria-labelledby="drawer-title" data-dismissable>
+    <div class="drawer__bar">
+      <button type="button" class="btn btn--sm" data-close-dialog>Fermer</button>
+    </div>
+    <div class="drawer__content"></div>
+  </dialog>
 
-  <div id="site-footer"></div>
+  <site-footer>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>© 2026 Pierre Duchesne</p>
+        <p class="eyebrow">Data · Maths · Code</p>
+      </div>
+    </footer>
+  </site-footer>
 
-  <script src="../shared-layout.js?v=5"></script>
-  <script src="data.js?v=3"></script>
-  <script src="app.js?v=2"></script>
-  <script>
-    async function submitMediaReco(btn) {
-      const contributor = document.getElementById('mf-contributor').value.trim() || 'Anonyme';
-      const title = document.getElementById('mf-title').value.trim();
-      if (!title) { showToast('Le titre est obligatoire.', 'error'); return; }
-
-      const item = {
-        type: document.getElementById('mf-type').value,
-        title,
-        contributor,
-        main_genre: document.getElementById('mf-genre').value.trim() || 'Divers',
-        ambiance: document.getElementById('mf-ambiance').value.trim() || '',
-        pitch: document.getElementById('mf-pitch').value.trim()
-      };
-
-      const ok = await sendContribution('recommendation', item, btn);
-      if (!ok) return;
-
-      ['mf-contributor','mf-title','mf-genre','mf-ambiance','mf-pitch'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      toggleContributePanel('form-mediatheque');
-      showToast('"' + title + '" envoyé — merci !', 'success');
-    }
-  </script>
+  <script src="../js/site.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="../js/main.js"></script>
 </body>
 
 </html>

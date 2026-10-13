@@ -21,5 +21,6 @@
   .nowrap { white-space: nowrap; }
   .measure { max-inline-size: var(--measure); }
   .align-end { justify-self: end; text-align: end; }
-  .is-hidden { display: none; }
+  /* L'attribut hidden doit primer sur le display de n'importe quel composant */
+  [hidden] { display: none; }
 }

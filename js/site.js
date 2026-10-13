@@ -56,8 +56,12 @@ function closeDrawer() {
 }
 
 document.addEventListener('click', e => {
-  // Clic sur le fond d'un <dialog> : la cible est le dialogue lui-même
-  if (e.target instanceof HTMLDialogElement && e.target.hasAttribute('data-dismissable')) e.target.close();
+  // Clic sur le fond d'un <dialog> : la cible est le dialogue, mais le point est hors de sa boîte
+  if (e.target instanceof HTMLDialogElement && e.target.hasAttribute('data-dismissable')) {
+    const box = e.target.getBoundingClientRect();
+    const inside = e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
+    if (!inside) e.target.close();
+  }
   const closer = e.target.closest('[data-close-dialog]');
   if (closer) closer.closest('dialog')?.close();
 });

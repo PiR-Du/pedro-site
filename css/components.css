@@ -966,7 +966,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-half) var(--grid-gutter);
-    align-items: baseline;
+    align-items: first baseline;
     padding-block: var(--space-2);
     border-block-start: var(--border);
   }
