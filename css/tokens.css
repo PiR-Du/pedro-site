@@ -121,6 +121,7 @@
     --avatar-size-lg: 4rem;       /* 64 px */
     --marker-size: 0.75rem;       /* 12 px */
     --marker-size-active: 1.25rem;/* 20 px */
+    --marker-hit: 1.5rem;         /* 24 px, zone cliquable minimale */
     --map-height: 35rem;          /* 560 px */
     --graph-height: 40rem;        /* 640 px */
     --chart-height: 20rem;        /* 320 px */
@@ -146,6 +147,31 @@
     --z-drawer: 200;
     --z-modal: 300;
     --z-toast: 400;
+  }
+
+  /* Navigateurs antérieurs à 2024, sans light-dark() : thème clair uniquement */
+  @supports not (color: light-dark(#000, #fff)) {
+    :root {
+      --color-bg: #efefec;
+      --color-surface: #e5e5e1;
+      --color-surface-sunken: #f6f6f3;
+      --color-text: #111111;
+      --color-text-muted: #4a4a46;
+      --color-border: #c6c6c0;
+      --color-border-strong: #77776f;
+      --color-accent: #c8102e;
+      --color-on-accent: #f6f6f3;
+      --color-success: #1f6b3a;
+      --color-overlay: rgb(17 17 17 / 0.56);
+      --color-data-1: #c8102e;
+      --color-data-2: #111111;
+      --color-data-3: #1f4fa8;
+      --color-data-4: #1f6b3a;
+      --color-data-5: #9c4a00;
+      --color-data-6: #6b6b63;
+      --color-data-7: #7a2e8e;
+      --color-data-8: #0f6e73;
+    }
   }
 
   /* Choix manuel du thème : l'attribut prime sur la préférence système */

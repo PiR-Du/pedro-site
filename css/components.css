@@ -1159,22 +1159,30 @@
     filter: var(--map-filter);
   }
 
+  /* La zone cliquable (24 px) est plus grande que le carré visible (12 px) */
   .map-marker {
+    display: grid;
+    place-items: center;
+    inline-size: var(--marker-hit);
+    block-size: var(--marker-hit);
+    margin: calc(var(--marker-hit) / -2) 0 0 calc(var(--marker-hit) / -2);
+  }
+
+  .map-marker::before {
+    content: "";
     inline-size: var(--marker-size);
     block-size: var(--marker-size);
-    margin: calc(var(--marker-size) / -2) 0 0 calc(var(--marker-size) / -2);
     border: var(--border-width-strong) solid var(--color-bg);
     background-color: var(--color-text);
   }
 
-  .map-marker--favorite {
+  .map-marker--favorite::before {
     background-color: var(--color-accent);
   }
 
-  .map-marker--active {
+  .map-marker--active::before {
     inline-size: var(--marker-size-active);
     block-size: var(--marker-size-active);
-    margin: calc(var(--marker-size-active) / -2) 0 0 calc(var(--marker-size-active) / -2);
     border-color: var(--color-text);
     background-color: var(--color-accent);
   }

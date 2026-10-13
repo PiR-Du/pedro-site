@@ -487,7 +487,7 @@ function renderChart() {
 function chartOptions() {
   const text = cssColor('--color-text-muted');
   const grid = cssColor('--color-border');
-  const font = { family: "'JetBrains Mono', monospace", size: 12 };
+  const font = { family: "'JetBrains Mono', monospace", size: 12.8 }; // --text-sm
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   return {
     responsive: true, maintainAspectRatio: false,
