@@ -1,154 +1,97 @@
 let activeFilters = { category: 'all', search: '' };
 
 function initWeb() {
-    const allItems = getAllItems();
-    populateCategoryPills(allItems);
+    populateCategoryChips(SITES);
     renderGrid();
     setupEventListeners();
 }
 
-function getAllItems() {
-    return SITES;
+function populateCategoryChips(items) {
+    const categories = [...new Set(items.map(i => i.category).filter(Boolean))].sort();
+    document.getElementById('category-filter').innerHTML =
+        `<button type="button" class="chip" data-category="all" aria-pressed="true">Tous</button>` +
+        categories.map(c => `<button type="button" class="chip" data-category="${escapeHtml(c)}" aria-pressed="false">${escapeHtml(c)}</button>`).join('');
 }
 
-function populateCategoryPills(items) {
-    const categories = [...new Set(items.map(i => i.category).filter(Boolean))].sort();
-    const container = document.getElementById('category-filter');
-    container.innerHTML = `<button class="type-pill active" data-category="all">Tous</button>` +
-        categories.map(c => `<button class="type-pill" data-category="${c}">${c}</button>`).join('');
+function hostOf(url) {
+    try { return new URL(url).hostname.replace('www.', ''); } catch (e) { return url || ''; }
 }
 
 function renderGrid() {
     const grid = document.getElementById('web-grid');
     if (!grid) return;
+    const q = activeFilters.search.toLowerCase();
 
-    const items = getAllItems();
-    const filtered = items.filter(item => {
-        const matchCategory = activeFilters.category === 'all' || item.category === activeFilters.category;
-        const q = activeFilters.search.toLowerCase();
-        const matchSearch = !q ||
+    const filtered = SITES.filter(item =>
+        (activeFilters.category === 'all' || item.category === activeFilters.category) &&
+        (!q ||
             item.name.toLowerCase().includes(q) ||
             (item.description && item.description.toLowerCase().includes(q)) ||
-            (item.tags && item.tags.join(' ').toLowerCase().includes(q));
-        return matchCategory && matchSearch;
-    });
+            (item.tags && item.tags.join(' ').toLowerCase().includes(q)))
+    );
 
-    document.getElementById('web-count').textContent = filtered.length + (filtered.length > 1 ? ' sites' : ' site');
+    document.getElementById('web-count').textContent = `${filtered.length} site${filtered.length > 1 ? 's' : ''}`;
 
     grid.innerHTML = filtered.length
-        ? filtered.map(item => createCard(item)).join('')
-        : `<p style="color:var(--muted-foreground);grid-column:1/-1;">Aucun site pour l'instant.</p>`;
+        ? filtered.map(createRow).join('')
+        : '<li class="empty">Aucun site ne correspond à ces filtres.</li>';
 }
 
-function createCard(item) {
-    let host = '';
-    try { host = new URL(item.url).hostname.replace('www.', ''); } catch (e) { host = item.url || ''; }
-
+function createRow(item) {
     return `
-        <div class="media-card" role="button" tabindex="0" onclick="showDetail('${item.id}', this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showDetail('${item.id}',this)}">
-            <div class="card-content">
-                <div class="card-header">
-                    <span class="type-badge">${item.category || 'Divers'}</span>
-                </div>
-                <h2 class="media-title">${item.name}</h2>
-                <div class="media-meta">${host}</div>
-                ${item.description ? `<div class="media-meta" style="margin-top:0.25rem;">${item.description}</div>` : ''}
-            </div>
-            <div class="card-footer">
-                <span style="color:var(--muted-foreground)">ajouté par ${item.contributor || 'Anonyme'}</span>
-            </div>
-        </div>
-    `;
+        <li class="result">
+            <span class="tag result__tag">${escapeHtml(item.category || 'Divers')}</span>
+            <h2 class="result__title"><button type="button" class="entry__link" data-id="${escapeHtml(item.id)}">${escapeHtml(item.name)}</button></h2>
+            <p class="result__body">${escapeHtml(item.description || '')}</p>
+            <span class="eyebrow result__meta">${escapeHtml(hostOf(item.url))}</span>
+        </li>`;
 }
 
 function setupEventListeners() {
     document.getElementById('category-filter').addEventListener('click', e => {
-        const pill = e.target.closest('.type-pill');
-        if (!pill) return;
-        document.querySelectorAll('#category-filter .type-pill').forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        activeFilters.category = pill.dataset.category;
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        document.querySelectorAll('#category-filter .chip').forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
+        activeFilters.category = chip.dataset.category;
         renderGrid();
     });
 
-    document.getElementById('web-search').oninput = (e) => {
+    document.getElementById('web-search').addEventListener('input', e => {
         activeFilters.search = e.target.value;
         renderGrid();
-    };
+    });
+
+    document.getElementById('web-grid').addEventListener('click', e => {
+        const trigger = e.target.closest('[data-id]');
+        if (trigger) showDetail(trigger.dataset.id);
+    });
 }
 
-let _drawerTrigger = null;
-
-window.showDetail = function (id, triggerEl) {
-    const item = getAllItems().find(s => s.id === id);
+function showDetail(id) {
+    const item = SITES.find(s => s.id === id);
     if (!item) return;
 
-    const drawer = document.getElementById('detail-drawer');
-    const content = document.getElementById('drawer-content');
-
-    _drawerTrigger = triggerEl || document.activeElement;
-
-    content.innerHTML = `
-        <div class="section-head">
-            <p class="eyebrow">${(item.category || 'Divers').toUpperCase()}</p>
-            <h2 class="serif" style="font-size: 2.2rem; margin-top:0.5rem;">${item.name}</h2>
-        </div>
-
-        <div class="detail-section">
-            <h3>Lien</h3>
-            <p><a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.url} ↗</a></p>
-            <p><strong>Ajouté par :</strong> ${item.contributor || 'Anonyme'}</p>
-        </div>
-
+    openDrawer(`
+        <header class="stack stack--1">
+            <span class="eyebrow">${escapeHtml(item.category || 'Divers')}</span>
+            <h2 class="title-2" id="drawer-title">${escapeHtml(item.name)}</h2>
+        </header>
+        <p><a class="btn btn--primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Ouvrir ${escapeHtml(hostOf(item.url))}<span class="sr-only"> (nouvel onglet)</span></a></p>
         ${item.description ? `
-        <div class="detail-section">
-            <h3>Pourquoi c'est cool</h3>
-            <p style="font-style: italic; color: var(--muted-foreground); line-height: 1.6;">${item.description}</p>
+        <div class="drawer__section">
+            <h3 class="eyebrow">Pourquoi il vaut le détour</h3>
+            <p>${escapeHtml(item.description)}</p>
         </div>` : ''}
-
+        <dl class="spec">
+            <dt class="spec__term">Ajouté par</dt><dd class="spec__value">${escapeHtml(item.contributor || 'Anonyme')}</dd>
+        </dl>
         ${item.tags && item.tags.length ? `
-        <div class="detail-section">
-            <h3>Tags</h3>
-            <div class="tag-cloud">
-                ${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-            </div>
-        </div>` : ''}
-    `;
-    drawer.classList.add('open');
-    drawer.setAttribute('aria-hidden', 'false');
-    setTimeout(() => {
-        const closeBtn = drawer.querySelector('.close-drawer');
-        if (closeBtn) closeBtn.focus();
-    }, 50);
-};
+        <div class="drawer__section">
+            <h3 class="eyebrow">Tags</h3>
+            <div class="cluster cluster--1">${item.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+        </div>` : ''}`);
+}
 
-window.closeDrawer = function () {
-    const drawer = document.getElementById('detail-drawer');
-    drawer.classList.remove('open');
-    drawer.setAttribute('aria-hidden', 'true');
-    if (_drawerTrigger) { _drawerTrigger.focus(); _drawerTrigger = null; }
-};
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        const drawer = document.getElementById('detail-drawer');
-        if (drawer && drawer.getAttribute('aria-hidden') === 'false') closeDrawer();
-    }
-});
-
-document.addEventListener('keydown', e => {
-    if (e.key !== 'Tab') return;
-    const drawer = document.getElementById('detail-drawer');
-    if (!drawer || drawer.getAttribute('aria-hidden') !== 'false') return;
-    const focusable = Array.from(drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
-    if (!focusable.length) return;
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
-        e.preventDefault();
-        (e.shiftKey ? last : first).focus();
-    }
-});
-
-function startApp() { try { initWeb(); } catch (e) { console.error("Web failed:", e); } }
+function startApp() { try { initWeb(); } catch (e) { console.error('Web failed:', e); } }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startApp);
 else startApp();
