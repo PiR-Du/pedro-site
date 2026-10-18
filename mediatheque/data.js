@@ -31,6 +31,8 @@ const MEDIA = [
     //  LIVRES
     // ═══════════════════════════════
     { id: "b1", title: "Les Thanatonautes", type: "Livre", creator: "Bernard Werber", contributor: "Pedro", main_genre: "Aventure", sub_genres: ["Philosophie", "Voyage", "SF"], main_emotion: "Philosophique", complexity: 5, ambiance: "Mystérieux", public: "Solo", favorite: true, pitch: "Des explorateurs de l'au-delà cartographiant le monde des morts" },
+    { id: "b2", title: "La Passe-miroir", type: "Livre", creator: "Christelle Dabos", contributor: "Cédric", main_genre: "Fantasy", sub_genres: ["Aventure"], ambiance: "Cozy", pitch: "Saga de quatre romans. Dans un monde composé d'arches flottantes indépendantes, Ophélie, récemment promise à un membre d'une arche voisine, va devoir utiliser ses capacités pour comprendre pourquoi les arches s'effondrent petit à petit." },
+    { id: "b3", title: "La Horde du Contrevent", type: "Livre", creator: "Alain Damasio", contributor: "Cédric", main_genre: "SF", sub_genres: ["Épique", "Voyage", "Imaginaire"], ambiance: "Poétique", pitch: "Dans un monde où le vent souffle constamment, un groupe formé dès l'enfance part aux confins du monde pour trouver l'origine du vent." },
 
 
     // ═══════════════════════════════
