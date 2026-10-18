@@ -5,7 +5,7 @@
 const BLOC_LABELS = {
   definition: 'Définition', exemple: 'Exemple', erreur: 'Erreur fréquente', astuce: 'Astuce', retenir: 'À retenir',
   probleme: 'Problème', formule: 'Formule', question: 'Question', donnees: 'Données', methode: 'Méthode',
-  resultat: 'Résultat', limite: 'Limites',
+  resultat: 'Résultat', limite: 'Limites', maths: 'Les maths', simulation: 'Simulation',
 };
 
 const laboState = { mounts: [] };
@@ -68,10 +68,11 @@ function visual(spec) {
   }
 
   if (spec.type === 'paire') {
-    // Une seule source de données pour les deux graphiques : seule la représentation change
+    // Une seule source de données pour les deux graphiques : seule la représentation change.
+    // verdict (facultatif) remplace « Trompeur » / « Corrigé » quand le premier graphique est maladroit plutôt que menteur.
     const side = (part, verdict, cls) => `
       <figure class="viz-pair__item viz-pair__item--${cls}">
-        <p class="viz-pair__verdict"><span class="tag ${cls === 'bad' ? 'tag--accent' : 'lab-tag--good'}">${verdict}</span></p>
+        <p class="viz-pair__verdict"><span class="tag ${cls === 'bad' ? 'tag--accent' : 'lab-tag--good'}">${escapeHtml(part.verdict || verdict)}</span></p>
         ${vizHost(part, data)}
         ${caption(part.legende)}
       </figure>`;
@@ -85,6 +86,11 @@ function visual(spec) {
 
   if (spec.type === 'selecteur') {
     return `<figure class="lab-figure lab-figure--wide">${chooser()}${caption(spec.legende)}</figure>`;
+  }
+
+  if (spec.type === 'simulation') {
+    const index = laboState.mounts.push({ spec, data, sim: true }) - 1;
+    return `<div class="lab-figure lab-figure--wide" role="group" aria-label="${escapeHtml(spec.alt || '')}">${LaboSim.markup(spec, index)}${caption(spec.legende)}</div>`;
   }
 
   if (!LaboCharts.isSvg(spec.type)) {
@@ -237,6 +243,14 @@ function hubView(params, notFound) {
 
 // ---------- Fiche détaillée ----------
 
+// Équations affichées en bloc : [{ eq: 'P(S = 7) = 6/36', note: 'ce que dit la formule' }]
+function equations(list) {
+  if (!list || !list.length) return '';
+  return `<dl class="lab-math">${list.map(e => `
+      <dt class="lab-math__eq">${inline(e.eq)}</dt>
+      <dd class="lab-math__note">${e.note ? inline(e.note) : ''}</dd>`).join('')}</dl>`;
+}
+
 function slide(bloc, n, total) {
   return `<li class="lab-slide">
       <span class="folio lab-slide__num">${pad(n)}<span class="muted"> / ${pad(total)}</span></span>
@@ -245,6 +259,8 @@ function slide(bloc, n, total) {
       <div class="lab-slide__body stack stack--2">
         ${bloc.formule ? `<p class="lab-formula"><code>${escapeHtml(bloc.formule)}</code></p>` : ''}
         ${rich(bloc.texte)}
+        ${equations(bloc.equations)}
+        ${bloc.suite ? rich(bloc.suite) : ''}
         ${visual(bloc.visuel)}
       </div>
     </li>`;
@@ -319,6 +335,7 @@ function renderLabo({ focus = null, scroll = false } = {}) {
   const view = document.getElementById('labo-view');
   if (!view) return;
   LaboCharts.reset();
+  LaboSim.reset();
   laboState.mounts = [];
 
   const params = new URLSearchParams(location.search);
@@ -331,6 +348,7 @@ function renderLabo({ focus = null, scroll = false } = {}) {
     LaboCharts.mount(el, spec, data);
   });
   initChooser(view);
+  LaboSim.init(view, laboState.mounts);
 
   const rub = rubriqueById(params.get('rubrique'));
   document.title = fiche ? `${fiche.titre}, Labo data` : `Labo data${rub ? `, ${rub.titre}` : ''}, Pierre Duchesne`;

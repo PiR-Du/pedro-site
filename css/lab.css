@@ -107,6 +107,34 @@
     line-height: var(--leading-base);
   }
 
+  /* Équations : la formule en grand, son sens en clair juste dessous */
+  .lab-math {
+    display: grid;
+    max-inline-size: var(--measure);
+    border-block-start: var(--border-width-strong) solid var(--color-text);
+    background-color: var(--color-surface);
+  }
+
+  .lab-math__eq {
+    padding: var(--space-2) var(--space-2) var(--space-half);
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .lab-math__note {
+    padding: 0 var(--space-2) var(--space-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    color: var(--color-text-muted);
+  }
+
+  .lab-math__note + .lab-math__eq {
+    border-block-start: var(--border);
+  }
+
   .lab-pager {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -286,6 +314,20 @@
     stroke-linecap: round;
   }
 
+  .viz__line--s1 { stroke: var(--color-data-1); }
+  .viz__line--s2 { stroke: var(--color-data-2); }
+  .viz__line--s3 { stroke: var(--color-data-3); }
+  .viz__line--s4 { stroke: var(--color-data-4); }
+  .viz__line--s5 { stroke: var(--color-data-5); }
+  .viz__line--s6 { stroke: var(--color-data-6); }
+  .viz__line--s7 { stroke: var(--color-data-7); }
+  .viz__line--s8 { stroke: var(--color-data-8); }
+
+  /* Série de contexte (la cause, pas l'effet) : tirets, pour ne pas reposer sur la seule couleur */
+  .viz__line--dash {
+    stroke-dasharray: var(--space-1) var(--space-half);
+  }
+
   .viz__ref {
     stroke: var(--color-text);
     stroke-width: var(--border-width-strong);
@@ -293,6 +335,19 @@
 
   .viz__ref--accent {
     stroke: var(--color-accent);
+  }
+
+  .viz__ref--thin {
+    stroke-width: var(--border-width);
+  }
+
+  /* Case de plateau : la couleur de remplissage vient du style en ligne (intensité calculée) */
+  .viz__cell {
+    fill: var(--color-surface);
+  }
+
+  .viz .viz__tick--inverse {
+    fill: var(--color-bg);
   }
 
   .viz__trend {
@@ -337,6 +392,13 @@
   }
 
   .viz__ring--muted { stroke: var(--color-data-6); }
+
+  /* Parts d'anneau et zones de carte : un liseré de la couleur du fond sépare deux voisines */
+  .viz__slice {
+    stroke: var(--color-bg);
+    stroke-width: var(--border-width-strong);
+    stroke-linejoin: round;
+  }
 
   /* Rampe séquentielle d'une seule teinte, du clair au foncé */
   .viz__heat--0 { fill: color-mix(in oklab, var(--color-data-3) 20%, var(--color-bg)); }
@@ -441,6 +503,98 @@
   .sheet__cell--formula {
     outline: var(--border-width-strong) solid var(--color-accent);
     outline-offset: calc(-1 * var(--border-width-strong));
+  }
+
+  /* ---------- Simulation de parties ---------- */
+  .sim {
+    display: grid;
+    gap: var(--space-3);
+    min-inline-size: 0;
+  }
+
+  .sim__controls {
+    display: grid;
+    gap: var(--space-2);
+    padding-block-end: var(--space-2);
+    border-block-end: var(--border);
+  }
+
+  .sim__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .sim__option {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .sim__status {
+    max-inline-size: none;
+    min-block-size: calc(2 * var(--leading-sm));
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sim__boards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(6rem, 100%), 1fr));
+    gap: var(--space-2);
+  }
+
+  /* Plateaux en carré (--sim-cols posé par simulation.js) dès qu'il y a la place */
+  @media (min-width: 48rem) {
+    .sim__boards {
+      grid-template-columns: repeat(var(--sim-cols, 3), minmax(0, 12rem));
+    }
+  }
+
+  .sim__game {
+    display: grid;
+    align-content: start;
+    gap: var(--space-half);
+    min-inline-size: 0;
+  }
+
+  .sim__board {
+    max-inline-size: 16rem;
+  }
+
+  .sim__caption {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .viz .sim__dice {
+    fill: var(--color-text);
+    font-size: 16px;
+  }
+
+  .viz .sim__count {
+    fill: var(--color-text-muted);
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sim__pawn {
+    fill: var(--color-text);
+    stroke: var(--color-bg);
+    stroke-width: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sim__pawn {
+      transition: cx 0.2s ease-out, cy 0.2s ease-out;
+    }
+  }
+
+  .sim__figure {
+    padding-block-start: var(--space-2);
+    border-block-start: var(--border);
   }
 
   /* ---------- Sélecteur « Quel graphique ? » ---------- */

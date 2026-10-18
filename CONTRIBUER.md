@@ -46,11 +46,13 @@ Complétez l'entrée et passez `statut` à `'publiee'`. Le gabarit est toujours 
 },
 ```
 
-**Types de blocs** : `definition`, `exemple`, `erreur`, `astuce`, `retenir`, `probleme`, `formule`, `question`, `donnees`, `methode`, `resultat`, `limite`.
+**Types de blocs** : `definition`, `exemple`, `erreur`, `astuce`, `retenir`, `probleme`, `formule`, `question`, `donnees`, `methode`, `resultat`, `limite`, `maths`, `simulation`.
 
 **Dans les textes** : `**gras**` et `` `code` ``. Les espaces insécables (avant `€`, `%`, `?`, `:`, dans `3 290`) sont posées automatiquement. Pensez à échapper les apostrophes (`l\'axe`) ou à utiliser des guillemets doubles.
 
 **Bloc formule (Excel)** : ajoutez `formule: '=RECHERCHEX(valeur; plage; retour)'`, affichée en bloc de code au-dessus du texte.
+
+**Équations** : tout bloc peut porter `equations: [{ eq: 'π = π · P', note: 'ce que dit la formule' }]`, affichées en grand sous le texte, chacune suivie de son explication. Écrivez-les en Unicode (indices `pᵢⱼ`, `Xₙ₊₁`, `√`, `Σ`, `⟶`) : pas de LaTeX. `suite` ajoute un paragraphe après les équations.
 
 **Un visuel dans un bloc** : tout bloc peut porter son propre `visuel`, au même format que le visuel principal.
 
@@ -60,15 +62,20 @@ Les données d'un graphique vont dans **`LABO_DONNEES`**, sous une clé. Le visu
 
 | `type` | Format des données | Options |
 |---|---|---|
-| `barres` | `{ unite, decimales, items: [{ label, valeur, accent }] }` | `axeMin`, `max` |
-| `colonnes` | idem | `axeMin` (axe tronqué), `valeurs: 'toutes'` |
-| `courbe` | `{ unite, points: [{ x: 'janv.', y: 12 }] }` | `plage: [début, fin]` (index), `axeMin` |
+| `barres` | `{ unite, decimales, items: [{ label, valeur, accent }] }` | `axeMin`, `max`, `trier` (du plus grand au plus petit) |
+| `anneau` | `{ unite, items: [{ label, valeur, serie }] }`, parts dans l'ordre des items | `valeurs: 'toutes'` (valeurs dans la légende) |
+| `boite` | `{ unite, valeurs: [...] }` : boîte à moustaches, quartiles de Tukey, atypiques au-delà de 1,5 écart interquartile | `points` (chaque valeur sous la boîte), `axeMin` |
+| `multiples` | `{ x: { libelle }, y: { libelle }, panneaux: [{ titre, points: [{ x, y }] }] }` : un petit nuage par panneau, mêmes axes | `tendance`, `coefficient` |
+| `colonnes` | idem, avec `theorie` facultatif par item (trait de valeur attendue) | `axeMin` (axe tronqué), `valeurs: 'toutes'`, `max` |
+| `plateau` | 40 `items` dans l'ordre d'un plateau de jeu, case 0 en bas à droite | `legendeTitre`, `sens` |
+| `courbe` | `{ unite, points: [{ x: 'janv.', y: 12 }] }` | `plage: [début, fin]` (index), `axeMin`, `decimalesAxe`, `reference: { valeur, libelle }` (droite horizontale) |
 | `points` | `{ unite, valeurs: [1850, 1900, …] }` | `pas` (largeur d'une classe), `marqueurs: ['mediane', 'moyenne']` |
 | `chiffre` | `{ unite, valeurs: […] }` | `stat: 'moyenne'` ou `'mediane'`, `libelle`, `sousTitre` |
 | `nuage` | `{ x: { libelle }, y: { libelle }, groupes: [{ id, libelle, serie }], points: [{ label, x, y, groupe }] }` | `tendance`, `coefficient` |
 | `causal` | aucune donnée | `cause`, `effets: [a, b]`, `lien` |
 | `tableur` | `{ colonnes: […], lignes: [[…], …] }` | `cellule`, `formule`, `formuleEn`, `filtre: { colonne, egal }` ou `resultat: [[…]]` |
 | `selecteur` | lit `LABO_GUIDE` | aucune |
+| `simulation` | deux clés de 40 cases : `donnees` (théorie « payer ») et `attendre` (théorie « tenter les doubles ») | `parties` (1, 4, 9 ou 16), `autoplay`. Code dans `labo/simulation.js`, propre au Monopoly |
 
 `accent: true` met une barre en couleur et grise les autres. `serie` (1 à 8) choisit une couleur de série du système de design, toujours dans le même ordre.
 
@@ -84,6 +91,8 @@ visuel: {
   corrige: { type: 'colonnes', titre: '…', alt: '…', legende: '…' },
 },
 ```
+
+Quand le premier graphique est maladroit plutôt que menteur, `verdict: 'Illisible'` (ou tout autre mot) remplace l'étiquette « Trompeur » ou « Corrigé » de chaque côté.
 
 Idées pour les cas à venir : **axe tronqué**, `colonnes` avec `axeMin` côté trompeur. **Cherry picking**, `courbe` avec `plage` côté trompeur, la série complète côté corrigé. **Biais d'échantillon**, deux `barres` sur une clé qui contient l'échantillon et la population.
 
