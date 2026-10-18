@@ -3,7 +3,7 @@
 
 const NODE_SIZE = 12;
 const ZONE_PADDING = 16;     // marge intérieure d'une zone de catégorie
-const ZONE_LABEL_SPACE = 16; // hauteur réservée à l'intitulé de la zone
+const ZONE_LABEL_SPACE = 20; // hauteur réservée à l'intitulé, posé au-dessus de la zone
 const ZONE_GAP = 24;         // écart minimal entre deux zones
 const NODE_GAP = 8;          // écart minimal entre deux titres d'une même zone
 const FIT_MARGIN = 24;       // marge entre les zones et le bord du cadre au cadrage initial
@@ -132,21 +132,28 @@ function renderGraph() {
         };
     }
 
-    // Zone d'une catégorie : rectangle englobant ses nœuds et leurs titres, avec une marge et la place de l'intitulé
+    // Zone d'une catégorie : rectangle englobant ses nœuds et leurs titres, avec une marge,
+    // au moins aussi large que son intitulé
     function categoryBox(cat) {
         const members = nodesByCategory[cat];
         const x0 = d3.min(members, n => n.x - NODE_SIZE / 2) - ZONE_PADDING;
         const x1 = Math.max(
             d3.max(members, n => n.x + NODE_SIZE + n.labelWidth) + ZONE_PADDING,
-            x0 + catLabelWidth[cat] + 2 * ZONE_PADDING
+            x0 + catLabelWidth[cat]
         );
-        const y0 = d3.min(members, n => n.y - NODE_SIZE / 2) - ZONE_PADDING - ZONE_LABEL_SPACE;
+        const y0 = d3.min(members, n => n.y - NODE_SIZE / 2) - ZONE_PADDING;
         const y1 = d3.max(members, n => n.y + NODE_SIZE / 2) + ZONE_PADDING;
         return { x0, x1, y0, y1 };
     }
 
+    // Emprise totale : la zone et son intitulé au-dessus, pour l'écartement et le cadrage
+    function categoryExtent(cat) {
+        const box = categoryBox(cat);
+        return { ...box, y0: box.y0 - ZONE_LABEL_SPACE };
+    }
+
     const separateNodes = strength => separateBoxes(nodes, nodeBox, n => [n], NODE_GAP, strength);
-    const separateZones = strength => separateBoxes(categories, categoryBox, cat => nodesByCategory[cat], ZONE_GAP, strength);
+    const separateZones = strength => separateBoxes(categories, categoryExtent, cat => nodesByCategory[cat], ZONE_GAP, strength);
 
     simulation = d3.forceSimulation(nodes)
         .force('charge', d3.forceManyBody().strength(-40))
@@ -173,15 +180,15 @@ function renderGraph() {
             .attr('width', d => boxes[d].x1 - boxes[d].x0)
             .attr('height', d => boxes[d].y1 - boxes[d].y0);
 
-        // Intitulé en drapeau, calé dans l'angle haut gauche de la zone
+        // Intitulé en drapeau, juste au-dessus de l'angle haut gauche de la zone
         hullLabels
-            .attr('x', d => boxes[d].x0 + ZONE_PADDING)
-            .attr('y', d => boxes[d].y0 + ZONE_PADDING);
-        return boxes;
+            .attr('x', d => boxes[d].x0)
+            .attr('y', d => boxes[d].y0 - ZONE_LABEL_SPACE);
     }
 
-    // Cadrage initial : toutes les zones visibles, sans agrandir au-delà de l'échelle 1
-    const boxes = Object.values(draw());
+    // Cadrage initial : toutes les zones et leurs intitulés visibles, sans agrandir au-delà de l'échelle 1
+    draw();
+    const boxes = categories.map(categoryExtent);
     const x0 = d3.min(boxes, b => b.x0), x1 = d3.max(boxes, b => b.x1);
     const y0 = d3.min(boxes, b => b.y0), y1 = d3.max(boxes, b => b.y1);
     const scale = Math.min(1, (width - 2 * FIT_MARGIN) / (x1 - x0), (height - 2 * FIT_MARGIN) / (y1 - y0));
