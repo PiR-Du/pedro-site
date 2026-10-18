@@ -1,0 +1,482 @@
+/* =========================================================
+   lab.css
+   Labo data (labo/index.html) uniquement : sommaire, fiches, graphiques SVG,
+   tableur et sélecteur de graphique. Non chargé par les autres pages.
+   Uniquement des tokens, comme le reste du système.
+   ========================================================= */
+
+@layer components {
+  /* ---------- Sommaire ---------- */
+  .lab-hub {
+    row-gap: var(--space-6);
+  }
+
+  .lab-section {
+    row-gap: var(--space-3);
+  }
+
+  .lab-chip__count {
+    margin-inline-start: var(--space-1);
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+  }
+
+  .chip[aria-pressed="true"] .lab-chip__count {
+    color: inherit;
+  }
+
+  /* Intertitre de thème dans une liste d'entrées */
+  .lab-group {
+    grid-column: 1 / -1;
+    padding-block: var(--space-3) var(--space-1);
+    border-block-start: var(--border-strong);
+  }
+
+  .lab-group + .entry {
+    border-block-start: var(--border);
+  }
+
+  /* Fiche à venir : présente mais en retrait, sans lien */
+  .lab-soon .entry__title,
+  .lab-soon .entry__folio {
+    color: var(--color-text-muted);
+    font-weight: var(--weight-regular);
+  }
+
+  /* ---------- Fiche ---------- */
+  .lab-slides {
+    border-block-end: var(--border-strong);
+  }
+
+  .lab-slide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    column-gap: var(--grid-gutter);
+    row-gap: var(--space-2);
+    align-items: baseline;
+    padding-block: var(--space-4);
+    border-block-start: var(--border-strong);
+  }
+
+  .lab-slide__num { grid-column: 1 / 3; }
+  .lab-slide__type { grid-column: 3 / 5; justify-self: end; text-align: end; }
+  .lab-slide__title,
+  .lab-slide__body { grid-column: 1 / -1; min-inline-size: 0; }
+
+  @media (min-width: 48rem) {
+    .lab-slide__num { grid-column: 1 / 2; }
+    .lab-slide__type { grid-column: 2 / 4; justify-self: start; text-align: start; }
+    .lab-slide__title,
+    .lab-slide__body { grid-column: 4 / 9; }
+  }
+
+  @media (min-width: 64rem) {
+    .lab-slide__title { grid-column: 4 / 10; }
+    .lab-slide__body { grid-column: 4 / 13; }
+  }
+
+  .lab-list {
+    display: grid;
+    gap: var(--space-1);
+    padding-inline-start: var(--space-3);
+    list-style: square;
+  }
+
+  .lab-list > li::marker {
+    color: var(--color-accent);
+  }
+
+  .lab-fiche code,
+  .chooser code {
+    padding-inline: var(--space-half);
+    background-color: var(--color-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .lab-formula {
+    max-inline-size: var(--measure);
+    padding: var(--space-2);
+    border-block-start: var(--border-width-strong) solid var(--color-text);
+    background-color: var(--color-surface);
+  }
+
+  .lab-fiche .lab-formula code {
+    padding: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-base);
+  }
+
+  .lab-pager {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gutter);
+    padding-block-start: var(--space-3);
+    border-block-start: var(--border);
+  }
+
+  .lab-pager__link {
+    display: grid;
+    align-content: start;
+    gap: var(--space-half);
+    text-decoration-line: none;
+  }
+
+  .lab-pager__link--next {
+    justify-items: end;
+    text-align: end;
+  }
+
+  .lab-pager__title {
+    font-weight: var(--weight-bold);
+  }
+
+  .lab-pager__link:hover .lab-pager__title {
+    color: var(--color-accent);
+    text-decoration-line: underline;
+    text-underline-offset: var(--space-half);
+  }
+
+  /* Étiquette « Corrigé » : succès, toujours doublé du mot */
+  .lab-tag--good {
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  /* ---------- Figures ---------- */
+  .lab-figure {
+    display: grid;
+    gap: var(--space-2);
+    max-inline-size: var(--viz-max);
+    min-inline-size: 0;
+  }
+
+  .lab-figure--wide {
+    max-inline-size: none;
+  }
+
+  .lab-figure__caption {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    color: var(--color-text-muted);
+  }
+
+  .viz-pair {
+    display: grid;
+    gap: var(--space-6) var(--grid-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .viz-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .viz-pair__item {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    min-inline-size: 0;
+    padding-block-start: var(--space-2);
+    border-block-start: var(--border-width-strong) solid var(--color-text);
+  }
+
+  .viz-data {
+    max-inline-size: var(--viz-max);
+    margin-block-start: var(--space-2);
+  }
+
+  .viz-data__table th,
+  .viz-data__table td {
+    padding-block: var(--space-half);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .viz-data__table th[scope="row"] {
+    font-weight: var(--weight-regular);
+  }
+
+  /* ---------- Graphiques SVG ----------
+     Le conteneur porte la taille de police : le texte SVG en hérite et charts.js la mesure. */
+  .viz-host {
+    inline-size: 100%;
+    min-inline-size: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .viz {
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .viz text {
+    fill: var(--color-text-muted);
+  }
+
+  .viz .viz__tick,
+  .viz .viz__value {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .viz .viz__label--strong,
+  .viz .viz__value {
+    fill: var(--color-text);
+    font-weight: var(--weight-medium);
+  }
+
+  .viz .viz__eyebrow {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .viz .viz__hero {
+    fill: var(--color-text);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-display);
+  }
+
+  .viz__grid {
+    stroke: var(--color-border);
+    stroke-width: var(--border-width);
+  }
+
+  .viz__axis {
+    stroke: var(--color-border-strong);
+    stroke-width: var(--border-width);
+  }
+
+  .viz__mark { fill: var(--color-data-1); }
+  .viz__mark--muted { fill: var(--color-data-6); }
+  .viz__mark--ink { fill: var(--color-data-2); }
+  .viz__mark--s1 { fill: var(--color-data-1); }
+  .viz__mark--s2 { fill: var(--color-data-2); }
+  .viz__mark--s3 { fill: var(--color-data-3); }
+  .viz__mark--s4 { fill: var(--color-data-4); }
+  .viz__mark--s5 { fill: var(--color-data-5); }
+  .viz__mark--s6 { fill: var(--color-data-6); }
+  .viz__mark--s7 { fill: var(--color-data-7); }
+  .viz__mark--s8 { fill: var(--color-data-8); }
+
+  /* Anneau de la couleur du fond : un point reste lisible sur un autre */
+  .viz__dot {
+    stroke: var(--color-bg);
+    stroke-width: var(--border-width-strong);
+  }
+
+  .viz__hit {
+    fill: transparent;
+  }
+
+  .viz__item:hover .viz__mark {
+    fill: var(--color-text);
+  }
+
+  .viz__line {
+    fill: none;
+    stroke: var(--color-data-1);
+    stroke-width: var(--border-width-strong);
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .viz__ref {
+    stroke: var(--color-text);
+    stroke-width: var(--border-width-strong);
+  }
+
+  .viz__ref--accent {
+    stroke: var(--color-accent);
+  }
+
+  .viz__trend {
+    stroke: var(--color-border-strong);
+    stroke-width: var(--border-width);
+  }
+
+  .viz__box {
+    fill: var(--color-surface);
+    stroke: var(--color-text);
+    stroke-width: var(--border-width);
+  }
+
+  .viz__box--cause {
+    fill: var(--color-inverse-bg);
+  }
+
+  .viz .viz__box--cause + text {
+    fill: var(--color-inverse-text);
+  }
+
+  .viz__arrow {
+    stroke: var(--color-text);
+    stroke-width: var(--border-width-strong);
+  }
+
+  .viz__arrowhead {
+    fill: var(--color-text);
+  }
+
+  /* Pointillé réservé au lien supposé, qui n'existe pas : ce n'est pas une grille */
+  .viz__link {
+    stroke: var(--color-accent);
+    stroke-width: var(--border-width-strong);
+    stroke-dasharray: var(--space-1) var(--space-half);
+  }
+
+  .viz__ring {
+    fill: none;
+    stroke: var(--color-data-1);
+    stroke-width: var(--space-1);
+  }
+
+  .viz__ring--muted { stroke: var(--color-data-6); }
+
+  /* Rampe séquentielle d'une seule teinte, du clair au foncé */
+  .viz__heat--0 { fill: color-mix(in oklab, var(--color-data-3) 20%, var(--color-bg)); }
+  .viz__heat--1 { fill: color-mix(in oklab, var(--color-data-3) 45%, var(--color-bg)); }
+  .viz__heat--2 { fill: color-mix(in oklab, var(--color-data-3) 70%, var(--color-bg)); }
+  .viz__heat--3 { fill: var(--color-data-3); }
+
+  .viz--picto {
+    inline-size: var(--viz-thumb);
+    flex-shrink: 0;
+  }
+
+  /* ---------- Tableur ---------- */
+  .sheet-view {
+    display: grid;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .sheet__bar {
+    display: flex;
+    max-inline-size: none;
+    border: var(--border-strong);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .sheet__ref {
+    flex-shrink: 0;
+    padding: var(--space-1) var(--space-2);
+    border-inline-end: var(--border-strong);
+    font-weight: var(--weight-medium);
+  }
+
+  .lab-fiche .sheet__formula {
+    flex: 1;
+    min-inline-size: 0;
+    padding: var(--space-1) var(--space-2);
+    background-color: transparent;
+    overflow-wrap: anywhere;
+  }
+
+  .sheet-view__grid {
+    display: grid;
+    gap: var(--space-3) var(--grid-gutter);
+  }
+
+  @media (min-width: 48rem) {
+    .sheet-view__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+  }
+
+  .sheet {
+    display: grid;
+    gap: var(--space-1);
+    min-inline-size: 0;
+  }
+
+  .sheet__table {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .sheet__table th,
+  .sheet__table td {
+    padding: var(--space-half) var(--space-1);
+    border: var(--border);
+    white-space: nowrap;
+  }
+
+  .sheet__corner,
+  .sheet__col,
+  .sheet__row {
+    background-color: var(--color-surface);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-regular);
+  }
+
+  .sheet__row,
+  .sheet__corner {
+    inline-size: var(--sheet-head);
+  }
+
+  .sheet__cell {
+    min-inline-size: var(--sheet-cell-min);
+  }
+
+  .sheet__cell--head {
+    font-weight: var(--weight-bold);
+  }
+
+  /* Zone de débordement, comme le cadre bleu d'Excel ; la cellule de formule en accent */
+  .sheet__cell--spill,
+  .sheet__cell--formula {
+    background-color: color-mix(in oklab, var(--color-data-3) 14%, transparent);
+  }
+
+  .sheet__cell--formula {
+    outline: var(--border-width-strong) solid var(--color-accent);
+    outline-offset: calc(-1 * var(--border-width-strong));
+  }
+
+  /* ---------- Sélecteur « Quel graphique ? » ---------- */
+  .chooser {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .chooser__answer {
+    display: grid;
+    gap: var(--space-2);
+    margin-block-start: var(--space-2);
+    padding-block-start: var(--space-3);
+    border-block-start: var(--border-strong);
+  }
+
+  .chooser__list {
+    border-block-end: var(--border);
+  }
+
+  .chooser__item {
+    display: grid;
+    gap: var(--space-2) var(--grid-gutter);
+    padding-block: var(--space-3);
+    border-block-start: var(--border);
+  }
+
+  @media (min-width: 48rem) {
+    .chooser__item {
+      grid-template-columns: var(--viz-thumb) minmax(0, 1fr);
+    }
+  }
+
+  .chooser__text {
+    display: grid;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+}

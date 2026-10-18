@@ -9,6 +9,7 @@ export const TOOLS = [
   { id: 'score', href: 'score/index.html', label: 'Scores', desc: 'Soirées jeux et trophées' },
   { id: 'sudoku', href: 'sudoku/sudoku.html', label: 'Sudoku', desc: 'Solveur par backtracking' },
   { id: 'web', href: 'web/index.html', label: 'Sites web', desc: 'Sites qui valent le détour' },
+  { id: 'labo', href: 'labo/index.html', label: 'Labo data', desc: 'Data, dataviz et Excel vulgarisés' },
 ];
 
 class SiteHeader extends HTMLElement {

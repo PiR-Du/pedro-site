@@ -127,6 +127,10 @@
     --chart-height: 20rem;        /* 320 px */
     --sudoku-size: 34rem;         /* 544 px */
     --score-input-width: 6rem;    /* 96 px */
+    --viz-max: 45rem;             /* 720 px, largeur maximale d'un visuel seul (Labo data) */
+    --viz-thumb: 6rem;            /* 96 px, pictogramme du sélecteur de graphique */
+    --sheet-cell-min: 4rem;       /* 64 px, cellule de tableur */
+    --sheet-head: 2rem;           /* 32 px, en-têtes de ligne et de colonne du tableur */
     --map-filter: grayscale(1) contrast(1.1);
     --hull-opacity: 0.06;
     --dim-opacity: 0.2;

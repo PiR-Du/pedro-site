@@ -18,6 +18,7 @@ Fondation : style typographique international, d'après *Grid Systems in Graphic
 | `css/components.css` | Atomes, molécules, organismes (BEM), primitives de mouvement | `components` |
 | `css/utilities.css` | 8 utilitaires et la règle `[hidden]` | `utilities` |
 | `css/styleguide.css` | Spécimens du guide de style uniquement, non chargé par le site | `components` |
+| `css/lab.css` | Labo data uniquement : fiches, graphiques SVG, tableur, sélecteur. Chargé par `labo/index.html` seul | `components` |
 | `css/vendor/leaflet-core.css` | Styles structurels de Leaflet 1.9.4 (page ville uniquement), sans habillage | `vendor` |
 
 ```css
@@ -43,10 +44,11 @@ La cascade est tenue par `@layer` : une règle d'une couche postérieure l'empor
 | `js/theme.js` | Module : bascule `[data-theme-toggle]`, mémorisation |
 | `js/motion.js` | Module : apparitions, révélation de texte, compteurs, calque de grille |
 | `js/main.js` | Module d'entrée commun : charge les Web Components, le thème et le mouvement |
-| `js/components/site-header.js` | Web Component `<site-header>` : marque, sept liens numérotés, menu repliable sous 1024 px |
+| `js/components/site-header.js` | Web Component `<site-header>` : marque, huit liens numérotés, menu repliable sous 1024 px |
 | `js/components/site-footer.js` | Web Component `<site-footer>` : mentions, lien vers le guide, bascule de thème |
 | `js/site.js` | Script classique partagé par les outils : échappement HTML, messages éphémères, tiroir, formulaires de contribution, lecture d'une couleur de token |
 | `js/home.js` | Compteurs et dernières entrées de l'accueil |
+| `labo/charts.js` | Graphiques du Labo data en SVG fait main (barres, colonnes, courbe, points, chiffre, nuage, schéma, tableur), redessinés à la largeur du conteneur. Couleurs par classes, donc par tokens. Le contenu est dans `labo/data.js`, voir [`CONTRIBUER.md`](CONTRIBUER.md) |
 
 Aucune dépendance ajoutée. Motion One a été écarté : les trois primitives retenues tiennent en 70 lignes environ avec `IntersectionObserver` et des transitions CSS.
 
@@ -332,6 +334,7 @@ Gabarits : accueil (affiche, chiffres, sommaire numéroté), outil à filtres (m
 - `js/site.js` et `encyclopedia/mindmap.js` appellent `style.setProperty` à trois endroits : pour lire la couleur résolue d'un token (Chart.js ne lit pas les variables CSS) et pour transmettre les coordonnées de l'infobulle du graphe par `--tip-x` et `--tip-y`. Aucune valeur de design n'y est écrite.
 - Les bibliothèques de dessin reçoivent quelques nombres en dur (taille des nœuds du graphe, rayon des points du graphique) : ce sont des multiples de 4 et la taille de police reprend `--text-sm`.
 - `score/app.js` garde la liste des 8 anciennes couleurs hexadécimales, uniquement pour convertir les parties enregistrées avant la refonte vers les séries de données.
+- `labo/charts.js` écrit la géométrie des SVG en attributs (coordonnées, épaisseur de barre de 20 px, rayon des points) et la taille du grand chiffre en attribut `font-size`, proportionnelle à la largeur. Les couleurs, filets et polices restent dans `css/lab.css`, sur des tokens. Le pointillé de `.viz__link` est réservé au lien de cause supposé, jamais à une grille.
 
 ### Ce qui remplace les motifs bannis
 
