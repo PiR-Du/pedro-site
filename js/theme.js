@@ -1,9 +1,9 @@
 // Bascule de thème : [data-theme-toggle] alterne clair et sombre et mémorise le choix.
+// Le clair est le thème par défaut : la préférence système n'est pas suivie.
 const root = document.documentElement;
-const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
 function currentTheme() {
-  return root.dataset.theme || (systemDark.matches ? 'dark' : 'light');
+  return root.dataset.theme === 'dark' ? 'dark' : 'light';
 }
 
 function syncToggles() {
@@ -22,7 +22,6 @@ export function initTheme() {
     try { localStorage.setItem('theme', theme); } catch (err) { /* choix non mémorisé */ }
     syncToggles();
   });
-  systemDark.addEventListener('change', syncToggles);
   syncToggles();
 }
 

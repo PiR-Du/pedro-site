@@ -223,7 +223,7 @@ Tout le corps de texte atteint AAA. L'accent atteint AAA en clair et AA en sombr
 
 ### Thèmes
 
-Les couleurs sont déclarées une seule fois avec `light-dark()`. Le thème suit `prefers-color-scheme` par défaut, `data-theme="light"` ou `data-theme="dark"` sur `<html>` force l'un ou l'autre en changeant `color-scheme`. Le sombre est un noir neutre, sans teinte violette ni bleue.
+Les couleurs sont déclarées une seule fois avec `light-dark()`. Le site est en **clair par défaut**, quelle que soit la préférence système (`color-scheme: light` sur `:root`). Le bouton du pied de page pose `data-theme="dark"` ou `data-theme="light"` sur `<html>`, ce qui change `color-scheme`, et mémorise le choix dans `localStorage`. Le sombre est un noir neutre, sans teinte violette ni bleue.
 
 ---
 

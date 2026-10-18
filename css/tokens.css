@@ -9,7 +9,8 @@
 
 @layer tokens {
   :root {
-    color-scheme: light dark;
+    /* Clair par défaut, quelle que soit la préférence système ; le sombre se choisit avec [data-theme-toggle] */
+    color-scheme: light;
 
     /* ---------- Couleur : rôles sémantiques (clair, sombre) ----------
        60 % fond, 30 % texte et structure, 10 % accent. */
@@ -178,14 +179,11 @@
     }
   }
 
-  /* Choix manuel du thème : l'attribut prime sur la préférence système */
+  /* Choix manuel du thème, mémorisé par js/theme.js */
   :root[data-theme="light"] { color-scheme: light; }
   :root[data-theme="dark"] { color-scheme: dark; }
 
   /* Fond de carte : tuiles désaturées, inversées en sombre */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --map-filter: grayscale(1) invert(1) contrast(0.9); }
-  }
   :root[data-theme="dark"] { --map-filter: grayscale(1) invert(1) contrast(0.9); }
 
   /* Tablette : 8 colonnes */
