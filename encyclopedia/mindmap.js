@@ -2,7 +2,38 @@
 // Toute l'apparence vient du CSS (.graph__*) : ce fichier ne pose que des classes et des positions.
 
 const NODE_SIZE = 12;
+const ZONE_PADDING = 16;     // marge intérieure d'une zone de catégorie
+const ZONE_LABEL_SPACE = 16; // hauteur réservée à l'intitulé de la zone
+const ZONE_GAP = 24;         // écart minimal entre deux zones
+const NODE_GAP = 8;          // écart minimal entre deux titres d'une même zone
+const FIT_MARGIN = 24;       // marge entre les zones et le bord du cadre au cadrage initial
+const LAYOUT_TICKS = 300;    // itérations calculées avant le premier affichage
 let simulation;
+
+// Écarte deux à deux les emprises qui se chevauchent (écart compris), sur l'axe le moins coûteux.
+// groupOf donne les nœuds déplacés d'un bloc. Renvoie le nombre de chevauchements traités.
+function separateBoxes(items, boxOf, groupOf, gap, strength) {
+    const boxes = items.map(boxOf);
+    let overlaps = 0;
+    for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+            const a = boxes[i], b = boxes[j];
+            const overlapX = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + gap;
+            const overlapY = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) + gap;
+            if (overlapX <= 0 || overlapY <= 0) continue;
+            overlaps++;
+            const horizontal = overlapX < overlapY;
+            const axis = horizontal ? 'x' : 'y';
+            const sign = horizontal
+                ? Math.sign((a.x0 + a.x1) - (b.x0 + b.x1)) || 1
+                : Math.sign((a.y0 + a.y1) - (b.y0 + b.y1)) || 1;
+            const push = (horizontal ? overlapX : overlapY) / 2 * strength * sign;
+            groupOf(items[i]).forEach(n => { n[axis] += push; });
+            groupOf(items[j]).forEach(n => { n[axis] -= push; });
+        }
+    }
+    return overlaps;
+}
 
 function renderGraph() {
     const container = document.getElementById('mindmap');
@@ -14,13 +45,13 @@ function renderGraph() {
 
     const nodes = data.infos.map((info, idx) => ({ ...info, id: `info-${idx}`, label: info.title }));
 
-    // Regroupement par catégorie, pour les enveloppes et l'attraction
+    // Regroupement par catégorie, pour les zones et l'attraction
     const nodesByCategory = {};
     nodes.forEach(node => {
         (nodesByCategory[node.category] = nodesByCategory[node.category] || []).push(node);
     });
 
-    // Un centre par catégorie, réparti sur un cercle
+    // Un centre par catégorie, réparti sur un cercle ; chaque nœud part de son centre
     const categories = Object.keys(nodesByCategory);
     const catCenters = {};
     categories.forEach((cat, i) => {
@@ -30,22 +61,20 @@ function renderGraph() {
             y: height / 2 + Math.sin(angle) * (height / 3.5)
         };
     });
+    nodes.forEach((n, i) => {
+        n.x = catCenters[n.category].x + Math.cos(i) * NODE_SIZE;
+        n.y = catCenters[n.category].y + Math.sin(i) * NODE_SIZE;
+    });
 
+    const zoom = d3.zoom().on('zoom', event => g.attr('transform', event.transform));
     const svg = d3.select('#mindmap')
         .append('svg')
-        .call(d3.zoom().on('zoom', event => g.attr('transform', event.transform)));
+        .call(zoom);
 
     const g = svg.append('g');
     const hullLayer = g.append('g');
     const nodeLayer = g.append('g');
     const labelLayer = g.append('g');
-
-    simulation = d3.forceSimulation(nodes)
-        .force('charge', d3.forceManyBody().strength(-80))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(28))
-        .force('x', d3.forceX(d => catCenters[d.category].x).strength(0.12))
-        .force('y', d3.forceY(d => catCenters[d.category].y).strength(0.12));
 
     const node = nodeLayer.selectAll('g')
         .data(nodes)
@@ -75,9 +104,12 @@ function renderGraph() {
         .attr('dy', '.35em')
         .text(d => d.label);
 
-    const hulls = hullLayer.selectAll('path')
+    // Largeur réelle du titre, pour que la zone englobe le texte et pas seulement le carré
+    node.each(function (d) { d.labelWidth = this.querySelector('text').getComputedTextLength(); });
+
+    const hulls = hullLayer.selectAll('rect')
         .data(categories)
-        .enter().append('path')
+        .enter().append('rect')
         .attr('class', 'graph__hull');
 
     const hullLabels = labelLayer.selectAll('text')
@@ -86,23 +118,79 @@ function renderGraph() {
         .attr('class', 'graph__hull-label')
         .text(d => d);
 
-    simulation.on('tick', () => {
+    // Largeur minimale d'une zone : celle de son intitulé
+    const catLabelWidth = {};
+    hullLabels.each(function (d) { catLabelWidth[d] = this.getComputedTextLength(); });
+
+    // Emprise d'un nœud : son carré et son titre
+    function nodeBox(n) {
+        return {
+            x0: n.x - NODE_SIZE / 2,
+            x1: n.x + NODE_SIZE + n.labelWidth,
+            y0: n.y - NODE_SIZE,
+            y1: n.y + NODE_SIZE
+        };
+    }
+
+    // Zone d'une catégorie : rectangle englobant ses nœuds et leurs titres, avec une marge et la place de l'intitulé
+    function categoryBox(cat) {
+        const members = nodesByCategory[cat];
+        const x0 = d3.min(members, n => n.x - NODE_SIZE / 2) - ZONE_PADDING;
+        const x1 = Math.max(
+            d3.max(members, n => n.x + NODE_SIZE + n.labelWidth) + ZONE_PADDING,
+            x0 + catLabelWidth[cat] + 2 * ZONE_PADDING
+        );
+        const y0 = d3.min(members, n => n.y - NODE_SIZE / 2) - ZONE_PADDING - ZONE_LABEL_SPACE;
+        const y1 = d3.max(members, n => n.y + NODE_SIZE / 2) + ZONE_PADDING;
+        return { x0, x1, y0, y1 };
+    }
+
+    const separateNodes = strength => separateBoxes(nodes, nodeBox, n => [n], NODE_GAP, strength);
+    const separateZones = strength => separateBoxes(categories, categoryBox, cat => nodesByCategory[cat], ZONE_GAP, strength);
+
+    simulation = d3.forceSimulation(nodes)
+        .force('charge', d3.forceManyBody().strength(-40))
+        .force('x', d3.forceX(d => catCenters[d.category].x).strength(0.1))
+        .force('y', d3.forceY(d => catCenters[d.category].y).strength(0.1))
+        .force('nodes', () => separateNodes(0.5))
+        .force('zones', () => separateZones(0.5))
+        .stop();
+
+    // Placement calculé avant l'affichage, puis passes de séparation jusqu'à ce que plus rien ne se chevauche
+    simulation.tick(LAYOUT_TICKS);
+    for (let pass = 0; pass < 200; pass++) {
+        if (separateNodes(1) + separateZones(1) === 0) break;
+    }
+    nodes.forEach(n => { n.vx = 0; n.vy = 0; });
+
+    function draw() {
         node.attr('transform', d => `translate(${d.x},${d.y})`);
 
-        hulls.attr('d', d => {
-            const points = nodesByCategory[d].map(n => [n.x, n.y]);
-            if (points.length < 3) {
-                points.push([points[0][0] + 1, points[0][1] + 1]);
-                points.push([points[0][0] - 1, points[0][1] - 1]);
-            }
-            const hull = d3.polygonHull(points);
-            return hull ? 'M' + hull.join('L') + 'Z' : null;
-        });
+        const boxes = Object.fromEntries(categories.map(cat => [cat, categoryBox(cat)]));
+        hulls
+            .attr('x', d => boxes[d].x0)
+            .attr('y', d => boxes[d].y0)
+            .attr('width', d => boxes[d].x1 - boxes[d].x0)
+            .attr('height', d => boxes[d].y1 - boxes[d].y0);
 
+        // Intitulé en drapeau, calé dans l'angle haut gauche de la zone
         hullLabels
-            .attr('x', d => d3.mean(nodesByCategory[d], n => n.x))
-            .attr('y', d => d3.min(nodesByCategory[d], n => n.y) - 24);
-    });
+            .attr('x', d => boxes[d].x0 + ZONE_PADDING)
+            .attr('y', d => boxes[d].y0 + ZONE_PADDING);
+        return boxes;
+    }
+
+    // Cadrage initial : toutes les zones visibles, sans agrandir au-delà de l'échelle 1
+    const boxes = Object.values(draw());
+    const x0 = d3.min(boxes, b => b.x0), x1 = d3.max(boxes, b => b.x1);
+    const y0 = d3.min(boxes, b => b.y0), y1 = d3.max(boxes, b => b.y1);
+    const scale = Math.min(1, (width - 2 * FIT_MARGIN) / (x1 - x0), (height - 2 * FIT_MARGIN) / (y1 - y0));
+    svg.call(zoom.transform, d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(scale)
+        .translate(-(x0 + x1) / 2, -(y0 + y1) / 2));
+
+    simulation.on('tick', draw);
 
     function dragstarted(event, d) {
         if (!event.active) simulation.alphaTarget(0.3).restart();

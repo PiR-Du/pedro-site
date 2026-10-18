@@ -995,6 +995,12 @@
     letter-spacing: var(--tracking-heading);
   }
 
+  /* En bloc, le bouton expose la ligne de base de sa première ligne (en inline-block, celle de la dernière) :
+     étiquette et description restent alignées sur la première ligne d'un titre long */
+  .result__title .entry__link {
+    display: block;
+  }
+
   .result__body {
     color: var(--color-text-muted);
   }
@@ -1015,13 +1021,41 @@
   }
 
   @media (min-width: 64rem) {
+    /* Pistes bornées à 0 : un contenu long ne peut plus élargir sa colonne et décaler la ligne */
     .result {
-      grid-template-columns: 2fr 4fr 3fr 2fr;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 4fr) minmax(0, 3fr);
+    }
+
+    .result__tag {
+      white-space: normal;
     }
 
     .result__meta {
       justify-self: end;
       text-align: end;
+      overflow-wrap: anywhere;
+    }
+
+    /* Une seule grille pour toute la liste : étiquette et adresse prennent la largeur
+       de la plus longue, et toutes les lignes partagent les mêmes colonnes */
+    @supports (grid-template-columns: subgrid) {
+      .results {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 2fr) minmax(0, 3fr) max-content;
+        column-gap: var(--grid-gutter);
+      }
+
+      .results > * {
+        grid-column: 1 / -1;
+      }
+
+      .result {
+        grid-template-columns: subgrid;
+      }
+
+      .result__tag {
+        white-space: nowrap;
+      }
     }
   }
 
@@ -1285,10 +1319,8 @@
   .graph__hull {
     fill: var(--color-text);
     fill-opacity: var(--hull-opacity);
-    stroke: var(--color-text);
-    stroke-opacity: var(--hull-opacity);
-    stroke-width: var(--space-4);
-    stroke-linejoin: miter;
+    stroke: var(--color-border);
+    stroke-width: var(--border-width);
   }
 
   .graph__hull-label {
@@ -1298,7 +1330,8 @@
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
-    text-anchor: middle;
+    text-anchor: start;
+    dominant-baseline: hanging;
     pointer-events: none;
   }
 

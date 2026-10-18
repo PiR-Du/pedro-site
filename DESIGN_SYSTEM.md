@@ -174,7 +174,7 @@ Longueur de ligne : `--measure` = 68 ch, appliqué par défaut à `p`, `li`, `dd
 2. **Harmonie** (approche Coolors) : gamme neutre de teinte unique, légèrement chaude (teinte 80°, chroma inférieur à 0,01), et un seul accent complémentaire franc.
 3. **Validation en situation** (approche Realtime Colors) : section 08 du guide de style, où la palette habille un vrai fragment de page, en clair, en sombre et en aplat inversé.
 
-Le fond est un gris papier neutre, ni blanc pur ni crème. L'accent est un rouge signalétique, canonique du style suisse.
+Le fond est un gris papier neutre, ni blanc pur ni crème. L'accent est un bordeaux : un rouge profond, plus feutré que le rouge signalétique suisse.
 
 ### Rôles
 
@@ -187,14 +187,14 @@ Le fond est un gris papier neutre, ni blanc pur ni crème. L'accent est un rouge
 | Texte atténué | `--color-text-muted` | `#4A4A46` | `#A9A9A2` | compris dans les 30 % |
 | Filet | `--color-border` | `#C6C6C0` | `#34342F` | compris dans les 30 % |
 | Contour de contrôle | `--color-border-strong` | `#77776F` | `#7C7C74` | compris dans les 30 % |
-| Accent | `--color-accent` | `#C8102E` | `#FF5A47` | **10 %** |
+| Accent | `--color-accent` | `#7B1E2E` | `#E07A8A` | **10 %** |
 | Texte sur accent | `--color-on-accent` | `#F6F6F3` | `#121211` | |
 | Succès | `--color-success` | `#1F6B3A` | `#5FBF82` | ponctuel |
 | Danger | `--color-danger` | = accent | = accent | ponctuel |
 
 **Où va l'accent** : bouton principal, folios, lien actif de la navigation, erreurs, élément sélectionné sur une carte ou un graphique. Jamais en fond de section, jamais en bordure décorative.
 
-**Erreur et accent partagent le rouge.** Une erreur ne repose donc jamais sur la couleur seule : elle porte le préfixe « Erreur : », une graisse 700 et un contour de 2 px sur le champ.
+**Erreur et accent partagent le bordeaux.** Une erreur ne repose donc jamais sur la couleur seule : elle porte le préfixe « Erreur : », une graisse 700 et un contour de 2 px sur le champ.
 
 ### Contrastes (WCAG 2.2)
 
@@ -206,14 +206,14 @@ Le fond est un gris papier neutre, ni blanc pur ni crème. L'accent est un rouge
 | Texte atténué sur fond | 7,73 | 7,93 | AAA |
 | Texte atténué sur surface | 7,05 | 7,14 | AAA |
 | Fond sur texte (aplat inversé) | 16,39 | 15,83 | AAA |
-| Accent sur fond | 5,11 | 6,07 | AA |
-| Accent sur surface | 4,66 | 5,47 | AA |
-| Texte sur accent (bouton) | 5,43 | 6,07 | AA |
+| Accent sur fond | 8,82 | 6,53 | AAA / AA |
+| Accent sur surface | 8,04 | 5,89 | AAA / AA |
+| Texte sur accent (bouton) | 9,38 | 6,53 | AAA / AA |
 | Succès sur fond | 5,66 | 8,27 | AA / AAA |
 | Contour de contrôle sur fond | 3,92 | 4,46 | conforme (3:1 requis) |
 | Filet décoratif sur fond | 1,49 | 1,50 | non concerné : purement décoratif, ne porte aucune information |
 
-Tout le corps de texte atteint AAA. L'accent atteint AA : un rouge AAA sur ce fond serait un bordeaux, qui perdrait le caractère signalétique.
+Tout le corps de texte atteint AAA. L'accent atteint AAA en clair et AA en sombre : un bordeaux foncé serait illisible sur fond noir, le thème sombre utilise donc un bordeaux éclairci, tirant sur le rosé.
 
 ### Séries de données
 
