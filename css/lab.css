@@ -1,7 +1,7 @@
 /* =========================================================
    lab.css
-   Labo data (labo/index.html) uniquement : sommaire, fiches, graphiques SVG,
-   tableur et sélecteur de graphique. Non chargé par les autres pages.
+   Labo data (labo/index.html) uniquement : sommaire, fiches, graphiques SVG
+   et sélecteur de graphique. Non chargé par les autres pages.
    Uniquement des tokens, comme le reste du système.
    ========================================================= */
 
@@ -183,6 +183,18 @@
     max-inline-size: none;
   }
 
+  .lab-figure__img,
+  .lab-schema__svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+
+  .lab-figure__credit {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
   .lab-figure__caption {
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
@@ -355,6 +367,18 @@
     stroke-width: var(--border-width);
   }
 
+  /* Tendance d'une période choisie : épaisse et en tirets, pour se distinguer de la courbe sans dépendre de la couleur */
+  .viz__trend--fenetre {
+    stroke: var(--color-text);
+    stroke-width: var(--border-width-strong);
+    stroke-dasharray: var(--space-1) var(--space-half);
+  }
+
+  /* Période mise en avant sur une courbe */
+  .viz__band {
+    fill: var(--color-surface);
+  }
+
   .viz__box {
     fill: var(--color-surface);
     stroke: var(--color-text);
@@ -409,100 +433,6 @@
   .viz--picto {
     inline-size: var(--viz-thumb);
     flex-shrink: 0;
-  }
-
-  /* ---------- Tableur ---------- */
-  .sheet-view {
-    display: grid;
-    gap: var(--space-2);
-    min-inline-size: 0;
-  }
-
-  .sheet__bar {
-    display: flex;
-    max-inline-size: none;
-    border: var(--border-strong);
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-  }
-
-  .sheet__ref {
-    flex-shrink: 0;
-    padding: var(--space-1) var(--space-2);
-    border-inline-end: var(--border-strong);
-    font-weight: var(--weight-medium);
-  }
-
-  .lab-fiche .sheet__formula {
-    flex: 1;
-    min-inline-size: 0;
-    padding: var(--space-1) var(--space-2);
-    background-color: transparent;
-    overflow-wrap: anywhere;
-  }
-
-  .sheet-view__grid {
-    display: grid;
-    gap: var(--space-3) var(--grid-gutter);
-  }
-
-  @media (min-width: 48rem) {
-    .sheet-view__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-items: start;
-    }
-  }
-
-  .sheet {
-    display: grid;
-    gap: var(--space-1);
-    min-inline-size: 0;
-  }
-
-  .sheet__table {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-  }
-
-  .sheet__table th,
-  .sheet__table td {
-    padding: var(--space-half) var(--space-1);
-    border: var(--border);
-    white-space: nowrap;
-  }
-
-  .sheet__corner,
-  .sheet__col,
-  .sheet__row {
-    background-color: var(--color-surface);
-    color: var(--color-text-muted);
-    font-weight: var(--weight-regular);
-  }
-
-  .sheet__row,
-  .sheet__corner {
-    inline-size: var(--sheet-head);
-  }
-
-  .sheet__cell {
-    min-inline-size: var(--sheet-cell-min);
-  }
-
-  .sheet__cell--head {
-    font-weight: var(--weight-bold);
-  }
-
-  /* Zone de débordement, comme le cadre bleu d'Excel ; la cellule de formule en accent */
-  .sheet__cell--spill,
-  .sheet__cell--formula {
-    background-color: color-mix(in oklab, var(--color-data-3) 14%, transparent);
-  }
-
-  .sheet__cell--formula {
-    outline: var(--border-width-strong) solid var(--color-accent);
-    outline-offset: calc(-1 * var(--border-width-strong));
   }
 
   /* ---------- Simulation de parties ---------- */
@@ -595,6 +525,94 @@
   .sim__figure {
     padding-block-start: var(--space-2);
     border-block-start: var(--border);
+  }
+
+  /* ---------- Exemples interactifs (labo/interactifs.js) ---------- */
+  .interactif {
+    display: grid;
+    gap: var(--space-3);
+    min-inline-size: 0;
+    padding-block-start: var(--space-2);
+    border-block-start: var(--border-width-strong) solid var(--color-text);
+  }
+
+  .interactif__controls {
+    display: grid;
+    gap: var(--space-2);
+    padding-block-end: var(--space-2);
+    border-block-end: var(--border);
+  }
+
+  .interactif__fields,
+  .interactif__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .interactif__field,
+  .interactif__option {
+    display: grid;
+    gap: var(--space-1);
+    flex: 1 1 14rem;
+    max-inline-size: 28rem;
+  }
+
+  .interactif__option {
+    flex-basis: auto;
+    max-inline-size: none;
+  }
+
+  .interactif__field output {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-bold);
+  }
+
+  .range {
+    inline-size: 100%;
+    min-block-size: var(--space-4);
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .range:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--space-half);
+  }
+
+  .interactif__status {
+    max-inline-size: var(--measure);
+    min-block-size: calc(2 * var(--leading-sm));
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .interactif__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    gap: var(--space-2) var(--grid-gutter);
+  }
+
+  .interactif__stat {
+    display: grid;
+    align-content: start;
+    gap: var(--space-half);
+    padding-block-start: var(--space-1);
+    border-block-start: var(--border);
+  }
+
+  .interactif__stat dt {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    color: var(--color-text-muted);
+  }
+
+  .interactif__stat dd {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-lg);
+    font-variant-numeric: tabular-nums;
   }
 
   /* ---------- Sélecteur « Quel graphique ? » ---------- */

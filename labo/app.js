@@ -1,11 +1,11 @@
 // Labo data : rendu du sommaire (filtres par rubrique) et des fiches détaillées.
 // Tout le contenu vient de data.js ; ce fichier ne contient que la mise en page.
-// Adresses partageables : index.html?rubrique=excel&theme=modernes, index.html?fiche=moyenne-vs-mediane
+// Adresses partageables : index.html?rubrique=notions, index.html?fiche=moyenne-vs-mediane
 
 const BLOC_LABELS = {
   definition: 'Définition', exemple: 'Exemple', erreur: 'Erreur fréquente', astuce: 'Astuce', retenir: 'À retenir',
   probleme: 'Problème', formule: 'Formule', question: 'Question', donnees: 'Données', methode: 'Méthode',
-  resultat: 'Résultat', limite: 'Limites', maths: 'Les maths', simulation: 'Simulation',
+  resultat: 'Résultat', limite: 'Limites', maths: 'Les maths', simulation: 'Simulation', interactif: 'À vous de jouer',
 };
 
 const laboState = { mounts: [] };
@@ -80,8 +80,18 @@ function visual(spec) {
       ${LaboCharts.table({ ...spec.corrige, ...spec }, data)}`;
   }
 
-  if (spec.type === 'tableur') {
-    return `<figure class="lab-figure lab-figure--wide" aria-label="${escapeHtml(spec.alt || '')}">${LaboCharts.tableur(spec, data)}${caption(spec.legende)}</figure>`;
+  if (spec.type === 'image') {
+    // Image existante (labo/images/) : crédit obligatoire quand la licence l'exige.
+    // schema : SVG recoloré aux tokens (LABO_SCHEMAS), insérée dans la page pour suivre le thème.
+    const credit = spec.credit ? `<p class="lab-figure__credit">${spec.creditUrl
+      ? `<a class="link" href="${escapeHtml(spec.creditUrl)}" rel="noopener">${escapeHtml(spec.credit)}</a>` : escapeHtml(spec.credit)}</p>` : '';
+    const svg = spec.schema && window.LABO_SCHEMAS?.[spec.schema];
+    if (spec.schema && !svg) console.error(`Labo data : le schéma « ${spec.schema} » n'est pas chargé (script manquant dans labo/index.html ?).`);
+    const size = spec.largeur && spec.hauteur ? ` width="${spec.largeur}" height="${spec.hauteur}"` : '';
+    const media = svg
+      ? `<div class="lab-schema" role="img" aria-label="${escapeHtml(spec.alt || '')}">${svg}</div>`
+      : `<img class="lab-figure__img" src="${escapeHtml(spec.src)}" alt="${escapeHtml(spec.alt || '')}"${size} decoding="async">`;
+    return `<figure class="lab-figure">${media}${caption(spec.legende)}${credit}</figure>`;
   }
 
   if (spec.type === 'selecteur') {
@@ -91,6 +101,12 @@ function visual(spec) {
   if (spec.type === 'simulation') {
     const index = laboState.mounts.push({ spec, data, sim: true }) - 1;
     return `<div class="lab-figure lab-figure--wide" role="group" aria-label="${escapeHtml(spec.alt || '')}">${LaboSim.markup(spec, index)}${caption(spec.legende)}</div>`;
+  }
+
+  if (spec.type === 'interactif') {
+    // Exemple à manipuler : réglages et graphique redessiné en direct (labo/interactifs.js)
+    const index = laboState.mounts.push({ spec, data }) - 1;
+    return `<figure class="lab-figure lab-figure--wide" aria-label="${escapeHtml(spec.alt || '')}">${LaboInteractifs.markup(spec, index)}${caption(spec.legende)}${data && spec.tableau !== false ? LaboCharts.table(spec, data) : ''}</figure>`;
   }
 
   if (!LaboCharts.isSvg(spec.type)) {
@@ -225,7 +241,7 @@ function hubView(params, notFound) {
         </div>
         <hr class="rule rule--strong col-1-12">
         <h1 class="title-1 col-1-7 md-col-1-6" tabindex="-1">Labo data</h1>
-        <p class="lead col-8-12 md-col-1-6">Data, dataviz et Excel, expliqués simplement. Une fiche, une idée, un visuel.</p>
+        <p class="lead col-8-12 md-col-1-6">Data et dataviz, expliqués simplement. Une fiche, une idée, un visuel.</p>
       </div>
     </header>
     <div class="tool">
@@ -349,6 +365,7 @@ function renderLabo({ focus = null, scroll = false } = {}) {
   });
   initChooser(view);
   LaboSim.init(view, laboState.mounts);
+  LaboInteractifs.init(view, laboState.mounts);
 
   const rub = rubriqueById(params.get('rubrique'));
   document.title = fiche ? `${fiche.titre}, Labo data` : `Labo data${rub ? `, ${rub.titre}` : ''}, Pierre Duchesne`;

@@ -101,11 +101,13 @@ const LaboCharts = (() => {
   }
 
   // ---------- Barres horizontales ----------
-  // donnees : { unite, decimales, items: [{ label, valeur, accent }] }. Options : axeMin, max, trier (du plus grand au plus petit).
+  // donnees : { unite, decimales, items: [{ label, valeur, accent, groupe }] }. Options : axeMin, max, trier (du plus grand au plus petit),
+  // groupe (ne garder que les items de ce groupe : une paire peut montrer une partie des données d'un côté, tout de l'autre).
 
   function barres(spec, data, w) {
     const o = { ...data, ...spec };
-    const items = o.trier ? [...data.items].sort((a, b) => b.valeur - a.valeur) : data.items;
+    const kept = spec.groupe ? data.items.filter(i => i.groupe === spec.groupe) : data.items;
+    const items = o.trier ? [...kept].sort((a, b) => b.valeur - a.valeur) : kept;
     const hasAccent = items.some(i => i.accent);
     const labelW = Math.min(Math.max(...items.map(i => measure(i.label))) + 12, w * 0.42);
     const valueW = Math.max(...items.map(i => measure(fmt(i.valeur, o)))) + 12;
@@ -142,8 +144,12 @@ const LaboCharts = (() => {
     const min = o.axeMin ?? 0;
     const tickList = ticks(min, o.max ?? Math.max(...items.map(i => i.valeur)), 4).filter(t => t >= min);
     if (tickList.length < 2) tickList.push(min + 1);   // toutes les valeurs nulles : un axe minimal plutôt qu'une division par zéro
+    // Axe tronqué entre deux graduations : on gradue aussi son départ, sauf s'il touche la graduation suivante
+    if (tickList[0] > min && tickList[0] - min > (tickList[1] - tickList[0]) * 0.3) tickList.unshift(min);
     const max = tickList[tickList.length - 1];
-    const axisW = Math.max(...tickList.map(t => measure(fmt(t, { ...o, decimales: o.decimalesAxe ?? 0 })))) + 8;
+    // Une décimale de plus pour un départ d'axe non rond (17,5 %), jamais pour les graduations rondes
+    const tickLabel = t => fmt(t, { ...o, decimales: Number.isInteger(t) ? o.decimalesAxe ?? 0 : Math.max(o.decimalesAxe ?? 0, 1) });
+    const axisW = Math.max(...tickList.map(t => measure(tickLabel(t)))) + 8;
     const top = 20, axisH = 24;
     const h = Math.round(Math.min(Math.max(w * 0.62, 240), 400));
     const plotX = axisW, plotW = w - axisW, plotH = h - top - axisH;
@@ -161,9 +167,8 @@ const LaboCharts = (() => {
       if (i === items.length - 1) return text(w, h - axisH + 14, item.label, 'viz__tick', 'end');
       return '';
     };
-    const tickFmt = { ...o, decimales: o.decimalesAxe ?? 0 };
 
-    const grid = tickList.map(t => line(plotX, sy(t), w, sy(t), 'viz__grid') + text(plotX - 8, sy(t), fmt(t, tickFmt), 'viz__tick', 'end')).join('');
+    const grid = tickList.map(t => line(plotX, sy(t), w, sy(t), 'viz__grid') + text(plotX - 8, sy(t), tickLabel(t), 'viz__tick', 'end')).join('');
     const bars = items.map((item, i) => {
       const x = plotX + i * slot + (slot - barW) / 2;
       const y = sy(Math.min(Math.max(item.valeur, min), max));
@@ -184,7 +189,9 @@ const LaboCharts = (() => {
 
   // ---------- Courbe ----------
   // donnees : { unite, points: [{ x: 'libellé', y }] }. Options : plage [début, fin] (index), axeMin,
-  // reference { valeur, libelle } (droite horizontale, une valeur limite par exemple).
+  // reference { valeur, libelle } (droite horizontale, une valeur limite par exemple),
+  // tendance (droite des moindres carrés sur les points affichés), fenetre [début, fin] (index : bande grisée
+  // et droite de tendance propre à cette période, épaisse et en tirets).
 
   function courbe(spec, data, w) {
     const o = { ...data, ...spec };
@@ -217,7 +224,23 @@ const LaboCharts = (() => {
       ? line(plotX, sy(o.reference.valeur), plotX + plotW, sy(o.reference.valeur), 'viz__ref viz__ref--thin') +
         text(plotX + plotW, sy(o.reference.valeur) - 10, o.reference.libelle || fmt(o.reference.valeur, o), 'viz__label viz__label--strong', 'end')
       : '';
-    return frame(w, h, spec, grid + labels + ref + `<path d="${path}" class="viz__line"/>` + end + hits);
+    // Droite des moindres carrés entre les index i0 et i1 des points affichés (l'abscisse est le rang : pas régulier)
+    const trendLine = (i0, i1, cls) => {
+      const idx = Array.from({ length: i1 - i0 + 1 }, (_, k) => i0 + k);
+      if (idx.length < 2) return '';
+      const { a, b } = stats.droite(idx, idx.map(i => points[i].y));
+      return line(sx(i0), sy(a + b * i0), sx(i1), sy(a + b * i1), cls);
+    };
+    let band = '', trends = '';
+    if (o.tendance) trends += trendLine(0, lastI, 'viz__trend');
+    if (o.fenetre) {
+      const i0 = Math.max(o.fenetre[0] - from, 0), i1 = Math.min(o.fenetre[1] - from, lastI);
+      if (i1 > i0) {
+        band = `<rect x="${sx(i0)}" y="${top}" width="${Math.max(sx(i1) - sx(i0), 0)}" height="${Math.max(plotH, 0)}" class="viz__band"/>`;
+        trends += trendLine(i0, i1, 'viz__trend viz__trend--fenetre');
+      }
+    }
+    return frame(w, h, spec, band + grid + labels + ref + `<path d="${path}" class="viz__line"/>` + trends + end + hits);
   }
 
   // ---------- Courbes : plusieurs séries sur le même axe ----------
@@ -571,35 +594,51 @@ const LaboCharts = (() => {
     return frame(w, h, spec, body, defs);
   }
 
-  // ---------- Tableur (HTML) ----------
-  // donnees : { colonnes: [...], lignes: [[...], ...] }
-  // Options : cellule, formule, formuleEn, filtre { colonne, egal } (résultat calculé) ou resultat (lignes données).
+  // ---------- Essais répétés : un point par essai (un sondage, une expérience), empilés par classe ----------
+  // donnees : { unite, decimales, min, max, pas, groupes: [{ id, libelle, serie }], valeurs: [{ v, groupe }],
+  // references: [{ valeur, libelle, accent }] }. Alimenté en direct par un module interactif.
 
-  const letters = n => String.fromCharCode(65 + n);
+  function essais(spec, data, w) {
+    const o = { ...data, ...spec };
+    const { min, max } = o, step = o.pas || 1;
+    const bins = Math.max(Math.round((max - min) / step), 1);
+    const groups = data.groupes || [];
+    const leg = groups.length ? legend(groups, 0, 10, w) : { svg: '', height: 0 };
+    const counts = new Array(bins).fill(0);
+    const placed = data.valeurs.map(d => {
+      const bin = Math.min(Math.max(Math.floor((d.v - min) / step), 0), bins - 1);
+      return { ...d, bin, k: counts[bin]++ };
+    });
+    const colW = w / bins;
+    const maxCount = Math.max(1, ...counts);
+    // Le rayon diminue quand une pile monte : le graphique garde une hauteur raisonnable
+    const r = Math.max(Math.min(colW / 2 - 0.5, 6, 240 / maxCount / 2 - 0.5), 1.2);
+    const refs = data.references || [];
+    const top = leg.height + 12 + refs.length * 20;
+    const stackH = maxCount * (2 * r + 1);
+    const h = Math.round(top + Math.max(stackH, 120) + 8 + 28);
+    const baseY = h - 28;
+    const sx = v => ((v - min) / (max - min)) * w;
 
-  function sheet(caption, headers, rows, firstCol, cls = () => '') {
-    const head = `<tr><th class="sheet__corner" scope="col"><span class="sr-only">Ligne</span></th>${headers.map((_, i) => `<th scope="col" class="sheet__col">${letters(firstCol + i)}</th>`).join('')}</tr>`;
-    const body = rows.map((row, r) => `<tr><th scope="row" class="sheet__row">${r + 1}</th>${row.map((cell, c) =>
-      `<td class="sheet__cell ${cls(r, c)}">${esc(cell)}</td>`).join('')}</tr>`).join('');
-    return `<div class="sheet"><p class="eyebrow sheet__caption">${esc(caption)}</p><div class="table-scroll"><table class="sheet__table"><thead>${head}</thead><tbody>${body}</tbody></table></div></div>`;
-  }
+    const tickList = ticks(min, max, w < 400 ? 4 : 10).filter(t => t >= min && t <= max);
+    const axis = line(0, baseY, w, baseY, 'viz__axis') + tickList.map(t => {
+      const anchor = sx(t) < 24 ? 'start' : sx(t) > w - 24 ? 'end' : 'middle';
+      return line(sx(t), baseY, sx(t), baseY + 4, 'viz__axis') + text(sx(t), baseY + 16, fmt(t, { ...o, decimales: 0 }), 'viz__tick', anchor);
+    }).join('');
 
-  function tableur(spec, data) {
-    let result = spec.resultat;
-    if (!result && spec.filtre) {
-      const col = data.colonnes.indexOf(spec.filtre.colonne);
-      result = data.lignes.filter(l => l[col] === spec.filtre.egal);
-    }
-    const firstCol = spec.cellule.charCodeAt(0) - 65;
-    const source = sheet(`Données, A1:${letters(data.colonnes.length - 1)}${data.lignes.length + 1}`, data.colonnes, [data.colonnes, ...data.lignes], 0,
-      r => r === 0 ? 'sheet__cell--head' : '');
-    const out = sheet(`Résultat, la formule est en ${spec.cellule}`, data.colonnes, [data.colonnes, ...result], firstCol,
-      (r, c) => r === 0 ? 'sheet__cell--head' : r === 1 && c === 0 ? 'sheet__cell--formula' : 'sheet__cell--spill');
-    return `<div class="sheet-view">
-      <p class="sheet__bar"><span class="sheet__ref">${esc(spec.cellule)}</span><code class="sheet__formula">${esc(spec.formule)}</code></p>
-      ${spec.formuleEn ? `<p class="hint">Version anglaise : <code>${esc(spec.formuleEn)}</code></p>` : ''}
-      <div class="sheet-view__grid">${source}${out}</div>
-    </div>`;
+    const serieOf = id => { const k = groups.findIndex(g => g.id === id); return k < 0 ? 1 : groups[k].serie ?? k + 1; };
+    const dots = placed.map(p => `<g class="viz__item"><title>${esc(fmt(p.v, o))}</title>
+      <circle cx="${(p.bin + 0.5) * colW}" cy="${baseY - r - 1 - p.k * (2 * r + 1)}" r="${r}" class="viz__mark viz__mark--s${serieOf(p.groupe)}${r > 2.5 ? ' viz__dot' : ''}"/></g>`).join('');
+
+    const lines = refs.map((ref, i) => {
+      const x = sx(ref.valeur), y = leg.height + 12 + i * 20 + 6;
+      const label = ref.libelle || fmt(ref.valeur, o);
+      const anchor = x + measure(label, 500) + 6 > w ? 'end' : 'start';
+      return line(x, y - 8, x, baseY, ref.accent ? 'viz__ref viz__ref--accent' : 'viz__ref viz__ref--thin') +
+        text(anchor === 'end' ? x - 6 : x + 6, y, label, 'viz__label viz__label--strong', anchor);
+    }).join('');
+
+    return frame(w, h, spec, leg.svg + axis + lines + dots);
   }
 
   // ---------- Pictogrammes du sélecteur (96 × 64) ----------
@@ -676,7 +715,7 @@ const LaboCharts = (() => {
 
   // ---------- Montage et redessin à la largeur du conteneur ----------
 
-  const RENDERERS = { barres, colonnes, courbe, courbes, points, chiffre, nuage, multiples, anneau, boite, causal, plateau };
+  const RENDERERS = { barres, colonnes, courbe, courbes, points, chiffre, nuage, multiples, anneau, boite, causal, plateau, essais };
   const observer = 'ResizeObserver' in window ? new ResizeObserver(entries => entries.forEach(e => draw(e.target))) : null;
 
   function draw(el) {
@@ -716,5 +755,5 @@ const LaboCharts = (() => {
   // Le texte des SVG dépend de la police : on redessine une fois Inter chargée
   if (document.fonts) document.fonts.ready.then(() => document.querySelectorAll('.viz-host').forEach(el => { if (el._viz) { el._viz.width = 0; draw(el); } }));
 
-  return { mount, update, reset, table, tableur, picto, stats, fmt, num, esc, isSvg: type => type in RENDERERS };
+  return { mount, update, reset, table, picto, stats, fmt, num, esc, isSvg: type => type in RENDERERS };
 })();

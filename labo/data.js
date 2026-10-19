@@ -17,18 +17,6 @@ const LABO_RUBRIQUES = [
     description: 'Les mêmes données, deux graphiques : celui qui trompe et celui qui dit vrai. Seule la représentation change.',
   },
   {
-    id: 'excel',
-    titre: 'Astuces Excel',
-    description: 'Un problème, une formule, un exemple concret. Classées par thème.',
-    themes: [
-      { id: 'recherche', titre: 'Recherche' },
-      { id: 'texte', titre: 'Texte' },
-      { id: 'dates', titre: 'Dates' },
-      { id: 'tcd', titre: 'Tableaux croisés dynamiques' },
-      { id: 'modernes', titre: 'Formules modernes' },
-    ],
-  },
-  {
     id: 'choisir',
     titre: 'Quel graphique pour quelle question ?',
     description: 'Partir de la question, pas du graphique. Un guide pour choisir la bonne forme, et savoir quand l\'éviter.',
@@ -83,6 +71,15 @@ const GLACES_GROUPES = [
   { id: 'chaud', libelle: 'Plus de 20 °C', serie: 1 },
 ];
 const glacesGroupe = t => t < 12 ? 'frais' : t <= 20 ? 'doux' : 'chaud';
+
+// NASA GISS, GISTEMP v4, fichier GLB.Ts+dSST.csv du 8 octobre 2026 (https://data.giss.nasa.gov/gistemp/) :
+// écart annuel (colonne J-D) de la température mondiale terre + océans à la moyenne 1951-1980, en °C, de 1970 à 2025.
+const GISTEMP_DEBUT = 1970;
+const GISTEMP = [
+  0.03, -0.08, 0.01, 0.16, -0.07, -0.01, -0.10, 0.18, 0.07, 0.16, 0.26, 0.32, 0.14, 0.31, 0.16, 0.12, 0.18, 0.32, 0.39, 0.27,
+  0.45, 0.41, 0.22, 0.23, 0.31, 0.45, 0.33, 0.47, 0.61, 0.38, 0.39, 0.53, 0.63, 0.62, 0.53, 0.68, 0.64, 0.66, 0.54, 0.66,
+  0.72, 0.61, 0.65, 0.67, 0.75, 0.89, 1.01, 0.91, 0.85, 0.98, 1.01, 0.85, 0.89, 1.17, 1.28, 1.18,
+];
 
 const LABO_DONNEES = {
   // Salaires nets mensuels des 20 salariés d'une entreprise fictive, dont 2 dirigeants
@@ -383,19 +380,123 @@ const LABO_DONNEES = {
     };
   })(),
 
-  // Feuille d'exemple pour les astuces Excel
-  commandes: {
-    colonnes: ['Client', 'Ville', 'Montant'],
-    lignes: [
-      ['Amélie', 'Toulouse', '120'],
-      ['Bruno', 'Paris', '85'],
-      ['Chloé', 'Madrid', '240'],
-      ['David', 'Toulouse', '60'],
-      ['Emma', 'Paris', '310'],
-      ['Farid', 'Toulouse', '175'],
-      ['Gaëlle', 'Madrid', '95'],
-      ['Hugo', 'Paris', '130'],
+  // Impacts par pied carré sur les avions revenus, chiffres cités par Jordan Ellenberg (2014)
+  'wald-densite': {
+    decimales: 2,
+    colonneLabel: 'Partie de l\'avion',
+    colonneValeur: 'Impacts par pied carré',
+    items: [
+      { label: 'Reste de l\'avion', valeur: 1.8 },
+      { label: 'Fuselage', valeur: 1.73 },
+      { label: 'Circuit de carburant', valeur: 1.55 },
+      { label: 'Moteurs', valeur: 1.11, accent: true },
     ],
+  },
+
+  // ----- Fiche « L'axe qui ne part pas de zéro » -----
+  // Taux marginal supérieur de l'impôt fédéral américain sur le revenu, tel que montré par Fox Business le 31 juillet 2012
+  'impot-bush': {
+    unite: '%',
+    decimales: 1,
+    colonneLabel: 'Date',
+    colonneValeur: 'Taux marginal le plus élevé de l\'impôt fédéral sur le revenu',
+    items: [
+      { label: 'En 2012', valeur: 35 },
+      { label: 'Au 1er janvier 2013', valeur: 39.6 },
+    ],
+  },
+  // Facteur de mensonge de Tufte : effet montré / effet réel
+  'facteurs-mensonge': {
+    decimales: 1,
+    decimalesAxe: 0,
+    colonneLabel: 'Graphique',
+    colonneValeur: 'Facteur de mensonge',
+    items: [
+      { label: 'Fox Business, 2012', valeur: 35, accent: true },
+      { label: 'Magasins, axe à 48 k€', valeur: 25 },
+      { label: 'New York Times, 1978', valeur: 14.8 },
+      { label: 'Graphique honnête', valeur: 1 },
+    ],
+  },
+
+  // ----- Fiche « Cherry picking » -----
+  // Température mondiale 1970-2025, NASA GISTEMP v4 (voir GISTEMP plus haut)
+  gistemp: {
+    unite: '°C',
+    decimales: 2,
+    decimalesAxe: 1,
+    colonneLabel: 'Année',
+    colonneValeur: 'Écart à la moyenne 1951-1980',
+    points: GISTEMP.map((y, i) => ({ x: String(GISTEMP_DEBUT + i), y })),
+  },
+  // Pour chaque durée, part des périodes de cette durée (toutes les dates de début possibles) dont la tendance est négative
+  'gistemp-fenetres': (() => {
+    const ys = GISTEMP;
+    // Signe de la pente des moindres carrés : seul le numérateur Σ (x − x̄)(y − ȳ) compte
+    const pente = (i0, n) => {
+      const v = ys.slice(i0, i0 + n);
+      const mx = (n - 1) / 2, my = v.reduce((s, y) => s + y, 0) / n;
+      return v.reduce((s, y, k) => s + (k - mx) * (y - my), 0);
+    };
+    return {
+      unite: '%',
+      decimales: 0,
+      colonneLabel: 'Durée de la période',
+      colonneValeur: 'Part des périodes où la température « baisse »',
+      items: [5, 6, 7, 8, 9, 10, 11, 12, 15, 20].map(n => {
+        const starts = ys.length - n + 1;
+        let neg = 0;
+        for (let i = 0; i < starts; i++) if (pente(i, n) < 0) neg++;
+        return { label: `${n} ans`, valeur: Math.round((100 * neg) / starts), accent: n === 7 };
+      }),
+    };
+  })(),
+
+  // ----- Fiche « Le sondage parfait… auprès des mauvaises personnes » -----
+  // Présidentielle américaine de 1936, parts calculées sur les seules voix Roosevelt + Landon.
+  // Literary Digest : 1 293 669 voix Landon, 972 897 Roosevelt. Urnes : 16 681 862 Landon, 27 752 648 Roosevelt.
+  'digest-1936': {
+    unite: '%',
+    decimales: 1,
+    colonneLabel: 'Candidat et source',
+    colonneValeur: 'Part des voix Roosevelt + Landon',
+    items: [
+      { label: 'Landon, sondage', valeur: 57.1, groupe: 'digest' },
+      { label: 'Roosevelt, sondage', valeur: 42.9, groupe: 'digest' },
+      { label: 'Landon, urnes', valeur: 37.5, accent: true },
+      { label: 'Roosevelt, urnes', valeur: 62.5, accent: true },
+    ],
+  },
+  // Part de Roosevelt selon chaque source : tableau 1 du chapitre 19 de Freedman, Pisani et Purves
+  'sondages-1936': {
+    unite: '%',
+    colonneLabel: 'Source',
+    colonneValeur: 'Part de Roosevelt',
+    items: [
+      { label: 'Literary Digest, 2,4 millions', valeur: 43 },
+      { label: 'Gallup, prévision du Digest', valeur: 44 },
+      { label: 'Gallup, 50 000 personnes', valeur: 56 },
+      { label: 'Résultat des urnes', valeur: 62, accent: true },
+    ],
+  },
+  // Marge d'erreur à 95 % d'un sondage aléatoire, dans le pire cas p = 50 % : 1,96 × √(0,25 / n), en points
+  'marge-erreur': {
+    unite: 'pts',
+    decimales: 2,
+    decimalesAxe: 0,
+    colonneLabel: 'Nombre de réponses',
+    colonneValeur: 'Marge d\'erreur à 95 %',
+    points: [[100, '100'], [1000, '1 000'], [10000, '10 000'], [50000, '50 000'], [100000, '100 000'], [1e6, '1 million'], [2266566, '2,27 millions']]
+      .map(([n, x]) => ({ x, y: 196 * Math.sqrt(0.25 / n) })),
+  },
+  // Paramètres de l'exemple interactif : le vrai score de Roosevelt et celui que le filtre du Digest laisse voir
+  'sondage-1936': {
+    reel: 62.46,
+    biaise: 42.92,
+    tailles: [100, 1000, 10000, 2266566],
+    candidat: 'Roosevelt',
+    adversaire: 'Landon',
+    methodes: { hasard: 'Au hasard dans tout l\'électorat', biaise: 'Comme le Literary Digest' },
   },
 };
 
@@ -790,46 +891,402 @@ const LABO_FICHES = [
       { titre: 'Wikipédia, « Asymétrie (statistiques) »', url: 'https://fr.wikipedia.org/wiki/Asym%C3%A9trie_(statistiques)' },
     ],
   },
-  { id: 'cherry-picking', rubrique: 'mensonges', statut: 'a-venir', titre: 'Cherry picking : choisir la période qui arrange' },
-  { id: 'biais-echantillon', rubrique: 'mensonges', statut: 'a-venir', titre: 'Le sondage parfait… auprès des mauvaises personnes' },
-  { id: 'axe-zero', rubrique: 'mensonges', statut: 'a-venir', titre: 'L\'axe qui ne part pas de zéro' },
-
-  // ---------- Astuces Excel ----------
   {
-    id: 'excel-filtre',
-    rubrique: 'excel',
-    theme: 'modernes',
+    id: 'axe-zero',
+    rubrique: 'mensonges',
     statut: 'publiee',
-    date: '2026-10-18',
-    titre: 'FILTRE : la fin des filtres manuels',
-    accroche: 'Une formule, et la liste se met à jour toute seule dès que les données changent.',
+    date: '2026-10-19',
+    titre: 'L\'axe qui ne part pas de zéro',
+    accroche: 'Juillet 2012, à la télévision américaine : un impôt qui passe de 35 % à 39,6 % devient une colonne plus de cinq fois plus haute que l\'autre. Aucun chiffre n\'est faux. Il a suffi de couper le bas de l\'axe.',
     visuel: {
-      type: 'tableur',
-      donnees: 'commandes',
-      cellule: 'E2',
-      formule: '=FILTRE(A2:C9;B2:B9="Toulouse";"Aucune commande")',
-      formuleEn: '=FILTER(A2:C9,B2:B9="Toulouse","Aucune commande")',
-      filtre: { colonne: 'Ville', egal: 'Toulouse' },
-      alt: 'À gauche, un tableau de 8 commandes avec client, ville et montant. À droite, le résultat de la formule FILTRE : les 3 commandes de Toulouse, Amélie 120, David 60 et Farid 175.',
-      legende: 'Les en-têtes sont recopiés à la main en E1:G1 ; la formule, saisie en E2, remplit seule les lignes du dessous.',
+      type: 'paire',
+      donnees: 'impot-bush',
+      mauvais: {
+        type: 'colonnes',
+        axeMin: 34,
+        valeurs: 'toutes',
+        titre: 'Taux supérieur de l\'impôt fédéral, axe démarrant à 34 %',
+        alt: 'Deux colonnes sur un axe qui commence à 34 %. La colonne « En 2012 », 35 %, est minuscule ; la colonne « Au 1er janvier 2013 », 39,6 %, est 5,6 fois plus haute.',
+        legende: 'La version diffusée par Fox Business le 31 juillet 2012 : l\'axe commence à 34 %. L\'impôt semble exploser.',
+      },
+      corrige: {
+        type: 'colonnes',
+        valeurs: 'toutes',
+        titre: 'Taux supérieur de l\'impôt fédéral, axe partant de zéro',
+        alt: 'Les deux mêmes colonnes sur un axe qui part de 0 %. 35 % et 39,6 % ont des hauteurs proches : la seconde dépasse la première d\'un huitième environ.',
+        legende: 'Les mêmes chiffres sur un axe qui part de zéro : une hausse de 4,6 points, soit 13 %. Réelle, mais loin d\'une explosion.',
+      },
     },
     blocs: [
-      { type: 'probleme', titre: 'Le problème', texte: 'Vous voulez la liste des commandes d\'une ville. Avec un filtre automatique, il faut refaire la manipulation à chaque mise à jour, et le résultat ne peut pas alimenter un autre calcul.' },
-      { type: 'formule', titre: 'La formule', formule: '=FILTRE(tableau; condition; [si_vide])', texte: ['**tableau** : la plage à renvoyer, ici A2:C9.', '**condition** : un test sur une colonne de même hauteur, ici B2:B9="Toulouse".', '**si_vide** (facultatif) : ce qui s\'affiche si aucune ligne ne correspond.'] },
-      { type: 'exemple', titre: 'L\'exemple', texte: 'Saisie en E2, `=FILTRE(A2:C9;B2:B9="Toulouse";"Aucune commande")` renvoie les 3 commandes toulousaines. Les cellules voisines se remplissent seules : c\'est le **débordement**. Ajoutez une commande à Toulouse dans les données, elle apparaît aussitôt.' },
-      { type: 'erreur', titre: 'L\'erreur fréquente', texte: 'Oublier le troisième argument : sans résultat, la formule affiche `#CALC!`. Autre piège, une cellule déjà remplie dans la zone de débordement bloque la formule et provoque une erreur de propagation.' },
-      { type: 'astuce', titre: 'Pour aller plus loin', texte: ['Plusieurs critères à la fois (ET) : multipliez les conditions, `(B2:B9="Toulouse")*(C2:C9>100)`.', 'L\'un ou l\'autre (OU) : additionnez-les, `(B2:B9="Toulouse")+(B2:B9="Paris")`.', 'Résultat trié par montant décroissant : `=TRIER(FILTRE(A2:C9;B2:B9="Toulouse");3;-1)`.'] },
-      { type: 'retenir', titre: 'À retenir', texte: 'FILTRE existe dans Excel 365 et Excel 2021 ou plus récent. Les versions anglaises s\'écrivent FILTER, avec des virgules à la place des points-virgules.' },
+      {
+        type: 'exemple',
+        titre: 'Le graphique de Fox Business',
+        texte: 'Le 31 juillet 2012, l\'émission de Neil Cavuto sur Fox Business illustre la fin annoncée des baisses d\'impôt votées sous George W. Bush. Le taux marginal le plus élevé de l\'impôt fédéral sur le revenu doit passer de **35 %** à **39,6 %** au 1er janvier 2013. Les deux chiffres sont exacts. Mais l\'axe vertical commence à 34 % : la première colonne mesure 1 point de haut, la seconde 5,6. L\'image dit « l\'impôt est multiplié par cinq » ; les chiffres disent « + 13 % ».',
+      },
+      {
+        type: 'maths',
+        titre: 'Le facteur de mensonge',
+        texte: 'Une colonne code une valeur par sa **hauteur**. Si l\'axe part de a au lieu de zéro, chaque colonne perd a de sa hauteur, et le rapport entre deux colonnes n\'a plus rien à voir avec le rapport entre les valeurs.',
+        equations: [
+          { eq: 'hauteur = v − a', note: 'Avec a = 34 % : 35 − 34 = 1 pour 2012, 39,6 − 34 = 5,6 pour 2013. La seconde colonne est 5,6 fois plus haute.' },
+          { eq: 'effet montré = 5,6 / 1 − 1 = 460 %   ·   effet réel = 39,6 / 35 − 1 = 13,1 %', note: 'L\'œil voit une hausse de 460 % ; la hausse réelle est de 13,1 %.' },
+          { eq: 'facteur de mensonge = effet montré / effet réel = 460 / 13,1 ≈ 35', note: 'L\'indicateur proposé par Edward Tufte en 1983. Il vaut 1 pour un graphique fidèle ; Tufte juge la déformation importante dès qu\'il sort de l\'intervalle 0,95 à 1,05.' },
+          { eq: 'F(a) = ((v₁ − a) / (v₀ − a) − 1) / (v₁ / v₀ − 1)', note: 'Le facteur selon le point de départ a de l\'axe, pour deux valeurs v₀ < v₁. F(0) = 1 : l\'axe à zéro est le seul honnête. Quand a s\'approche de v₀, la première colonne disparaît et F part vers l\'infini.' },
+        ],
+        visuel: {
+          type: 'barres',
+          donnees: 'facteurs-mensonge',
+          titre: 'Facteur de mensonge de quelques graphiques',
+          alt: 'Barres horizontales. Fox Business 2012, en couleur : 35. Magasins avec un axe à 48 k€ : 25. New York Times 1978 : 14,8. Graphique honnête : 1.',
+          legende: 'Fox Business : calculé ci-dessus. Magasins : l\'exemple fictif de la fiche « Quel graphique pour quelle question ? ». New York Times : le calcul de Tufte, voir plus bas.',
+        },
+      },
+      {
+        type: 'interactif',
+        titre: 'Coupez l\'axe vous-même',
+        texte: 'Faites glisser le bas de l\'axe, de 0 % jusqu\'à 34,5 %. Les deux valeurs ne changent jamais : seule la ligne de départ bouge. Regardez le facteur de mensonge grimper, d\'abord doucement, puis très vite.',
+        visuel: {
+          type: 'interactif',
+          module: 'axe-tronque',
+          donnees: 'impot-bush',
+          depart: 0,
+          axeMax: 40,
+          reperes: [{ valeur: 0, libelle: 'Zéro : honnête' }, { valeur: 20, libelle: '20 %' }, { valeur: 30, libelle: '30 %' }, { valeur: 34, libelle: '34 % : Fox Business' }],
+          titre: 'Taux supérieur de l\'impôt fédéral',
+          alt: 'Exemple interactif : un curseur règle le point de départ de l\'axe vertical d\'un graphique à deux colonnes, 35 % et 39,6 %. Trois chiffres se mettent à jour : la hausse réelle, la hausse que l\'œil voit et le facteur de mensonge.',
+          legende: 'À 17,5 %, l\'axe commence à mi-hauteur du premier taux et le facteur vaut déjà 2. À 34 %, il vaut 35. À 34,5 %, la colonne de 2012 n\'est plus qu\'un trait et le facteur atteint 70.',
+          tableau: false,
+        },
+      },
+      {
+        type: 'donnees',
+        titre: 'Le record de Tufte : 14,8',
+        texte: 'Dans The Visual Display of Quantitative Information (1983), Edward Tufte invente le facteur de mensonge à partir d\'un dessin du New York Times de 1978. Les normes fédérales de consommation des voitures doivent passer de **18 miles par gallon** en 1978 à **27,5** en 1985 : + 53 %. Le journal les représente par une route en perspective, où le trait de 1985 est 783 % plus long que celui de 1978.',
+        equations: [
+          { eq: '783 % / 53 % ≈ 14,8', note: 'Le facteur de mensonge calculé par Tufte. Ici, ce n\'est pas un axe coupé mais une perspective : le même résultat par un autre chemin.' },
+        ],
+      },
+      {
+        type: 'definition',
+        titre: 'Barres : zéro obligatoire. Courbes : pas forcément.',
+        texte: [
+          'Une **barre** se lit par sa longueur. L\'œil compare des longueurs ; elles doivent donc partir du même zéro.',
+          'Une **courbe** ou un **nuage de points** se lisent par la position et la pente. L\'axe peut commencer ailleurs qu\'à zéro, à condition de l\'indiquer clairement. Un axe à zéro peut même écraser une variation qui compte : la fiche « Quel graphique pour quelle question ? » le montre avec le CO₂ de Mauna Loa.',
+          'Une température corporelle de 39 °C contre 37 °C ne se lit pas sur un axe qui part de 0 °C : ce qui compte, c\'est l\'écart à la normale. Montrez alors l\'écart lui-même, en barres qui partent de zéro.',
+        ],
+      },
+      {
+        type: 'erreur',
+        titre: 'Même prévenu, l\'œil se fait avoir',
+        texte: 'En 2015, Anshul Pandey et ses collègues de l\'université de New York montrent que des participants à qui l\'on présente un graphique à axe tronqué surestiment nettement l\'écart entre les valeurs. En 2020, Michael Correll, Enrico Bertini et Steven Franconeri vont plus loin : l\'effet persiste quel que soit le type de graphique, **même quand un symbole de coupure signale l\'axe tronqué**. Lire les graduations ne suffit pas à corriger la première impression.',
+      },
+      {
+        type: 'astuce',
+        titre: 'Le réflexe',
+        texte: [
+          'Devant des barres, lisez **la valeur du bas de l\'axe** avant de regarder les barres.',
+          'Recalculez le rapport : 39,6 / 35 = 1,13. Si les barres disent 5, quelqu\'un a coupé l\'axe.',
+          'Pour zoomer sur de petits écarts, remplacez les barres par des **points** : une position ne prétend pas mesurer une longueur.',
+          'Ou tracez **l\'écart lui-même** : une seule barre de + 4,6 points, qui part de zéro.',
+          'Distinguez les **points** des **pour cent** : de 35 % à 39,6 %, c\'est + 4,6 points, soit + 13,1 %.',
+        ],
+      },
+      {
+        type: 'limite',
+        titre: 'Les limites',
+        texte: [
+          'Le facteur de mensonge dépend de la façon de mesurer « l\'effet montré ». Sur le site de Tufte, Alexei Lebedev obtient 5,8 et non 14,8 pour le dessin du New York Times, en mesurant autrement la longueur des traits. L\'ordre de grandeur, lui, ne change pas.',
+          'Le calcul pour Fox Business suppose que les colonnes sont dessinées à l\'échelle de leur axe, ce que montrent les captures publiées par Media Matters et FlowingData.',
+          'Couper l\'axe n\'est pas toujours tricher : sur une courbe, c\'est souvent nécessaire. Correll et ses collègues recommandent de choisir l\'échelle selon la taille des écarts qui comptent vraiment, et de le dire.',
+        ],
+      },
+      { type: 'retenir', titre: 'À retenir', texte: 'Une barre est une longueur : elle part de zéro, toujours. Avant de croire un écart entre deux barres, regardez où commence l\'axe et refaites la division.' },
+    ],
+    sources: [
+      { titre: 'Media Matters, « A History Of Dishonest Fox Charts », 2012 (capture du graphique du 31 juillet 2012)', url: 'https://www.mediamatters.org/fox-friends/history-dishonest-fox-charts' },
+      { titre: 'Nathan Yau, « Fox News continues charting excellence », FlowingData, 6 août 2012', url: 'https://flowingdata.com/2012/08/06/fox-news-continues-charting-excellence/' },
+      { titre: 'Cole Nussbaumer Knaflic, « bar charts must have a zero baseline », Storytelling with Data, septembre 2012', url: 'https://www.storytellingwithdata.com/blog/2012/09/bar-charts-must-have-zero-baseline' },
+      { titre: 'Edward R. Tufte, The Visual Display of Quantitative Information, Graphics Press, 1983, p. 57 (facteur de mensonge, normes de consommation du New York Times)' },
+      { titre: 'Michael Friendly, « Lie factor », galerie de graphiques de datavis.ca', url: 'https://www.datavis.ca/gallery/lie-factor.php' },
+      { titre: 'Alexei Lebedev, « Computing Lie Factor by Dividing Percentages », forum d\'Edward Tufte', url: 'https://www.edwardtufte.com/notebook/computing-lie-factor-by-dividing-percentages/' },
+      { titre: 'Anshul Vikram Pandey, Katharina Rall, Margaret L. Satterthwaite, Oded Nov et Enrico Bertini, « How Deceptive are Deceptive Visualizations? An Empirical Analysis of Common Distortion Techniques », actes de CHI 2015' },
+      { titre: 'Michael Correll, Enrico Bertini et Steven Franconeri, « Truncating the Y-Axis: Threat or Menace? », actes de CHI 2020', url: 'https://www.tableau.com/research/publications/truncating-y-axis-threat-or-menace' },
+      { titre: 'Darrell Huff, How to Lie with Statistics, W. W. Norton, 1954, chapitre 5 « The Gee-Whiz Graph »' },
     ],
   },
-  { id: 'excel-recherchex', rubrique: 'excel', theme: 'recherche', statut: 'a-venir', titre: 'RECHERCHEX : oubliez RECHERCHEV' },
-  { id: 'excel-index-equiv', rubrique: 'excel', theme: 'recherche', statut: 'a-venir', titre: 'INDEX + EQUIV, le duo des versions anciennes' },
-  { id: 'excel-textavant', rubrique: 'excel', theme: 'texte', statut: 'a-venir', titre: 'Couper un texte en deux avec TEXTE.AVANT et TEXTE.APRES' },
-  { id: 'excel-joindre', rubrique: 'excel', theme: 'texte', statut: 'a-venir', titre: 'JOINDRE.TEXTE : fusionner une liste en une cellule' },
-  { id: 'excel-nb-jours-ouvres', rubrique: 'excel', theme: 'dates', statut: 'a-venir', titre: 'Compter les jours ouvrés entre deux dates' },
-  { id: 'excel-tcd-pourcentages', rubrique: 'excel', theme: 'tcd', statut: 'a-venir', titre: 'Afficher des pourcentages dans un tableau croisé dynamique' },
-  { id: 'excel-let', rubrique: 'excel', theme: 'modernes', statut: 'a-venir', titre: 'LET : nommer les étapes d\'une formule' },
-  { id: 'excel-lambda', rubrique: 'excel', theme: 'modernes', statut: 'a-venir', titre: 'LAMBDA : créer sa propre fonction' },
+  {
+    id: 'cherry-picking',
+    rubrique: 'mensonges',
+    statut: 'publiee',
+    date: '2026-10-19',
+    titre: 'Cherry picking : choisir la période qui arrange',
+    accroche: 'Entre 2016 et 2022, la température mondiale a baissé. Entre 1970 et 2025, elle a monté de 1,1 °C. Les deux phrases sont vraies ; la première est pourtant un mensonge. Tout est dans le choix des dates.',
+    visuel: {
+      type: 'paire',
+      donnees: 'gistemp',
+      mauvais: {
+        type: 'courbe',
+        plage: [46, 52],
+        axeMin: 0.8,
+        tendance: true,
+        titre: 'Température mondiale, 2016-2022',
+        alt: 'Courbe de 2016 à 2022 sur un axe de 0,8 à 1,1 °C. Elle part de 1,01 °C en 2016, descend à 0,85 en 2018, remonte à 1,01 en 2020 et finit à 0,89 en 2022. La droite de tendance descend.',
+        legende: 'Sept années bien choisies : la tendance est de − 0,11 °C par décennie. « La planète se refroidit. »',
+      },
+      corrige: {
+        type: 'courbe',
+        tendance: true,
+        fenetre: [46, 52],
+        titre: 'Température mondiale, 1970-2025',
+        alt: 'Courbe de 1970 à 2025. Elle monte en dents de scie de 0,03 °C à 1,18 °C, avec un record à 1,28 °C en 2024. La droite de tendance monte de 0,20 °C par décennie. La période 2016-2022 est grisée : c\'est une petite marche descendante juste après le pic de 2016.',
+        legende: 'La série complète : + 0,20 °C par décennie. La période grisée commence sur le pic d\'El Niño de 2016 et finit sur une année La Niña. Écart à la moyenne 1951-1980, NASA GISTEMP v4.',
+      },
+    },
+    blocs: [
+      {
+        type: 'definition',
+        titre: 'Cueillir les cerises',
+        texte: 'Le **cherry picking**, ou cueillette de cerises, consiste à ne montrer que les données qui vont dans le sens voulu : les bonnes années, les pays qui arrangent, les études favorables. Le choix des dates est le plus discret, parce que chaque point du graphique est exact. Ce qui ment, c\'est ce qu\'on a laissé hors du cadre.',
+      },
+      {
+        type: 'donnees',
+        titre: 'Les données : 56 ans de température mondiale',
+        texte: 'La NASA publie chaque mois l\'écart entre la température moyenne de la planète (terres et océans) et la moyenne de 1951 à 1980. Nous prenons la moyenne annuelle de 1970 à 2025, telle que publiée dans la version du 8 octobre 2026 de GISTEMP v4. D\'une année à l\'autre, la courbe fait des dents de scie : les années **El Niño** (1998, 2016, 2024) sont plus chaudes, les années **La Niña** plus fraîches. C\'est dans ces dents que se cachent les cerises.',
+      },
+      {
+        type: 'maths',
+        titre: 'Une tendance, et son incertitude',
+        texte: 'La tendance est la pente de la droite des moindres carrés : de combien la température monte, en moyenne, chaque année. Mais une pente calculée sur quelques années est très incertaine.',
+        equations: [
+          { eq: 'b = Σ (tᵢ − t̄)(yᵢ − ȳ) / Σ (tᵢ − t̄)²', note: 'tᵢ est l\'année, yᵢ la température. Sur 1970-2025 : b = 0,020 °C par an, soit + 0,20 °C par décennie et 1,1 °C en 55 ans.' },
+          { eq: 'σ(b) = σₑ / √( Σ (tᵢ − t̄)² )   avec   Σ (tᵢ − t̄)² = n (n² − 1) / 12', note: 'σₑ ≈ 0,1 °C est l\'écart typique des années autour de la droite : les dents de scie. Le dénominateur grandit comme n³ : pour n = 56 ans, il vaut 14 630 ; pour n = 7 ans, seulement 28.' },
+          { eq: 'σ(b) ≈ 0,009 °C par décennie sur 1970-2025  ·  0,14 sur 2016-2022', note: 'Une période huit fois plus courte donne une pente environ quinze fois plus incertaine. Sur 2016-2022, l\'intervalle de confiance à 95 % va de − 0,47 à + 0,24 °C par décennie : il contient la tendance de long terme. Ces sept années ne prouvent rien.' },
+        ],
+      },
+      {
+        type: 'interactif',
+        titre: 'Choisissez vos dates',
+        texte: 'Déplacez le début et la fin de la période, ou partez d\'un choix tout fait. La bande grisée et la droite en tirets montrent la tendance sur votre période ; la droite fine, celle des 56 ans. Essayez de trouver un « refroidissement » qui dure plus de dix ans.',
+        visuel: {
+          type: 'interactif',
+          module: 'fenetre-tendance',
+          donnees: 'gistemp',
+          debut: 2016,
+          fin: 2022,
+          presets: [
+            { libelle: 'Toute la série', debut: 1970, fin: 2025 },
+            { libelle: 'La « pause » 1998-2012', debut: 1998, fin: 2012 },
+            { libelle: 'Le « refroidissement » 2016-2022', debut: 2016, fin: 2022 },
+            { libelle: 'Le pire choix de 10 ans', pire: 10 },
+            { libelle: 'Les 15 dernières années', debut: 2011, fin: 2025 },
+          ],
+          titre: 'Température mondiale, écart à la moyenne 1951-1980',
+          alt: 'Exemple interactif : deux curseurs choisissent l\'année de début et de fin d\'une période sur la courbe de la température mondiale de 1970 à 2025. La tendance de la période, son intervalle de confiance et la tendance de la série complète se mettent à jour.',
+          legende: 'L\'intervalle de confiance suppose des années indépendantes autour de la droite. Les années voisines se ressemblent (El Niño dure plusieurs mois) : le vrai intervalle est un peu plus large.',
+          tableau: false,
+        },
+      },
+      {
+        type: 'maths',
+        titre: 'Combien de cerises dans l\'arbre ?',
+        texte: 'Prenons toutes les périodes possibles d\'une durée donnée entre 1970 et 2025, et comptons celles dont la tendance est négative.',
+        equations: [
+          { eq: '7 ans : 11 périodes sur 50   ·   10 ans : 1 sur 47   ·   11 ans et plus : 0', note: 'Sur sept ans, plus d\'une période sur cinq « refroidit » : le cueilleur n\'a que l\'embarras du choix. Sur dix ans, il ne reste que 1987-1996, à − 0,01 °C par décennie, grâce au creux qui suit l\'éruption du Pinatubo en 1991. Au-delà, aucune.' },
+        ],
+        visuel: {
+          type: 'colonnes',
+          donnees: 'gistemp-fenetres',
+          valeurs: 'toutes',
+          titre: 'Part des périodes où la température mondiale « baisse », selon leur durée, 1970-2025',
+          alt: 'Colonnes décroissantes. Périodes de 5 ans : 23 % ont une tendance négative ; 6 ans : 25 % ; 7 ans, en couleur : 22 % ; 8 ans : 12 % ; 9 ans : 4 % ; 10 ans : 2 % ; 11, 12, 15 et 20 ans : 0 %.',
+          legende: 'Calculé sur la série NASA GISTEMP v4, pour toutes les dates de début possibles. Plus la période est courte, plus il est facile d\'y trouver la tendance qu\'on cherche.',
+        },
+      },
+      {
+        type: 'exemple',
+        titre: 'La « pause » de 1998-2012',
+        texte: 'En 2013, le cinquième rapport du GIEC note que le réchauffement de 1998 à 2012, **0,05 °C par décennie** (de − 0,05 à + 0,15), est plus lent que celui de 1951 à 2012, 0,12 °C par décennie, et précise que la période **commence par un fort El Niño**. La formule fait le tour des débats : « le réchauffement s\'est arrêté en 1998 ». Depuis, les données ont été corrigées, notamment pour mieux couvrir l\'Arctique (Cowtan et Way, 2014) et les mesures en mer (Karl et al., 2015). Dans la version actuelle de GISTEMP, 1998-2012 donne + 0,13 °C par décennie. La « pause » tenait à une année de départ exceptionnelle, puis à des trous dans les mesures.',
+      },
+      {
+        type: 'erreur',
+        titre: 'Les cerises sont partout',
+        texte: [
+          '**La Bourse** : un fonds qui affiche sa performance « sur 3 ans » le jour où 3 ans le font partir d\'un creux.',
+          '**La délinquance, le chômage, les prix** : « en baisse depuis le mois dernier », quand la tendance sur cinq ans monte, ou l\'inverse.',
+          '**Les comparaisons de pays** : garder les cinq pays qui confirment la thèse, oublier les vingt autres.',
+          '**Les études** : citer celle qui va dans son sens parmi dix qui disent le contraire.',
+        ],
+      },
+      {
+        type: 'astuce',
+        titre: 'Le réflexe',
+        texte: [
+          'Demandez **la série complète**, et pourquoi elle commence et s\'arrête à ces dates.',
+          'Regardez si la première année est **un pic** ou **un creux** : 1998 et 2016 suivent deux des plus forts El Niño jamais mesurés.',
+          'Faites **bouger les bornes** de deux ou trois ans : une conclusion solide survit, une cerise s\'écroule.',
+          'Méfiez-vous des tendances calculées sur **moins de dix points** quand les données font des dents de scie.',
+          'Préférez des **moyennes sur plusieurs années** (5 ou 10 ans) aux comparaisons d\'une année à une autre.',
+        ],
+      },
+      {
+        type: 'limite',
+        titre: 'Les limites',
+        texte: [
+          'Une droite résume mal une courbe qui accélère : sur 2010-2025, la tendance atteint + 0,36 °C par décennie, presque le double de celle des 56 ans.',
+          'L\'intervalle de confiance suppose des écarts indépendants d\'une année à l\'autre. Ce n\'est pas tout à fait vrai : Foster et Rahmstorf (2011) retirent l\'effet d\'El Niño, des volcans et du Soleil pour mieux isoler la tendance.',
+          'Les chiffres changent légèrement d\'une version à l\'autre de GISTEMP, à mesure que des stations et des corrections sont ajoutées. Les nôtres sont ceux du 8 octobre 2026.',
+          'Choisir une période n\'est pas toujours tricher : étudier l\'effet d\'une loi demande de regarder avant et après. La faute est de choisir les dates **après** avoir vu les données, pour obtenir le résultat voulu.',
+        ],
+      },
+      { type: 'retenir', titre: 'À retenir', texte: 'Sur une courbe qui fait des dents de scie, on peut trouver presque n\'importe quelle tendance en choisissant bien ses dates. Demandez toujours la série entière, et vérifiez que la conclusion résiste quand on bouge les bornes.' },
+    ],
+    sources: [
+      { titre: 'NASA Goddard Institute for Space Studies, GISS Surface Temperature Analysis (GISTEMP v4), fichier GLB.Ts+dSST.csv, version du 8 octobre 2026', url: 'https://data.giss.nasa.gov/gistemp/' },
+      { titre: 'Nathan J. L. Lenssen et al., « Improvements in the GISTEMP Uncertainty Model », Journal of Geophysical Research: Atmospheres, vol. 124, n° 12, 2019, p. 6307-6326' },
+      { titre: 'GIEC, Climate Change 2013: The Physical Science Basis, résumé à l\'intention des décideurs, section B.1, et encadré 9.2', url: 'https://www.ipcc.ch/report/ar5/wg1/' },
+      { titre: 'Kevin Cowtan et Robert G. Way, « Coverage bias in the HadCRUT4 temperature series and its impact on recent temperature trends », Quarterly Journal of the Royal Meteorological Society, vol. 140, n° 683, 2014, p. 1935-1944' },
+      { titre: 'Thomas R. Karl et al., « Possible artifacts of data biases in the recent global surface warming hiatus », Science, vol. 348, n° 6242, 2015, p. 1469-1472', url: 'https://doi.org/10.1126/science.aaa5632' },
+      { titre: 'Grant Foster et Stefan Rahmstorf, « Global temperature evolution 1979–2010 », Environmental Research Letters, vol. 6, n° 4, 2011, 044022' },
+      { titre: 'Wikipédia, « Cueillette de cerises »', url: 'https://fr.wikipedia.org/wiki/Cueillette_de_cerises' },
+    ],
+  },
+  {
+    id: 'biais-echantillon',
+    rubrique: 'mensonges',
+    statut: 'publiee',
+    date: '2026-10-19',
+    titre: 'Le sondage parfait… auprès des mauvaises personnes',
+    accroche: '1936 : le Literary Digest recueille 2,4 millions de réponses et annonce la défaite de Roosevelt. Roosevelt gagne avec 61 % des voix. Gallup, avec 50 000 personnes, avait vu juste. Un gros échantillon mal choisi se trompe avec beaucoup d\'assurance.',
+    visuel: {
+      type: 'paire',
+      donnees: 'digest-1936',
+      mauvais: {
+        type: 'barres',
+        groupe: 'digest',
+        titre: 'Le sondage du Literary Digest, 1936',
+        alt: 'Deux barres horizontales : Landon 57,1 %, Roosevelt 42,9 %. Landon est largement en tête.',
+        legende: '2,4 millions de bulletins retournés, une marge d\'erreur de 0,06 point : Landon semble imbattable.',
+      },
+      corrige: {
+        type: 'barres',
+        titre: 'Le sondage et les urnes, 1936',
+        alt: 'Quatre barres horizontales. Sondage du Digest, en gris : Landon 57,1 %, Roosevelt 42,9 %. Urnes, en couleur : Landon 37,5 %, Roosevelt 62,5 %.',
+        legende: 'Les urnes inversent le résultat : 19,5 points d\'erreur sur la part de Roosevelt. Parts calculées sur les seules voix Roosevelt et Landon.',
+      },
+    },
+    blocs: [
+      {
+        type: 'probleme',
+        titre: 'Le plus gros sondage de l\'histoire',
+        texte: 'En 1936, le magazine américain **The Literary Digest** envoie 10 millions de bulletins à ses lecteurs et à des listes d\'abonnés au téléphone et de propriétaires de voitures. 2,38 millions reviennent remplis. Verdict : le républicain Alf Landon l\'emporte avec **57 %** des voix et 370 grands électeurs. Le jour de l\'élection, Franklin D. Roosevelt obtient **60,8 %** des voix, gagne 46 États sur 48 et 523 grands électeurs contre 8. Le Digest, qui avait prédit juste les élections précédentes, disparaît deux ans plus tard.',
+      },
+      {
+        type: 'definition',
+        titre: 'Le biais d\'échantillon',
+        texte: 'Un échantillon est **biaisé** quand il diffère de la population d\'une façon systématique, qui ne disparaît pas en interrogeant plus de monde. Deux filtres ont joué en 1936 :',
+        suite: [
+          '**La base de sondage** : en pleine crise, avoir le téléphone, une voiture ou un abonnement à un magazine signale un foyer plutôt aisé, plus favorable à Landon.',
+          '**La non-réponse** : sur 10 millions de bulletins, moins d\'un quart revient, et ceux qui prennent la peine de répondre votent plus souvent Landon que les autres. Peverill Squire (1988), puis Sharon Lohr et Michael Brick (2017), concluent que ce second filtre a pesé le plus : si tous les destinataires avaient répondu, le Digest aurait sans doute prédit la victoire de Roosevelt.',
+        ],
+      },
+      {
+        type: 'interactif',
+        titre: 'Faites vos sondages',
+        texte: 'Choisissez qui interroger et combien de personnes, puis lancez des sondages. **Au hasard**, chaque électeur a la même chance d\'être tiré : Roosevelt y pèse 62,5 %, son vrai score. **Comme le Literary Digest**, le tirage se fait parmi les électeurs que les deux filtres laissent passer : Roosevelt n\'y pèse que 42,9 %, le score mesuré par le magazine. Comparez 100 réponses au hasard et 2,27 millions de réponses biaisées.',
+        visuel: {
+          type: 'interactif',
+          module: 'sondage',
+          donnees: 'sondage-1936',
+          titre: 'Part de Roosevelt dans chaque sondage simulé',
+          alt: 'Exemple interactif : on choisit la méthode (au hasard ou comme le Literary Digest) et la taille de l\'échantillon, puis on lance des sondages. Chaque sondage devient un point sur un axe de 25 à 80 %, avec le vrai résultat, 62,5 %, et la majorité, 50 %.',
+          legende: 'Les tirages ont lieu dans votre navigateur. Au hasard, les points se resserrent autour du vrai résultat quand l\'échantillon grandit. Biaisés, ils se resserrent aussi… autour de la mauvaise valeur.',
+          tableau: false,
+        },
+      },
+      {
+        type: 'maths',
+        titre: 'La marge d\'erreur ne mesure que le hasard',
+        texte: 'La marge d\'erreur annoncée avec un sondage suppose un tirage au hasard. Elle mesure la malchance du tirage, pas les défauts de la méthode.',
+        equations: [
+          { eq: 'marge à 95 % = 1,96 × √( p (1 − p) / n )', note: 'p est la part mesurée, n le nombre de réponses. Pour 1 000 réponses et p proche de 50 % : ± 3,1 points.' },
+          { eq: 'n = 2 266 566   ⟶   marge ≈ ± 0,06 point', note: 'Les réponses du Digest qui départagent Roosevelt et Landon. La marge est minuscule. L\'erreur réelle, elle, est de 42,9 − 62,5 = − 19,5 points : plus de 300 fois la marge.' },
+          { eq: 'erreur quadratique moyenne = biais² + variance', note: 'La variance, le hasard du tirage, baisse comme 1/n. Le biais ne dépend pas de n. Multiplier les réponses rend le sondage plus sûr de lui, pas plus juste.' },
+        ],
+        visuel: {
+          type: 'courbe',
+          donnees: 'marge-erreur',
+          reference: { valeur: 19.5, libelle: 'Erreur réelle du Digest : 19,5 points' },
+          titre: 'Marge d\'erreur d\'un sondage aléatoire selon le nombre de réponses',
+          alt: 'Courbe qui plonge : 9,8 points pour 100 réponses, 3,1 pour 1 000, 0,98 pour 10 000, 0,44 pour 50 000, puis presque zéro. Une ligne horizontale à 19,5 points marque l\'erreur réelle du Literary Digest, très au-dessus.',
+          legende: 'Marge à 95 % dans le pire cas, p = 50 %. Avec 2,27 millions de réponses, la marge tombe à 0,07 point ; l\'erreur du Digest reste à 19,5 points. Les abscisses ne sont pas à l\'échelle.',
+        },
+      },
+      {
+        type: 'maths',
+        titre: '2,3 millions de réponses valaient 6 personnes',
+        texte: 'Le statisticien Xiao-Li Meng (2018) a écrit l\'erreur d\'un sondage comme le produit de trois termes : la qualité des données, leur quantité, et la difficulté de la question.',
+        equations: [
+          { eq: 'erreur = ρ × √( (N − n) / n ) × σ', note: 'N = 44 434 510 votants Roosevelt ou Landon, n = 2 266 566 réponses, σ = √(p (1 − p)) ≈ 0,48 la dispersion des votes. ρ mesure le lien entre « répondre » et « voter Roosevelt » : il vaut 0 pour un tirage au hasard.' },
+          { eq: 'ρ = − 0,195 / (4,31 × 0,48) ≈ − 0,09', note: 'Une corrélation minuscule, que personne ne remarquerait dans un tableau. Multipliée par √((N − n)/n) ≈ 4,3, elle produit 19,5 points d\'erreur.' },
+          { eq: 'n équivalent = p (1 − p) / erreur² = 0,234 / 0,195² ≈ 6', note: 'Un tirage au hasard de 6 électeurs aurait eu, en moyenne, la même erreur quadratique que les 2,27 millions de réponses du Digest. Meng parle du **paradoxe des big data** : plus la population est grande, plus un léger biais coûte cher.' },
+        ],
+      },
+      {
+        type: 'donnees',
+        titre: 'Gallup avait prévu le résultat… et l\'erreur du Digest',
+        texte: 'Le jeune institut de George Gallup interroge 50 000 personnes choisies pour ressembler à l\'électorat, et annonce Roosevelt gagnant. Plus fort : avant même la publication du Digest, Gallup tire 3 000 noms dans les mêmes listes que le magazine et prédit son résultat à 1 point près. Le biais était prévisible ; il tenait aux listes et aux réponses, pas au nombre.',
+        visuel: {
+          type: 'barres',
+          donnees: 'sondages-1936',
+          titre: 'Part de Roosevelt selon chaque source, 1936',
+          alt: 'Barres horizontales. Literary Digest, 2,4 millions de réponses : 43 %. Gallup, prévision du résultat du Digest : 44 %. Gallup, 50 000 personnes : 56 %. Résultat des urnes, en couleur : 62 %.',
+          legende: 'Chiffres arrondis de Freedman, Pisani et Purves. Gallup a vu le vainqueur, mais sous-estimé Roosevelt de 6 points : sa méthode des quotas avait aussi ses biais, qui le trahiront en 1948.',
+        },
+      },
+      {
+        type: 'erreur',
+        titre: 'Les Literary Digest d\'aujourd\'hui',
+        texte: [
+          '**Les votes en ligne** ouverts à tous : ne répondent que ceux qui passent par là et qui ont un avis.',
+          '**Les avis clients** : les très contents et les très mécontents écrivent, la majorité tranquille se tait.',
+          '**Le sondage dans son entourage** ou auprès de ses abonnés : ils vous ressemblent.',
+          '**Les sondages de 2016 aux États-Unis** : le bilan de l\'association américaine des sondeurs (AAPOR) relève que beaucoup de sondages par État ne corrigeaient pas la surreprésentation des diplômés, plus nombreux à répondre et moins favorables à Donald Trump.',
+        ],
+      },
+      {
+        type: 'astuce',
+        titre: 'Le réflexe',
+        texte: [
+          'Demandez **qui a pu répondre** : quelle liste, quel canal, quel horaire ?',
+          'Demandez **qui a voulu répondre** : quel taux de réponse ? Les absents pensent-ils comme les autres ?',
+          'Comparez l\'échantillon à la **population connue** (âge, sexe, diplôme, région, par exemple d\'après l\'Insee) et redressez-le si besoin.',
+          'Ne vous laissez pas impressionner par **la taille** : 1 000 personnes bien tirées valent mieux qu\'un million de volontaires.',
+        ],
+      },
+      {
+        type: 'limite',
+        titre: 'Les limites',
+        texte: [
+          'L\'exemple interactif simplifie : le mode « Literary Digest » tire au hasard dans un électorat où Roosevelt pèse 42,9 %, le score observé par le magazine. Il ne sépare pas les deux filtres, base de sondage et non-réponse.',
+          'Les parts sont calculées sur les seules voix Roosevelt et Landon. Sur l\'ensemble des suffrages, Roosevelt obtient 60,8 % : les autres candidats, dont William Lemke, en recueillent 2,7 %.',
+          'Le poids exact de chaque filtre reste discuté : Dominic Lusinchi (2012) conteste par exemple l\'idée que les listes du Digest étaient surtout des listes de riches.',
+          'Le calcul de Meng suppose que l\'erreur vient entièrement du biais. Il donne un ordre de grandeur, pas une valeur exacte.',
+        ],
+      },
+      { type: 'retenir', titre: 'À retenir', texte: 'Un échantillon se juge à la façon dont il a été choisi, pas à sa taille. La marge d\'erreur mesure le hasard, jamais le biais : un sondage énorme et biaisé se trompe avec une précision parfaite.' },
+    ],
+    sources: [
+      { titre: 'Peverill Squire, « Why the 1936 Literary Digest Poll Failed », Public Opinion Quarterly, vol. 52, n° 1, 1988, p. 125-133' },
+      { titre: 'Sharon L. Lohr et J. Michael Brick, « Roosevelt Predicted to Win: Revisiting the 1936 Literary Digest Poll », Statistics, Politics and Policy, vol. 8, n° 1, 2017', url: 'https://doi.org/10.1515/spp-2016-0006' },
+      { titre: 'Dominic Lusinchi, « "President" Landon and the 1936 Literary Digest Poll: Were Automobile and Telephone Owners to Blame? », Social Science History, vol. 36, n° 1, 2012, p. 23-54' },
+      { titre: 'David Freedman, Robert Pisani et Roger Purves, Statistics, 4e édition, W. W. Norton, 2007, chapitre 19 « Sample Surveys »' },
+      { titre: 'Xiao-Li Meng, « Statistical paradises and paradoxes in big data (I): Law of large populations, big data paradox, and the 2016 US presidential election », The Annals of Applied Statistics, vol. 12, n° 2, 2018, p. 685-726', url: 'https://doi.org/10.1214/18-AOAS1161SF' },
+      { titre: 'Courtney Kennedy et al., « An Evaluation of the 2016 Election Polls in the United States », Public Opinion Quarterly, vol. 82, n° 1, 2018, p. 1-33' },
+      { titre: 'Wikipédia (en anglais), « The Literary Digest » : prévision du sondage de 1936 et prévision de Gallup', url: 'https://en.wikipedia.org/wiki/The_Literary_Digest' },
+      { titre: 'Wikipédia (en anglais), « 1936 United States presidential election » : résultats officiels', url: 'https://en.wikipedia.org/wiki/1936_United_States_presidential_election' },
+      { titre: 'Wikipédia, « Biais d\'échantillonnage »', url: 'https://fr.wikipedia.org/wiki/Biais_d%27%C3%A9chantillonnage' },
+    ],
+  },
 
   // ---------- Quel graphique ? ----------
   {
@@ -984,7 +1441,7 @@ const LABO_FICHES = [
         titre: 'Distribution : la boîte à moustaches, mode d\'emploi',
         texte: 'John Tukey a popularisé la boîte à moustaches en 1977 pour résumer une distribution en cinq nombres. Appliquée aux 20 salaires de la fiche « Le salaire moyen vous ment », elle désigne d\'elle-même les deux salaires de direction.',
         equations: [
-          { eq: 'Q1 = 2 075 €   ·   Me = 2 325 €   ·   Q3 = 2 750 €', note: 'Les quartiles coupent les valeurs rangées en quatre groupes égaux. Méthode de Tukey : Q1 est la médiane de la moitié basse (les 10 plus petits salaires), Q3 celle de la moitié haute. Excel (`QUARTILE.INCLURE`) interpole autrement et donne 2 087,5 € et 2 725 € : les méthodes diffèrent un peu, jamais beaucoup.' },
+          { eq: 'Q1 = 2 075 €   ·   Me = 2 325 €   ·   Q3 = 2 750 €', note: 'Les quartiles coupent les valeurs rangées en quatre groupes égaux. Méthode de Tukey : Q1 est la médiane de la moitié basse (les 10 plus petits salaires), Q3 celle de la moitié haute. D\'autres méthodes interpolent autrement et donnent 2 087,5 € et 2 725 € : les méthodes diffèrent un peu, jamais beaucoup.' },
           { eq: 'EI = Q3 − Q1 = 675 €', note: 'L\'écart interquartile, la largeur de la boîte : la moitié centrale des salariés tient dans 675 €.' },
           { eq: 'Q3 + 1,5 × EI = 3 762,5 €', note: 'Au-delà de cette limite, une valeur est dite atypique et dessinée à part : ici 9 500 € et 14 000 €. Pourquoi 1,5 ? Pour une loi normale, la limite tombe à 2,7 écarts-types de la moyenne, et seules 0,7 % des valeurs la dépassent.' },
           { eq: 'h = 2 × EI × n^(−1/3) = 2 × 675 × 20^(−1/3) ≈ 497 €', note: 'Pour un histogramme, la règle de Freedman et Diaconis donne la largeur des classes : environ 500 €, le pas du graphique en points de la fiche sur les salaires. La règle de Sturges, k = 1 + log₂ n, soit 5 à 6 classes, suppose des données symétriques : ici, elle mettrait 18 salariés sur 20 dans la première classe.' },
@@ -1225,15 +1682,6 @@ const LABO_FICHES = [
       },
       { type: 'astuce', titre: 'Les trois questions à se poser', texte: ['Une troisième variable peut-elle expliquer les deux ?', 'Le lien peut-il aller dans l\'autre sens ?', 'Est-ce une coïncidence, sur une période trop courte ou parmi trop de séries comparées ?'] },
       {
-        type: 'astuce',
-        titre: 'Dans Excel',
-        texte: [
-          '`=COEFFICIENT.CORRELATION(B2:B13;C2:C13)` donne r entre les glaces (colonne B) et les coups de soleil (colonne C).',
-          '`=PENTE(C2:C13;B2:B13)` et `=ORDONNEE.ORIGINE(C2:C13;B2:B13)` donnent la droite de régression, `=COEFFICIENT.DETERMINATION(C2:C13;B2:B13)` le R².',
-          'La corrélation partielle en trois colonnes, avec la température en A : `=B2-PREVISION.LINEAIRE(A2;B$2:B$13;A$2:A$13)` pour les résidus des glaces, la même formule sur C pour les coups de soleil, puis `COEFFICIENT.CORRELATION` des deux colonnes de résidus.',
-        ],
-      },
-      {
         type: 'limite',
         titre: 'Les limites',
         texte: [
@@ -1263,7 +1711,100 @@ const LABO_FICHES = [
       { titre: 'Wikipédia, « Facteur de confusion »', url: 'https://fr.wikipedia.org/wiki/Facteur_de_confusion' },
     ],
   },
-  { id: 'biais-selection', rubrique: 'notions', statut: 'a-venir', titre: 'Le biais du survivant : les avions qui reviennent' },
+  {
+    id: 'biais-selection',
+    rubrique: 'notions',
+    statut: 'publiee',
+    date: '2026-10-19',
+    titre: 'Le biais du survivant : les avions qui reviennent',
+    accroche: 'Les bombardiers rentrent criblés de balles sur les ailes. Réflexe : blinder les ailes. Mauvaise idée. Les trous qu\'on voit sont ceux qu\'un avion encaisse sans tomber. Il faut blinder là où il n\'y en a pas.',
+    visuel: {
+      type: 'image',
+      schema: 'biais-selection-avion',
+      src: 'images/biais-selection-avion.svg',
+      largeur: 1200,
+      hauteur: 894,
+      alt: 'Silhouette d\'un bimoteur vu de dessus, criblé de points rouges. Les impacts couvrent les ailes, le fuselage et l\'empennage. Les deux moteurs et le cockpit sont intacts.',
+      legende: 'Le schéma devenu le symbole du biais du survivant : les impacts relevés sur les avions revenus de mission. Les moteurs et le cockpit sont vides.',
+      credit: 'Martin Grandjean, McGeddon, Cameron Moll, Wikimedia Commons, CC BY-SA 4.0',
+      creditUrl: 'https://commons.wikimedia.org/wiki/File:Survivorship-bias.svg',
+    },
+    blocs: [
+      {
+        type: 'probleme',
+        titre: '1943 : où mettre le blindage ?',
+        texte: 'Pendant la Seconde Guerre mondiale, les bombardiers alliés tombent en masse. Le blindage protège, mais il pèse : un avion trop lourd consomme plus, vole moins loin et manœuvre mal. Il faut donc blinder **peu, et au bon endroit**. Les militaires relèvent les impacts sur les avions qui rentrent de mission : les ailes, le fuselage et la queue sont criblés, les moteurs presque intacts. Leur conclusion semble évidente : renforcer les zones les plus touchées.',
+      },
+      {
+        type: 'definition',
+        titre: 'Le biais du survivant',
+        texte: 'Le statisticien **Abraham Wald**, du Statistical Research Group de l\'université Columbia, retourne la question : où sont les impacts **manquants** ? Les balles ne choisissent pas leur cible, elles devraient tomber à peu près partout. Si les avions revenus n\'ont presque pas de trous aux moteurs, c\'est que les avions touchés aux moteurs ne sont pas revenus. On parle de **biais du survivant** quand on tire des conclusions d\'un échantillon qui a passé un filtre, sans voir ceux que le filtre a éliminés.',
+      },
+      {
+        type: 'donnees',
+        titre: 'Les chiffres de l\'histoire',
+        texte: 'Le mathématicien Jordan Ellenberg raconte l\'épisode avec ce tableau : le nombre d\'impacts par pied carré (environ 9 dm²) sur les avions revenus. Les moteurs sont nettement moins touchés que le reste. Rien ne les protège pourtant davantage : les avions touchés aux moteurs manquent à l\'appel, ils ne sont jamais rentrés.',
+        visuel: {
+          type: 'barres',
+          donnees: 'wald-densite',
+          titre: 'Impacts par pied carré sur les avions revenus',
+          alt: 'Barres horizontales. Reste de l\'avion : 1,80 impact par pied carré. Fuselage : 1,73. Circuit de carburant : 1,55. Moteurs, en couleur : 1,11.',
+          legende: 'À surface égale, les moteurs des survivants ont 38 % d\'impacts de moins que le reste de l\'avion : la marque des impacts manquants.',
+        },
+      },
+      {
+        type: 'maths',
+        titre: 'Les impacts manquants, en équations',
+        texte: 'Appelons z une zone de l\'avion. Ce qu\'on observe, c\'est la répartition des impacts **sur les avions revenus**. Ce qu\'on cherche, c\'est la chance de rentrer après un impact en z. La formule de Bayes relie les deux.',
+        equations: [
+          { eq: 'P(z | revenu) = P(revenu | z) × P(z) / P(revenu)', note: 'À gauche, la part des impacts de la zone z parmi ceux relevés sur les avions revenus. À droite, P(z) est la part de la zone dans tous les impacts, revenus ou non, et P(revenu | z) la chance de rentrer après un impact en z : c\'est elle qui compte pour décider du blindage.' },
+          { eq: 'P(z | revenu) / P(z) = P(revenu | z) / P(revenu)', note: 'Si les balles tombent au hasard, P(z) est proportionnelle à la surface de la zone. Le membre de gauche devient alors la densité d\'impacts observée (par pied carré), à une constante près : une zone sous-représentée sur les survivants est une zone où un impact fait tomber l\'avion.' },
+          { eq: 'P(revenu | moteur) / P(revenu | reste) = 1,11 / 1,8 ≈ 0,62', note: 'Avec les chiffres cités par Ellenberg : sous cette hypothèse, un avion touché au moteur rentre environ 40 % moins souvent qu\'un avion touché ailleurs. Les militaires voulaient blinder là où la densité est la plus forte ; le calcul dit l\'inverse.' },
+        ],
+      },
+      {
+        type: 'erreur',
+        titre: 'Les avions sont partout',
+        texte: [
+          '**« Il a arrêté ses études et il est milliardaire. »** On entend parler des fondateurs qui ont réussi, jamais des milliers qui ont échoué avec le même parcours.',
+          '**« Les vieux bâtiments étaient mieux construits. »** Les mal construits se sont effondrés ou ont été rasés : seuls les solides sont encore là.',
+          '**« La musique était meilleure avant. »** Le temps a fait le tri : on n\'écoute plus que les chansons qui ont tenu cinquante ans.',
+          '**Les fonds d\'investissement.** Les fonds qui perdent ferment et disparaissent des bases de données : la performance moyenne des fonds « existants » est gonflée.',
+          '**Les chats parachutistes.** Une étude de 1987 trouve que les chats tombés de plus de sept étages sont moins blessés que ceux tombés de moins haut. Une explication souvent avancée : un chat tué sur le coup n\'est pas amené chez le vétérinaire, et n\'entre donc pas dans l\'étude.',
+        ],
+      },
+      {
+        type: 'astuce',
+        titre: 'Le réflexe Wald',
+        texte: [
+          'Avant de regarder les données, demandez-vous **quel filtre** les a produites : qui a eu une chance d\'être compté, qui n\'en a pas eu ?',
+          'Cherchez les **absents** : les clients partis, les patients sortis de l\'étude, les entreprises fermées, les candidats refusés.',
+          'Comparez avec la **population de départ** quand elle est connue : ici, la surface de chaque zone dit combien d\'impacts on aurait dû voir.',
+          'Méfiez-vous des conseils tirés **uniquement des gagnants** : les perdants suivaient souvent les mêmes.',
+        ],
+      },
+      {
+        type: 'limite',
+        titre: 'Une histoire un peu enjolivée',
+        texte: [
+          'Les rapports de Wald (1943) sont des mémos techniques : ils proposent une **méthode** pour estimer la vulnérabilité de chaque zone à partir des seuls survivants, sans l\'anecdote des militaires têtus. Le récit a été popularisé bien plus tard.',
+          'Le célèbre schéma aux points rouges est une **illustration** réalisée pour Wikipédia, pas un relevé d\'époque : ses points montrent l\'idée, pas des impacts réels.',
+          'Les chiffres par pied carré sont ceux que rapporte Jordan Ellenberg. Nous ne les avons pas retrouvés tels quels dans les mémos de Wald.',
+          'Le calcul suppose que les impacts tombent au hasard, en proportion de la surface de chaque zone. C\'est une approximation : rien ne garantit que les tirs se répartissaient ainsi.',
+        ],
+      },
+      { type: 'retenir', titre: 'À retenir', texte: 'Les données ne montrent que ce qui a survécu au filtre. Avant de conclure, demandez-vous qui manque à l\'appel : la réponse est souvent là où il n\'y a rien à voir.' },
+    ],
+    sources: [
+      { titre: 'Abraham Wald, A Method of Estimating Plane Vulnerability Based on Damage of Survivors, Statistical Research Group, Columbia University, 1943 ; réédité par le Center for Naval Analyses, CRC 432, 1980' },
+      { titre: 'Marc Mangel et Francisco J. Samaniego, « Abraham Wald\'s Work on Aircraft Survivability », Journal of the American Statistical Association, vol. 79, n° 386, 1984, p. 259-267' },
+      { titre: 'Jordan Ellenberg, How Not to Be Wrong: The Power of Mathematical Thinking, Penguin Press, 2014, chapitre 1' },
+      { titre: 'Edwin J. Elton, Martin J. Gruber et Christopher R. Blake, « Survivor Bias and Mutual Fund Performance », The Review of Financial Studies, vol. 9, n° 4, 1996, p. 1097-1120' },
+      { titre: 'Wayne O. Whitney et Cheryl J. Mehlhaff, « High-rise syndrome in cats », Journal of the American Veterinary Medical Association, vol. 191, n° 11, 1987, p. 1399-1403' },
+      { titre: 'Wikimedia Commons, « Survivorship-bias.svg » (Martin Grandjean, McGeddon, Cameron Moll, CC BY-SA 4.0)', url: 'https://commons.wikimedia.org/wiki/File:Survivorship-bias.svg' },
+      { titre: 'Wikipédia, « Biais du survivant »', url: 'https://fr.wikipedia.org/wiki/Biais_du_survivant' },
+    ],
+  },
   { id: 'mediane-moyenne', rubrique: 'notions', statut: 'a-venir', titre: 'Médiane, moyenne, mode : trois façons de dire « typique »' },
   { id: 'loi-grands-nombres', rubrique: 'notions', statut: 'a-venir', titre: 'La loi des grands nombres, avec une pièce de monnaie' },
 ];
