@@ -1,18 +1,20 @@
-// Carte mentale (D3.js) : nœuds regroupés par catégorie, sans liens.
+// Carte mentale (D3.js) : un nœud central, une branche par catégorie, une feuille par savoir.
 // Toute l'apparence vient du CSS (.graph__*) : ce fichier ne pose que des classes et des positions.
 
-const NODE_SIZE = 12;
-const ZONE_PADDING = 16;     // marge intérieure d'une zone de catégorie
-const ZONE_LABEL_SPACE = 20; // hauteur réservée à l'intitulé, posé au-dessus de la zone
-const ZONE_GAP = 24;         // écart minimal entre deux zones
-const NODE_GAP = 8;          // écart minimal entre deux titres d'une même zone
-const FIT_MARGIN = 24;       // marge entre les zones et le bord du cadre au cadrage initial
-const LAYOUT_TICKS = 300;    // itérations calculées avant le premier affichage
+const LEAF_RADIUS = 6;        // rayon du point d'un savoir
+const LABEL_OFFSET = 8;       // écart entre le point et son titre
+const PILL_PAD_X = 12;        // marge horizontale d'une pastille de catégorie
+const PILL_HEIGHT = 28;
+const BRANCH_RADIUS = 150;    // distance du centre aux catégories, au placement initial
+const LEAF_RADIUS_RING = 230; // distance du centre aux savoirs, au placement initial
+const BOX_GAP = 6;            // écart minimal entre deux emprises
+const FIT_MARGIN = 24;        // marge entre la carte et le bord du cadre au cadrage initial
+const LAYOUT_TICKS = 300;     // itérations calculées avant le premier affichage
 let simulation;
 
 // Écarte deux à deux les emprises qui se chevauchent (écart compris), sur l'axe le moins coûteux.
-// groupOf donne les nœuds déplacés d'un bloc. Renvoie le nombre de chevauchements traités.
-function separateBoxes(items, boxOf, groupOf, gap, strength) {
+// Les nœuds fixés (fx) ne bougent pas. Renvoie le nombre de chevauchements traités.
+function separateBoxes(items, boxOf, gap, strength) {
     const boxes = items.map(boxOf);
     let overlaps = 0;
     for (let i = 0; i < items.length; i++) {
@@ -28,11 +30,19 @@ function separateBoxes(items, boxOf, groupOf, gap, strength) {
                 ? Math.sign((a.x0 + a.x1) - (b.x0 + b.x1)) || 1
                 : Math.sign((a.y0 + a.y1) - (b.y0 + b.y1)) || 1;
             const push = (horizontal ? overlapX : overlapY) / 2 * strength * sign;
-            groupOf(items[i]).forEach(n => { n[axis] += push; });
-            groupOf(items[j]).forEach(n => { n[axis] -= push; });
+            const fixedI = items[i].fx != null, fixedJ = items[j].fx != null;
+            if (!fixedI) items[i][axis] += fixedJ ? 2 * push : push;
+            if (!fixedJ) items[j][axis] -= fixedI ? 2 * push : push;
         }
     }
     return overlaps;
+}
+
+// Branche courbe d'un parent vers un enfant : départ et arrivée à l'horizontale
+function branchPath(l) {
+    const s = l.source, t = l.target;
+    const mx = (s.x + t.x) / 2;
+    return `M${s.x},${s.y} C${mx},${s.y} ${mx},${t.y} ${t.x},${t.y}`;
 }
 
 function renderGraph() {
@@ -40,50 +50,65 @@ function renderGraph() {
     if (!container || typeof d3 === 'undefined') return;
     const width = container.clientWidth;
     const height = container.clientHeight;
+    const cx = width / 2, cy = height / 2;
     container.innerHTML = '';
     if (simulation) simulation.stop();
 
-    const nodes = data.infos.map((info, idx) => ({ ...info, id: `info-${idx}`, label: info.title }));
+    // Regroupement par catégorie
+    const infosByCategory = d3.group(data.infos, i => i.category);
+    const categories = Array.from(infosByCategory.keys())
+        .sort((a, b) => infosByCategory.get(b).length - infosByCategory.get(a).length);
 
-    // Regroupement par catégorie, pour les zones et l'attraction
-    const nodesByCategory = {};
-    nodes.forEach(node => {
-        (nodesByCategory[node.category] = nodesByCategory[node.category] || []).push(node);
-    });
+    const nodes = [];
+    const links = [];
 
-    // Un centre par catégorie, réparti sur un cercle ; chaque nœud part de son centre
-    const categories = Object.keys(nodesByCategory);
-    const catCenters = {};
-    categories.forEach((cat, i) => {
-        const angle = (i / categories.length) * 2 * Math.PI;
-        catCenters[cat] = {
-            x: width / 2 + Math.cos(angle) * (width / 3.5),
-            y: height / 2 + Math.sin(angle) * (height / 3.5)
+    // Chaque catégorie reçoit un secteur proportionnel à son nombre de savoirs, ses feuilles s'y répartissent
+    const total = data.infos.length;
+    let angle = -Math.PI / 2;
+    categories.forEach((cat, ci) => {
+        const infos = infosByCategory.get(cat);
+        const sector = (infos.length / total) * 2 * Math.PI;
+        const mid = angle + sector / 2;
+        const branch = {
+            id: `cat-${ci}`, kind: 'branch', label: cat, angle: mid,
+            x: cx + Math.cos(mid) * BRANCH_RADIUS,
+            y: cy + Math.sin(mid) * BRANCH_RADIUS
         };
-    });
-    nodes.forEach((n, i) => {
-        n.x = catCenters[n.category].x + Math.cos(i) * NODE_SIZE;
-        n.y = catCenters[n.category].y + Math.sin(i) * NODE_SIZE;
+        nodes.push(branch);
+        infos.forEach((info, k) => {
+            const a = angle + sector * (k + 0.5) / infos.length;
+            const leaf = {
+                ...info, id: `info-${ci}-${k}`, kind: 'leaf', label: info.title, parent: branch,
+                x: cx + Math.cos(a) * LEAF_RADIUS_RING,
+                y: cy + Math.sin(a) * LEAF_RADIUS_RING
+            };
+            nodes.push(leaf);
+            links.push({ source: branch, target: leaf });
+        });
+        angle += sector;
     });
 
-    const zoom = d3.zoom().on('zoom', event => g.attr('transform', event.transform));
-    const svg = d3.select('#mindmap')
-        .append('svg')
-        .call(zoom);
+    // Titre d'une feuille du côté opposé à sa catégorie : la branche arrive toujours sur le point
+    const isLeft = n => n.x < n.parent.x;
 
+    const zoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', event => g.attr('transform', event.transform));
+    const svg = d3.select('#mindmap').append('svg').call(zoom);
     const g = svg.append('g');
-    const hullLayer = g.append('g');
+    const linkLayer = g.append('g');
     const nodeLayer = g.append('g');
-    const labelLayer = g.append('g');
 
-    const node = nodeLayer.selectAll('g')
-        .data(nodes)
+    const link = linkLayer.selectAll('path')
+        .data(links)
+        .enter().append('path')
+        .attr('class', 'graph__link');
+
+    const leaves = nodes.filter(n => n.kind === 'leaf');
+    const hubs = nodes.filter(n => n.kind === 'branch');
+
+    const leaf = nodeLayer.selectAll('g.graph__node')
+        .data(leaves)
         .enter().append('g')
         .attr('class', d => `graph__node swatch--${seriesOf(d.source)}`)
-        .call(d3.drag()
-            .on('start', dragstarted)
-            .on('drag', dragged)
-            .on('end', dragended))
         .on('mouseover', showTooltip)
         .on('mousemove', showTooltip)
         .on('mouseout', hideTooltip)
@@ -93,102 +118,67 @@ function renderGraph() {
             showNodeDetail(d);
         });
 
-    node.append('rect')
-        .attr('x', -NODE_SIZE / 2)
-        .attr('y', -NODE_SIZE / 2)
-        .attr('width', NODE_SIZE)
-        .attr('height', NODE_SIZE);
-
-    node.append('text')
-        .attr('dx', NODE_SIZE)
+    leaf.append('circle').attr('r', LEAF_RADIUS);
+    const leafLabel = leaf.append('text')
         .attr('dy', '.35em')
         .text(d => d.label);
 
-    // Largeur réelle du titre, pour que la zone englobe le texte et pas seulement le carré
-    node.each(function (d) { d.labelWidth = this.querySelector('text').getComputedTextLength(); });
+    const hub = nodeLayer.selectAll('g.graph__hub')
+        .data(hubs)
+        .enter().append('g')
+        .attr('class', 'graph__hub');
+    const pill = hub.append('rect');
+    hub.append('text').attr('dy', '.35em').text(d => d.label);
 
-    const hulls = hullLayer.selectAll('rect')
-        .data(categories)
-        .enter().append('rect')
-        .attr('class', 'graph__hull');
+    // Dimensions réelles des titres, pour les emprises et les pastilles
+    leaf.each(function (d) { d.labelWidth = this.querySelector('text').getComputedTextLength(); });
+    hub.each(function (d) {
+        d.w = this.querySelector('text').getComputedTextLength() + 2 * PILL_PAD_X;
+        d.h = PILL_HEIGHT;
+    });
+    pill
+        .attr('x', d => -d.w / 2).attr('y', d => -d.h / 2)
+        .attr('width', d => d.w).attr('height', d => d.h);
 
-    const hullLabels = labelLayer.selectAll('text')
-        .data(categories)
-        .enter().append('text')
-        .attr('class', 'graph__hull-label')
-        .text(d => d);
-
-    // Largeur minimale d'une zone : celle de son intitulé
-    const catLabelWidth = {};
-    hullLabels.each(function (d) { catLabelWidth[d] = this.getComputedTextLength(); });
-
-    // Emprise d'un nœud : son carré et son titre
-    function nodeBox(n) {
-        return {
-            x0: n.x - NODE_SIZE / 2,
-            x1: n.x + NODE_SIZE + n.labelWidth,
-            y0: n.y - NODE_SIZE,
-            y1: n.y + NODE_SIZE
-        };
+    // Emprise d'un nœud : pastille, ou point et titre
+    function boxOf(n) {
+        if (n.kind !== 'leaf') return { x0: n.x - n.w / 2, x1: n.x + n.w / 2, y0: n.y - n.h / 2, y1: n.y + n.h / 2 };
+        const reach = LEAF_RADIUS + LABEL_OFFSET + n.labelWidth;
+        return isLeft(n)
+            ? { x0: n.x - reach, x1: n.x + LEAF_RADIUS, y0: n.y - 10, y1: n.y + 10 }
+            : { x0: n.x - LEAF_RADIUS, x1: n.x + reach, y0: n.y - 10, y1: n.y + 10 };
     }
 
-    // Zone d'une catégorie : rectangle englobant ses nœuds et leurs titres, avec une marge,
-    // au moins aussi large que son intitulé
-    function categoryBox(cat) {
-        const members = nodesByCategory[cat];
-        const x0 = d3.min(members, n => n.x - NODE_SIZE / 2) - ZONE_PADDING;
-        const x1 = Math.max(
-            d3.max(members, n => n.x + NODE_SIZE + n.labelWidth) + ZONE_PADDING,
-            x0 + catLabelWidth[cat]
-        );
-        const y0 = d3.min(members, n => n.y - NODE_SIZE / 2) - ZONE_PADDING;
-        const y1 = d3.max(members, n => n.y + NODE_SIZE / 2) + ZONE_PADDING;
-        return { x0, x1, y0, y1 };
-    }
-
-    // Emprise totale : la zone et son intitulé au-dessus, pour l'écartement et le cadrage
-    function categoryExtent(cat) {
-        const box = categoryBox(cat);
-        return { ...box, y0: box.y0 - ZONE_LABEL_SPACE };
-    }
-
-    const separateNodes = strength => separateBoxes(nodes, nodeBox, n => [n], NODE_GAP, strength);
-    const separateZones = strength => separateBoxes(categories, categoryExtent, cat => nodesByCategory[cat], ZONE_GAP, strength);
+    const separate = strength => separateBoxes(nodes, boxOf, BOX_GAP, strength);
 
     simulation = d3.forceSimulation(nodes)
-        .force('charge', d3.forceManyBody().strength(-40))
-        .force('x', d3.forceX(d => catCenters[d.category].x).strength(0.1))
-        .force('y', d3.forceY(d => catCenters[d.category].y).strength(0.1))
-        .force('nodes', () => separateNodes(0.5))
-        .force('zones', () => separateZones(0.5))
+        .force('link', d3.forceLink(links).distance(70).strength(0.6))
+        .force('charge', d3.forceManyBody().strength(d => d.kind === 'leaf' ? -80 : -400).distanceMax(300))
+        // Les catégories restent groupées autour du milieu du cadre, leurs savoirs autour d'elles
+        .force('x', d3.forceX(cx).strength(d => d.kind === 'branch' ? 0.08 : 0))
+        .force('y', d3.forceY(cy).strength(d => d.kind === 'branch' ? 0.08 : 0))
+        .force('boxes', () => separate(0.5))
         .stop();
 
     // Placement calculé avant l'affichage, puis passes de séparation jusqu'à ce que plus rien ne se chevauche
     simulation.tick(LAYOUT_TICKS);
     for (let pass = 0; pass < 200; pass++) {
-        if (separateNodes(1) + separateZones(1) === 0) break;
+        if (separate(1) === 0) break;
     }
     nodes.forEach(n => { n.vx = 0; n.vy = 0; });
 
     function draw() {
-        node.attr('transform', d => `translate(${d.x},${d.y})`);
-
-        const boxes = Object.fromEntries(categories.map(cat => [cat, categoryBox(cat)]));
-        hulls
-            .attr('x', d => boxes[d].x0)
-            .attr('y', d => boxes[d].y0)
-            .attr('width', d => boxes[d].x1 - boxes[d].x0)
-            .attr('height', d => boxes[d].y1 - boxes[d].y0);
-
-        // Intitulé en drapeau, juste au-dessus de l'angle haut gauche de la zone
-        hullLabels
-            .attr('x', d => boxes[d].x0)
-            .attr('y', d => boxes[d].y0 - ZONE_LABEL_SPACE);
+        link.attr('d', branchPath);
+        leaf.attr('transform', d => `translate(${d.x},${d.y})`);
+        leafLabel
+            .attr('dx', d => isLeft(d) ? -(LEAF_RADIUS + LABEL_OFFSET) : LEAF_RADIUS + LABEL_OFFSET)
+            .attr('text-anchor', d => isLeft(d) ? 'end' : 'start');
+        hub.attr('transform', d => `translate(${d.x},${d.y})`);
     }
 
-    // Cadrage initial : toutes les zones et leurs intitulés visibles, sans agrandir au-delà de l'échelle 1
+    // Cadrage initial : toute la carte visible, sans agrandir au-delà de l'échelle 1
     draw();
-    const boxes = categories.map(categoryExtent);
+    const boxes = nodes.map(boxOf);
     const x0 = d3.min(boxes, b => b.x0), x1 = d3.max(boxes, b => b.x1);
     const y0 = d3.min(boxes, b => b.y0), y1 = d3.max(boxes, b => b.y1);
     const scale = Math.min(1, (width - 2 * FIT_MARGIN) / (x1 - x0), (height - 2 * FIT_MARGIN) / (y1 - y0));
@@ -199,15 +189,19 @@ function renderGraph() {
 
     simulation.on('tick', draw);
 
-    function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x; d.fy = d.y;
-    }
-    function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
-    function dragended(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null; d.fy = null;
-    }
+    // Glisser une catégorie entraîne ses savoirs
+    const drag = d3.drag()
+        .on('start', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x; d.fy = d.y;
+        })
+        .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+        .on('end', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null; d.fy = null;
+        });
+    leaf.call(drag);
+    hub.call(drag);
 }
 
 // Infobulle : seules ses coordonnées passent par des propriétés personnalisées
@@ -231,7 +225,8 @@ function hideTooltip() {
     if (tooltip) tooltip.hidden = true;
 }
 
-// Met en avant les nœuds d'un contributeur en estompant les autres. null rétablit tout.
+// Met en avant les savoirs d'un contributeur et leurs branches en estompant les autres. null rétablit tout.
 function highlightSource(name) {
     d3.selectAll('.graph__node').classed('is-dimmed', d => name !== null && d.source !== name);
+    d3.selectAll('.graph__link').classed('is-dimmed', l => name !== null && l.target.source !== name);
 }

@@ -131,7 +131,6 @@
     --viz-max: 45rem;             /* 720 px, largeur maximale d'un visuel seul (Labo data) */
     --viz-thumb: 6rem;            /* 96 px, pictogramme du sélecteur de graphique */
     --map-filter: grayscale(1) contrast(1.1);
-    --hull-opacity: 0.06;
     --dim-opacity: 0.2;
 
     /* ---------- Mouvement ---------- */

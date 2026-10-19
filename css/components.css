@@ -1299,10 +1299,29 @@
     cursor: pointer;
   }
 
-  .graph__node rect {
+  /* Carte mentale : branches courbes et points ronds, seule exception aux angles droits du site */
+  .graph__link {
+    fill: none;
+    stroke: var(--color-border-strong);
+    stroke-width: 1.5;
+  }
+
+  .graph__link.is-dimmed {
+    opacity: var(--dim-opacity);
+  }
+
+  .graph__node circle {
     fill: var(--swatch-color, var(--color-text));
     stroke: var(--color-surface-sunken);
     stroke-width: var(--border-width-strong);
+  }
+
+  .graph__node:hover circle {
+    stroke: var(--color-text);
+  }
+
+  .graph__node:hover text {
+    fill: var(--color-accent);
   }
 
   .graph__node text {
@@ -1316,23 +1335,25 @@
     opacity: var(--dim-opacity);
   }
 
-  .graph__hull {
-    fill: var(--color-text);
-    fill-opacity: var(--hull-opacity);
-    stroke: var(--color-border);
-    stroke-width: var(--border-width);
+  .graph__hub rect {
+    fill: var(--color-surface-sunken);
+    stroke: var(--color-border-strong);
+    stroke-width: var(--border-width-strong);
   }
 
-  .graph__hull-label {
-    fill: var(--color-text-muted);
+  .graph__hub text {
+    fill: var(--color-text);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
-    text-anchor: start;
-    dominant-baseline: hanging;
+    text-anchor: middle;
     pointer-events: none;
+  }
+
+  .graph__hub {
+    cursor: move;
   }
 
   .graph__tooltip {

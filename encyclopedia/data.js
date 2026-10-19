@@ -26,7 +26,7 @@ const INITIAL_DATA = {
     { "title": "Pataphysique", "text": "« Science du particulier », appliquée notamment à la construction de raisonnements.", "category": "Philosophie", "source": "Pierre" },
     { "title": "Synesthésie", "text": "Association de plusieurs sens entre eux, avec des applications notamment en musique.", "category": "Philosophie", "source": "Pierre" },
 
-    { "title": "Nombre d'or", "text": "Constante valant environ 1,6180339887, notée φ, telle que φ² = φ+1. Elle correspond au ratio parfait des côtés d'un rectangle.", "category": "Mathematiques", "source": "Pierre" },
+    { "title": "Nombre d'or", "text": "Constante valant environ 1,6180339887, notée φ, telle que φ² = φ+1. Elle correspond au ratio parfait des côtés d'un rectangle.", "category": "Mathématiques", "source": "Pierre" },
 
     { "title": "Prétérition", "text": "Figure de style qui consiste à dire qu'on ne parlera pas de tel ou tel sujet, tout en en parlant quand même.", "category": "Littérature", "source": "Cédric" },
     { "title": "Périphrase", "text": "Figure de style qui remplace un mot par une expression équivalente plus longue : elle dit en plusieurs mots ce qu'on pourrait dire en un seul.", "category": "Littérature", "source": "Cédric" },

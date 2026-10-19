@@ -323,7 +323,7 @@ Inspiré des primitives In View, Text Effect, Animated Group et Animated Number 
 | Boîte de dialogue | `<dialog class="modal">` : confirmation et choix de couleur du suivi de scores |
 | Formulaire de contribution | `<details class="disclosure">` et `<form data-contribute="outil">`. Validation, erreurs rattachées aux champs et envoi gérés une seule fois dans `js/site.js`. Le panneau se déplie sans JS. |
 | Carte | `.map`, `.map-marker`, `.map-tooltip` : habillage de Leaflet, tuiles désaturées par `--map-filter` |
-| Graphe | `.graph`, `.graph__node`, `.graph__hull` : carte mentale D3 stylée par classes |
+| Graphe | `.graph`, `.graph__node`, `.graph__hub`, `.graph__link` : carte mentale D3 (branches courbes et points ronds, seule exception aux angles droits) stylée par classes |
 | Sudoku | `.sudoku`, `.sudoku__cell`, `.numpad` |
 | Suivi de scores | `.view`, `.avatar`, `.standings`, `.score-row`, `.stepper`, `.score-table`, `.podium`, `.color-picker` |
 
