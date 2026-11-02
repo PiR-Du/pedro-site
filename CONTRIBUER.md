@@ -17,7 +17,7 @@ Tout le contenu du Labo data est dans **`labo/data.js`**. Ajouter une fiche, c'e
 Une ligne suffit. Elle apparaît en gris, non cliquable :
 
 ```js
-{ id: 'axe-zero', rubrique: 'mensonges', statut: 'a-venir', titre: 'L\'axe qui ne part pas de zéro' },
+{ id: 'axe-zero', rubrique: 'mensonges', statut: 'a-venir', titre: 'Comment faire exploser un impôt sans changer un chiffre ?' },
 ```
 
 ## 2. Publier une fiche
@@ -30,7 +30,7 @@ Complétez l'entrée et passez `statut` à `'publiee'`. Le gabarit est toujours 
   rubrique: 'mensonges',           // datasets | mensonges | choisir | notions
   statut: 'publiee',
   date: '2026-11-02',              // AAAA-MM-JJ
-  titre: 'L\'axe qui ne part pas de zéro',   // titre accrocheur, 60 caractères au plus
+  titre: 'Comment faire exploser un impôt sans changer un chiffre ?',   // une question curieuse, 60 caractères au plus
   accroche: 'Une hausse de 2 % qui ressemble à une explosion.',  // une ou deux phrases
   visuel: { /* voir § 3 */ },
   blocs: [                         // 4 à 6 blocs courts
@@ -43,6 +43,8 @@ Complétez l'entrée et passez `statut` à `'publiee'`. Le gabarit est toujours 
   sources: [{ titre: 'Insee, salaires 2024', url: 'https://…' }],  // facultatif
 },
 ```
+
+**Le fil rouge** : le titre pose une question, toute la fiche la creuse, et le bloc `retenir` commence par y répondre.
 
 **Types de blocs** : `definition`, `exemple`, `erreur`, `astuce`, `retenir`, `probleme`, `formule`, `question`, `donnees`, `methode`, `resultat`, `limite`, `maths`, `simulation`.
 

@@ -29,11 +29,18 @@ function typo(html) {
     .replace(/« /g, '« ');
 }
 
-// Mise en forme minimale dans les textes : **gras** et `code`
+// Appel de source : [^3] ou [^3,5] renvoie aux numéros de la liste des sources de la fiche
+function citation(list) {
+  const links = list.split(',').map(n => `<a href="#source-${n}" data-cite="${n}" aria-label="Source ${n}">${n}</a>`).join(', ');
+  return `<sup class="lab-cite">${links}</sup>`;
+}
+
+// Mise en forme minimale dans les textes : **gras**, `code` et appels de source
 function inline(value) {
   return typo(escapeHtml(value))
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`(.+?)`/g, '<code>$1</code>');
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\[\^(\d+(?:,\d+)*)\]/g, (_, list) => citation(list));
 }
 
 function rich(texte) {
@@ -270,7 +277,7 @@ function equations(list) {
 function slide(bloc, n, total) {
   return `<li class="lab-slide">
       <span class="folio lab-slide__num">${pad(n)}<span class="muted"> / ${pad(total)}</span></span>
-      <p class="eyebrow lab-slide__type">${escapeHtml(BLOC_LABELS[bloc.type] || bloc.type)}</p>
+      <p class="eyebrow lab-slide__type">${escapeHtml(bloc.etiquette || BLOC_LABELS[bloc.type] || bloc.type)}</p>
       <h3 class="title-3 lab-slide__title">${inline(bloc.titre || '')}</h3>
       <div class="lab-slide__body stack stack--2">
         ${bloc.formule ? `<p class="lab-formula"><code>${escapeHtml(bloc.formule)}</code></p>` : ''}
@@ -293,10 +300,16 @@ function ficheView(fiche) {
   const pager = (f, label, cls) => f
     ? `<a class="lab-pager__link ${cls}" href="${laboUrl({ fiche: f.id })}" data-nav><span class="eyebrow">${label}</span><span class="lab-pager__title">${escapeHtml(f.titre)}</span></a>`
     : '<span></span>';
+  const sourceItem = s => s.url ? `<a class="link" href="${escapeHtml(s.url)}" rel="noopener">${escapeHtml(s.titre)}</a>` : escapeHtml(s.titre);
+  // Fiche avec appels de source : liste numérotée, chaque entrée est la cible d'un appel [^n]
+  const sourceList = fiche.citations
+    ? `<ol class="lab-list lab-sources">${fiche.sources.map((s, k) => `<li id="source-${k + 1}" tabindex="-1">${sourceItem(s)}${s.note ? ` <span class="muted">${inline(s.note)}</span>` : ''}</li>`).join('')}</ol>`
+    : `<ul class="lab-list">${fiche.sources?.map(s => `<li>${sourceItem(s)}</li>`).join('') ?? ''}</ul>`;
   const sources = (fiche.sources || []).length ? `
       <div class="col-1-12 stack stack--1">
         <h2 class="eyebrow">Sources</h2>
-        <ul class="lab-list">${fiche.sources.map(s => `<li>${s.url ? `<a class="link" href="${escapeHtml(s.url)}" rel="noopener">${escapeHtml(s.titre)}</a>` : escapeHtml(s.titre)}</li>`).join('')}</ul>
+        ${sourceList}
+        ${fiche.inspiration ? `<p class="lab-figure__credit">${escapeHtml(fiche.inspiration.texte)} <a class="link" href="${escapeHtml(fiche.inspiration.url)}" rel="noopener">${escapeHtml(fiche.inspiration.titre)}</a>.</p>` : ''}
       </div>` : '';
 
   return `
@@ -321,7 +334,7 @@ function ficheView(fiche) {
 
       <section class="section section--ruled section--tight" aria-labelledby="fiche-points">
         <div class="container grid">
-          <h2 class="eyebrow col-1-12" id="fiche-points">L'essentiel en ${blocs.length} points</h2>
+          <h2 class="eyebrow col-1-12" id="fiche-points">${escapeHtml(fiche.parcours || `L'essentiel en ${blocs.length} points`)}</h2>
           <ol class="grid__band grid--flush lab-slides">${blocs.map((b, k) => slide(b, k + 2, total)).join('')}</ol>
         </div>
       </section>
@@ -366,6 +379,8 @@ function renderLabo({ focus = null, scroll = false } = {}) {
   initChooser(view);
   LaboSim.init(view, laboState.mounts);
   LaboInteractifs.init(view, laboState.mounts);
+  // Au survol d'un appel de source, le titre de la source
+  if (fiche) view.querySelectorAll('[data-cite]').forEach(a => { a.title = fiche.sources?.[Number(a.dataset.cite) - 1]?.titre ?? ''; });
 
   const rub = rubriqueById(params.get('rubrique'));
   document.title = fiche ? `${fiche.titre}, Labo data` : `Labo data${rub ? `, ${rub.titre}` : ''}, Pierre Duchesne`;
@@ -396,11 +411,33 @@ async function shareFiche() {
   }
 }
 
+// Va à la source citée sans toucher à l'adresse : un changement de fragment déclencherait popstate,
+// donc un nouveau rendu qui effacerait les expériences en cours. Le bouton de retour ramène à l'appel.
+function goToSource(link) {
+  const item = document.getElementById(`source-${link.dataset.cite}`);
+  if (!item) return;
+  document.querySelector('[data-cite-back]')?.remove();
+  item.insertAdjacentHTML('beforeend', ' <button type="button" class="lab-cite__back link text-sm" data-cite-back>Revenir au texte</button>');
+  item.querySelector('[data-cite-back]').addEventListener('click', e => {
+    e.currentTarget.remove();
+    link.focus({ preventScroll: true });
+    link.scrollIntoView({ block: 'center' });
+  });
+  item.focus({ preventScroll: true });
+  item.scrollIntoView({ block: 'center' });
+}
+
 function initLabo() {
   laboState.description = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
   renderLabo();
 
   document.addEventListener('click', e => {
+    const cite = e.target.closest('a[data-cite]');
+    if (cite && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.button === 0) {
+      e.preventDefault();
+      goToSource(cite);
+      return;
+    }
     const link = e.target.closest('a[data-nav]');
     if (link && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.button === 0) {
       e.preventDefault();

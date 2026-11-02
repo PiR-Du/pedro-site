@@ -171,19 +171,24 @@ const LaboInteractifs = (() => {
 
   // ---------- Sondage : au hasard ou dans un échantillon biaisé ----------
   // donnees : { reel, biaise (part du candidat, en %), tailles: [...], candidat, adversaire, methodes: { hasard, biaise } }.
+  // Options : tailles (remplace celles des données), seulement ('hasard' : une seule méthode), min, max, pas (axe),
+  // duel : { hasard, biaise } (tailles comparées par un bouton dédié).
   MODULES.sondage = {
-    markup(spec, data) {
-      const tailles = data.tailles.map((n, i) => chip('taille', n, n >= 1e6 ? `${num(n / 1e6, 2)} millions` : num(n), i === 1)).join('');
+    markup(spec, data, id) {
+      const sizes = spec.tailles || data.tailles;
+      const tailles = sizes.map((n, i) => chip('taille', n, n >= 1e6 ? `${num(n / 1e6, 2)} millions` : num(n), i === 1)).join('');
+      const methodes = spec.seulement ? '' : `<div class="interactif__option"><p class="label" id="${id}-methode">Qui interroger ?</p>
+              <div class="chip-group" role="group" aria-labelledby="${id}-methode">${chip('methode', 'hasard', data.methodes.hasard, true)}${chip('methode', 'biaise', data.methodes.biaise, false)}</div></div>`;
       return `<div class="interactif__controls">
           <div class="interactif__options">
-            <div class="interactif__option"><p class="label" id="sondage-methode">Qui interroger ?</p>
-              <div class="chip-group" role="group" aria-labelledby="sondage-methode">${chip('methode', 'hasard', data.methodes.hasard, true)}${chip('methode', 'biaise', data.methodes.biaise, false)}</div></div>
-            <div class="interactif__option"><p class="label" id="sondage-taille">Combien de réponses ?</p>
-              <div class="chip-group" role="group" aria-labelledby="sondage-taille">${tailles}</div></div>
+            ${methodes}
+            <div class="interactif__option"><p class="label" id="${id}-taille">Combien de réponses ?</p>
+              <div class="chip-group" role="group" aria-labelledby="${id}-taille">${tailles}</div></div>
           </div>
           <div class="btn-group">
             <button type="button" class="btn btn--primary" data-run="1">Faire un sondage</button>
             <button type="button" class="btn" data-run="20">Faire 20 sondages</button>
+            ${spec.duel ? '<button type="button" class="btn" data-duel>Lancer le duel</button>' : ''}
             <button type="button" class="btn" data-clear>Effacer</button>
           </div>
         </div>
@@ -191,12 +196,17 @@ const LaboInteractifs = (() => {
         <div class="viz-host" data-chart></div>`;
     },
     init(root, spec, data) {
-      const s = { methode: 'hasard', taille: data.tailles[1], polls: [] };
+      const s = { methode: spec.seulement || 'hasard', taille: (spec.tailles || data.tailles)[1], polls: [] };
       const chart = root.querySelector('[data-chart]'), status = root.querySelector('[data-status]');
       const groupes = [
         { id: 'hasard', libelle: data.methodes.hasard, serie: 3 },
         { id: 'biaise', libelle: data.methodes.biaise, serie: 1 },
-      ];
+      ].filter(g => !spec.seulement || g.id === spec.seulement);
+      const lancer = (methode, n, fois) => {
+        const p = (methode === 'hasard' ? data.reel : data.biaise) / 100;
+        for (let k = 0; k < fois; k++) s.polls.push({ methode, n, v: (100 * binomial(n, p)) / n });
+        s.polls = s.polls.slice(-400);   // au-delà, les piles deviennent illisibles
+      };
 
       // Nombre de réponses favorables au candidat parmi n, chacune avec la probabilité p.
       // Exact (n tirages) jusqu'à 20 000 réponses ; au-delà, approximation normale de la loi binomiale.
@@ -208,7 +218,7 @@ const LaboInteractifs = (() => {
 
       const draw = () => {
         const chartSpec = {
-          type: 'essais', titre: spec.titre, unite: '%', decimales: 1, min: 25, max: 80, pas: 1,
+          type: 'essais', titre: spec.titre, unite: '%', decimales: 1, min: spec.min ?? 25, max: spec.max ?? 80, pas: spec.pas ?? 1,
           alt: `Un point par sondage simulé : ${s.polls.length} sondage${s.polls.length > 1 ? 's' : ''}. Trait d'accent : le vrai résultat, ${num(data.reel, 1)} %. Trait fin : la majorité, 50 %.`,
         };
         const chartData = {
@@ -219,11 +229,13 @@ const LaboInteractifs = (() => {
 
         const last = s.polls[s.polls.length - 1];
         if (!last) { status.innerHTML = `Choisissez qui interroger et combien de personnes, puis lancez un sondage. Le vrai score de ${esc(data.candidat)} est de ${num(data.reel, 1)} %.`; return; }
-        const marge = 1.96 * Math.sqrt((last.v / 100) * (1 - last.v / 100) / last.n) * 100;
-        const winner = last.v > 50 ? data.candidat : data.adversaire;
+        // Sous 100 réponses, la part mesurée peut toucher 0 ou 100 % et annuler la formule : on prend le pire cas, 50 %
+        const pm = last.n < 100 ? 0.5 : last.v / 100;
+        const marge = 1.96 * Math.sqrt(pm * (1 - pm) / last.n) * 100;
+        const winner = last.v > 50 ? data.candidat : last.v < 50 ? data.adversaire : 'personne, égalité';
         const same = s.polls.filter(p => p.methode === last.methode && p.n === last.n);
         const right = same.filter(p => p.v > 50).length;
-        status.innerHTML = `Dernier sondage, ${num(last.n)} réponses : <strong>${esc(data.candidat)} ${num(last.v, 1)} %</strong>, marge d'erreur annoncée ± ${num(marge, marge < 1 ? 2 : 1)} point. ` +
+        status.innerHTML = `Dernier sondage, ${num(last.n)} réponses : <strong>${esc(data.candidat)} ${num(last.v, 1)} %</strong>, marge d'erreur annoncée ± ${num(marge, marge < 1 ? 2 : 1)} point${marge >= 2 ? 's' : ''}. ` +
           `Vainqueur prédit : <strong>${esc(winner)}</strong>. Erreur réelle : ${signe(last.v - data.reel)} point${Math.abs(last.v - data.reel) >= 2 ? 's' : ''}. ` +
           `Avec ce réglage, ${right} sondage${right > 1 ? 's' : ''} sur ${same.length} désigne${right > 1 ? 'nt' : ''} le bon vainqueur.`;
       };
@@ -234,12 +246,226 @@ const LaboInteractifs = (() => {
         if (b.dataset.methode) { s.methode = b.dataset.methode; press(root, 'methode', s.methode); return; }
         if (b.dataset.taille) { s.taille = Number(b.dataset.taille); press(root, 'taille', s.taille); return; }
         if (b.matches('[data-clear]')) { s.polls = []; draw(); return; }
-        if (b.dataset.run) {
-          const p = (s.methode === 'hasard' ? data.reel : data.biaise) / 100;
-          for (let k = 0; k < Number(b.dataset.run); k++) s.polls.push({ methode: s.methode, n: s.taille, v: (100 * binomial(s.taille, p)) / s.taille });
-          s.polls = s.polls.slice(-400);   // au-delà, les piles deviennent illisibles
+        if (b.dataset.run) { lancer(s.methode, s.taille, Number(b.dataset.run)); draw(); return; }
+        if (b.matches('[data-duel]')) {
+          const { hasard, biaise } = spec.duel;
+          s.polls = [];
+          lancer('hasard', hasard, 20);
+          lancer('biaise', biaise, 20);
           draw();
+          const ecart = id => LaboCharts.stats.moyenne(s.polls.filter(p => p.methode === id).map(p => Math.abs(p.v - data.reel)));
+          const justes = id => s.polls.filter(p => p.methode === id && p.v > 50).length;
+          status.innerHTML = `<strong>${num(hasard)} réponses au hasard</strong> : ${justes('hasard')} sondages sur 20 désignent ${esc(data.candidat)}, erreur moyenne ${num(ecart('hasard'), 1)} points. ` +
+            `<strong>${num(biaise)} réponses biaisées</strong> : ${justes('biaise')} sur 20, erreur moyenne ${num(ecart('biaise'), 1)} points.`;
         }
+      });
+      draw();
+    },
+  };
+
+  // ---------- Le pari : choisir un camp avant de voir le résultat ----------
+  // donnees : { question, options: [{ id, titre, detail, reponse }], unite, decimales, items } (les barres du verdict).
+  MODULES.pari = {
+    markup(spec, data, id) {
+      const options = data.options.map(o => `<button type="button" class="pari__option" data-choix="${esc(o.id)}" aria-pressed="false">
+          <span class="pari__titre">${esc(o.titre)}</span><span class="pari__detail">${esc(o.detail)}</span></button>`).join('');
+      return `<p class="title-4" id="${id}-q">${esc(data.question)}</p>
+        <div class="pari" role="group" aria-labelledby="${id}-q">${options}</div>
+        <div class="stack stack--2" aria-live="polite">
+          <p class="interactif__status" data-status></p>
+          <div class="viz-host" data-chart hidden></div>
+        </div>`;
+    },
+    init(root, spec, data) {
+      const chart = root.querySelector('[data-chart]'), status = root.querySelector('[data-status]');
+      status.textContent = 'Choisissez un camp : le résultat s\'affiche ensuite.';
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-choix]');
+        if (!b) return;
+        press(root, 'choix', b.dataset.choix);
+        status.textContent = data.options.find(o => o.id === b.dataset.choix).reponse;
+        chart.hidden = false;
+        if (!chart._viz) LaboCharts.mount(chart, { type: 'barres', titre: spec.titre, alt: spec.alt, max: 100 }, data);
+      });
+    },
+  };
+
+  // ---------- Les deux filtres : de l'électorat aux bulletins renvoyés ----------
+  // Cent jetons, chacun pèse 1 %. Carré : le candidat ; triangle : l'adversaire ; contour vide : ne répond pas.
+  // donnees : { reel (part du candidat dans l'électorat), candidat, adversaire, presets: [{ libelle, liste, tauxCandidat, tauxAdversaire }] }.
+  const JETONS = (() => {
+    // Ordre mélangé mais fixe : bouger un curseur ne change que quelques jetons, le reste ne saute pas
+    const order = Array.from({ length: 100 }, (_, i) => i);
+    let seed = 1936;
+    for (let i = 99; i > 0; i--) {
+      seed = (seed * 16807) % 2147483647;
+      const j = seed % (i + 1);
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  })();
+
+  function jeton(cell, sorte, repond) {
+    const x = (cell % 10) * 10 + 5, y = Math.floor(cell / 10) * 10 + 5;
+    const cls = `tally__jeton tally__jeton--${sorte}${repond ? '' : ' tally__jeton--vide'}`;
+    return sorte === 'a'
+      ? `<rect x="${x - 3.6}" y="${y - 3.6}" width="7.2" height="7.2" class="${cls}"/>`
+      : `<path d="M${x},${y - 4.4} L${x + 4.4},${y + 3.6} L${x - 4.4},${y + 3.6} Z" class="${cls}"/>`;
+  }
+
+  // part : part du candidat en %. Taux de réponse facultatifs : sans eux, tout le monde est plein.
+  function jetons(part, tauxA, tauxB) {
+    const nA = Math.round(part);
+    const pleinsA = tauxA === undefined ? nA : Math.round(nA * tauxA / 100);
+    const pleinsB = tauxB === undefined ? 100 - nA : Math.round((100 - nA) * tauxB / 100);
+    return JETONS.map((cell, rang) => rang < nA ? jeton(cell, 'a', rang < pleinsA) : jeton(cell, 'b', rang - nA < pleinsB)).join('');
+  }
+
+  MODULES.filtres = {
+    markup(spec, data, id) {
+      const range = (key, label, min, max, value) => `<div class="interactif__field">
+          <label class="label" for="${id}-${key}">${label} <output data-out-${key} for="${id}-${key}"></output></label>
+          <input type="range" class="range" id="${id}-${key}" min="${min}" max="${max}" step="any" value="${value}" data-${key}>
+        </div>`;
+      const panel = (key, titre) => `<div class="tally__panel">
+          <p class="eyebrow">${titre}</p>
+          <svg class="tally__svg" viewBox="0 0 100 100" role="img" data-panel-${key}></svg>
+          <p class="tally__caption" data-legende-${key}></p>
+        </div>`;
+      const p = data.presets[0];
+      return `<div class="interactif__controls">
+          <div class="chip-group" role="group" aria-label="Scénarios">${data.presets.map((x, i) => chip('preset', i, x.libelle, i === 0)).join('')}</div>
+          <div class="interactif__fields">
+            ${range('liste', `Part de ${esc(data.candidat)} sur la liste`, 30, 80, p.liste)}
+            ${range('ta', `Partisans de ${esc(data.candidat)} qui répondent`, 5, 100, p.tauxCandidat)}
+            ${range('tb', `Partisans de ${esc(data.adversaire)} qui répondent`, 5, 100, p.tauxAdversaire)}
+          </div>
+        </div>
+        <div class="tally">
+          ${panel('electorat', '1. L\'électorat')}${panel('liste', '2. La liste du sondeur')}${panel('retour', '3. Les bulletins renvoyés')}
+        </div>
+        <p class="tally__legend"><span class="tally__key"><svg viewBox="0 0 10 10" aria-hidden="true"><rect x="1.4" y="1.4" width="7.2" height="7.2" class="tally__jeton tally__jeton--a"/></svg>${esc(data.candidat)}</span>
+          <span class="tally__key"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5,0.6 L9.4,8.6 L0.6,8.6 Z" class="tally__jeton tally__jeton--b"/></svg>${esc(data.adversaire)}</span>
+          <span class="tally__key"><svg viewBox="0 0 10 10" aria-hidden="true"><rect x="1.4" y="1.4" width="7.2" height="7.2" class="tally__jeton tally__jeton--a tally__jeton--vide"/></svg>Contour vide : ne répond pas</span></p>
+        <p class="interactif__status" data-status aria-live="polite"></p>
+        <dl class="interactif__stats">
+          ${stat('resultat', `${esc(data.candidat)} dans les bulletins`)}${stat('vainqueur', 'Vainqueur annoncé')}${stat('elist', 'Erreur due à la liste')}${stat('eretour', 'Erreur due aux réponses')}
+        </dl>`;
+    },
+    init(root, spec, data) {
+      const q = sel => root.querySelector(`[data-${sel}]`);
+      const liste = q('liste'), ta = q('ta'), tb = q('tb');
+      const c = data.candidat, a = data.adversaire;
+      const draw = () => {
+        const part = Number(liste.value), rA = Number(ta.value), rB = Number(tb.value);
+        const pA = part * rA / 100, pB = (100 - part) * rB / 100;
+        const retour = pA + pB, res = 100 * pA / retour;
+        const errListe = part - data.reel, errRetour = res - part, err = res - data.reel;
+
+        q('panel-electorat').innerHTML = jetons(data.reel);
+        q('panel-electorat').setAttribute('aria-label', `Électorat : ${num(data.reel, 1)} % pour ${c}.`);
+        q('panel-liste').innerHTML = jetons(part);
+        q('panel-liste').setAttribute('aria-label', `Liste du sondeur : ${num(part, 1)} % pour ${c}.`);
+        q('panel-retour').innerHTML = jetons(part, rA, rB);
+        q('panel-retour').setAttribute('aria-label', `Bulletins renvoyés : ${num(retour, 0)} % de la liste répond, dont ${num(res, 1)} % pour ${c}.`);
+        q('legende-electorat').textContent = `${c} ${num(data.reel, 1)} %`;
+        q('legende-liste').textContent = `${c} ${num(part, 1)} %`;
+        q('legende-retour').textContent = `${num(retour, 0)} % répondent, dont ${c} ${num(res, 1)} %`;
+        q('out-liste').textContent = `${num(part, 1)} %`;
+        q('out-ta').textContent = `${num(rA, rA < 100 ? 1 : 0)} %`;
+        q('out-tb').textContent = `${num(rB, rB < 100 ? 1 : 0)} %`;
+        q('resultat').textContent = `${num(res, 1)} %`;
+        q('vainqueur').textContent = res > 50 ? c : res < 50 ? a : 'Égalité';
+        q('elist').textContent = `${signe(errListe)} pts`;
+        q('eretour').textContent = `${signe(errRetour)} pts`;
+
+        const verdict = Math.abs(err) < 1
+          ? `Le sondage tombe juste${retour < 50 ? `, alors que seuls ${num(retour, 0)} % de la liste répondent` : ''}.`
+          : res < 50
+            ? `Le sondage annonce <strong>${esc(a)}</strong> vainqueur, à ${num(Math.abs(err), 1)} points du vrai score : il se trompe de gagnant.`
+            : `Le bon vainqueur, mais à ${num(Math.abs(err), 1)} points du vrai score.`;
+        q('status').innerHTML = verdict;
+        root.querySelectorAll('[data-preset]').forEach((b, k) => {
+          const x = data.presets[k];
+          b.setAttribute('aria-pressed', String(Math.abs(x.liste - part) < 0.05 && Math.abs(x.tauxCandidat - rA) < 0.05 && Math.abs(x.tauxAdversaire - rB) < 0.05));
+        });
+      };
+      [liste, ta, tb].forEach(el => el.addEventListener('input', draw));
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-preset]');
+        if (!b) return;
+        const x = data.presets[Number(b.dataset.preset)];
+        liste.value = x.liste; ta.value = x.tauxCandidat; tb.value = x.tauxAdversaire;
+        draw();
+      });
+      draw();
+    },
+  };
+
+  // ---------- Que vaut ce sondage ? Taille, biais et tirage au hasard équivalent (Meng, 2018) ----------
+  // donnees : { population, part, presets: [{ libelle, n, biais }] }. Le biais et la marge sont en points.
+  MODULES.qualite = {
+    markup(spec, data, id) {
+      const p = data.presets[0];
+      return `<div class="interactif__controls">
+          <div class="chip-group" role="group" aria-label="Exemples">${data.presets.map((x, i) => chip('preset', i, x.libelle, i === 0)).join('')}</div>
+          <div class="interactif__fields">
+            <div class="interactif__field">
+              <label class="label" for="${id}-n">Nombre de réponses <output data-out-n for="${id}-n"></output></label>
+              <input type="range" class="range" id="${id}-n" min="2" max="7" step="any" value="${Math.log10(p.n)}" data-n>
+            </div>
+            <div class="interactif__field">
+              <label class="label" for="${id}-biais">Biais <output data-out-biais for="${id}-biais"></output></label>
+              <input type="range" class="range" id="${id}-biais" min="0" max="25" step="any" value="${p.biais}" data-biais>
+            </div>
+          </div>
+        </div>
+        <div class="viz-host" data-chart></div>
+        <p class="interactif__status" data-status aria-live="polite"></p>
+        <dl class="interactif__stats">
+          ${stat('rho', 'Corrélation réponse-vote nécessaire')}${stat('equiv', 'Vaut un tirage au hasard de')}
+        </dl>`;
+    },
+    init(root, spec, data) {
+      const q = sel => root.querySelector(`[data-${sel}]`);
+      const sliderN = q('n'), sliderB = q('biais'), chart = q('chart');
+      const variance = data.part * (1 - data.part);
+      const rond = n => Number(n.toPrecision(3));
+      const draw = () => {
+        const n = 10 ** Number(sliderN.value), biais = Number(sliderB.value);
+        const marge = 196 * Math.sqrt(variance / n);
+        const b = biais / 100;
+        const rho = b / (Math.sqrt((data.population - n) / n) * Math.sqrt(variance));
+        // Erreur quadratique du sondage = biais² + variance / n ; le tirage équivalent a la même erreur quadratique
+        const equiv = variance / (b * b + variance / n);
+        const items = [{ label: 'Marge d\'erreur annoncée', valeur: marge }, { label: 'Biais', valeur: biais, accent: true }];
+        const chartData = { unite: 'pts', decimales: 2, decimalesAxe: 0, items };
+        const chartSpec = {
+          type: 'barres', titre: spec.titre, max: Math.max(5, marge, biais),
+          alt: `Marge annoncée ${num(marge, 2)} points, biais ${num(biais, 2)} points, pour ${num(rond(n))} réponses.`,
+        };
+        if (chart._viz) LaboCharts.update(chart, chartData, chartSpec); else LaboCharts.mount(chart, chartSpec, chartData);
+        q('out-n').textContent = num(rond(n));
+        q('out-biais').textContent = `${num(biais, 1)} point${biais >= 2 ? 's' : ''}`;
+        q('rho').textContent = biais === 0 ? '0' : num(rho, rho < 0.01 ? 4 : 3);
+        const v = Math.max(1, Math.round(equiv));
+        q('equiv').textContent = `${num(rond(v))} personne${v > 1 ? 's' : ''}`;
+        q('status').innerHTML = biais < marge
+          ? `Le biais reste sous la marge d'erreur : le hasard du tirage domine, et interroger plus de monde aide encore.`
+          : `Le biais dépasse la marge d'erreur <strong>${num(Math.min(biais / marge, 9999), biais / marge < 10 ? 1 : 0)} fois</strong> : ajouter des réponses ne sert plus à grand-chose.`;
+        root.querySelectorAll('[data-preset]').forEach((btn, k) => {
+          const x = data.presets[k];
+          btn.setAttribute('aria-pressed', String(Math.abs(Math.log10(x.n) - Number(sliderN.value)) < 0.005 && Math.abs(x.biais - biais) < 0.05));
+        });
+      };
+      [sliderN, sliderB].forEach(el => el.addEventListener('input', draw));
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-preset]');
+        if (!b) return;
+        const x = data.presets[Number(b.dataset.preset)];
+        sliderN.value = Math.log10(x.n);
+        sliderB.value = x.biais;
+        draw();
       });
       draw();
     },

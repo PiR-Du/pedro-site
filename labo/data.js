@@ -393,7 +393,7 @@ const LABO_DONNEES = {
     ],
   },
 
-  // ----- Fiche « L'axe qui ne part pas de zéro » -----
+  // ----- Fiche « Comment faire exploser un impôt sans changer un chiffre ? » -----
   // Taux marginal supérieur de l'impôt fédéral américain sur le revenu, tel que montré par Fox Business le 31 juillet 2012
   'impot-bush': {
     unite: '%',
@@ -419,7 +419,7 @@ const LABO_DONNEES = {
     ],
   },
 
-  // ----- Fiche « Cherry picking » -----
+  // ----- Fiche « Peut-on « prouver » que la planète se refroidit ? » -----
   // Température mondiale 1970-2025, NASA GISTEMP v4 (voir GISTEMP plus haut)
   gistemp: {
     unite: '°C',
@@ -452,19 +452,57 @@ const LABO_DONNEES = {
     };
   })(),
 
-  // ----- Fiche « Le sondage parfait… auprès des mauvaises personnes » -----
+  // ----- Fiche « Peut-on se tromper avec 2,4 millions de réponses ? » -----
   // Présidentielle américaine de 1936, parts calculées sur les seules voix Roosevelt + Landon.
   // Literary Digest : 1 293 669 voix Landon, 972 897 Roosevelt. Urnes : 16 681 862 Landon, 27 752 648 Roosevelt.
-  'digest-1936': {
+  // Le pari d'ouverture et son verdict. Gallup 55,7 % : Lusinchi 2012, p. 44.
+  'pari-1936': {
+    question: 'Octobre 1936. Deux sondages se contredisent. Lequel croyez-vous ?',
     unite: '%',
     decimales: 1,
-    colonneLabel: 'Candidat et source',
-    colonneValeur: 'Part des voix Roosevelt + Landon',
+    options: [
+      { id: 'digest', titre: 'The Literary Digest', detail: '2,38 millions de bulletins. Le magazine a désigné le bon vainqueur à chaque présidentielle depuis 1920. Il annonce Landon vainqueur.', reponse: 'Raté, et de loin. Vous êtes en bonne compagnie : 2,38 millions de réponses, c\'est difficile à contredire. Toute la suite explique pourquoi la taille ne protégeait de rien.' },
+      { id: 'gallup', titre: 'L\'institut de George Gallup', detail: 'Environ 50 000 personnes, cinquante fois moins. Un institut fondé l\'année précédente. Il annonce Roosevelt vainqueur.', reponse: 'Bien vu : le plus petit sondage désigne le bon vainqueur. Mais pourquoi ? Et pourquoi Gallup se trompe-t-il quand même de près de 7 points ? La suite démonte le mécanisme.' },
+    ],
     items: [
-      { label: 'Landon, sondage', valeur: 57.1, groupe: 'digest' },
-      { label: 'Roosevelt, sondage', valeur: 42.9, groupe: 'digest' },
-      { label: 'Landon, urnes', valeur: 37.5, accent: true },
-      { label: 'Roosevelt, urnes', valeur: 62.5, accent: true },
+      { label: 'The Literary Digest', valeur: 42.9 },
+      { label: 'Gallup', valeur: 55.7 },
+      { label: 'Résultat des urnes', valeur: 62.5, accent: true },
+    ],
+  },
+  // Les deux filtres. Liste : 56,6 % (Lusinchi 2012, tableau 2). Taux de retour déduits du même tableau :
+  // 23,8 % de réponses, dont 42,9 % Roosevelt, soit 18,05 % des partisans de Roosevelt et 31,3 % de ceux de Landon.
+  'filtres-1936': {
+    reel: 62.46,
+    candidat: 'Roosevelt',
+    adversaire: 'Landon',
+    presets: [
+      { libelle: 'Aucun filtre', liste: 62.46, tauxCandidat: 100, tauxAdversaire: 100 },
+      { libelle: 'Peu de réponses, mais les mêmes', liste: 62.46, tauxCandidat: 24, tauxAdversaire: 24 },
+      { libelle: 'Seulement la liste', liste: 56.6, tauxCandidat: 100, tauxAdversaire: 100 },
+      { libelle: 'Seulement les réponses', liste: 62.46, tauxCandidat: 18.05, tauxAdversaire: 31.3 },
+      { libelle: 'Les deux : 1936', liste: 56.6, tauxCandidat: 18.05, tauxAdversaire: 31.3 },
+    ],
+  },
+  // Taille, biais et tirage équivalent : N et p de la présidentielle 1936. Gallup : 62,46 − 55,7 = 6,76 points de biais.
+  'qualite-1936': {
+    population: 44434510,
+    part: 0.6246,
+    presets: [
+      { libelle: 'Le Literary Digest', n: 2266566, biais: 19.54 },
+      { libelle: 'Gallup, 50 000', n: 50000, biais: 6.76 },
+      { libelle: 'Mille personnes bien tirées', n: 1000, biais: 0 },
+      { libelle: 'Énorme, à peine biaisé', n: 1000000, biais: 1 },
+    ],
+  },
+  // Grands électeurs de Roosevelt : Lohr et Brick 2017, p. 71 ; 266 sur 531 pour gagner
+  'redressement-1936': {
+    colonneLabel: 'Source',
+    colonneValeur: 'Grands électeurs de Roosevelt',
+    items: [
+      { label: 'Digest, chiffres bruts', valeur: 161 },
+      { label: 'Digest, redressé', valeur: 276 },
+      { label: 'Résultat réel', valeur: 523, accent: true },
     ],
   },
   // Part de Roosevelt selon chaque source : tableau 1 du chapitre 19 de Freedman, Pisani et Purves
@@ -605,8 +643,8 @@ const LABO_FICHES = [
     rubrique: 'datasets',
     statut: 'publiee',
     date: '2026-10-18',
-    titre: 'Monopoly : pourquoi les cases orange sont les meilleures',
-    accroche: 'Un calcul exact, des parties simulées en direct et un peu de probabilités. Toutes les cases ne se valent pas, et c\'est la prison qui décide.',
+    titre: 'Au Monopoly, faut-il tout miser sur les cases orange ?',
+    accroche: 'Sur un plateau équitable, chaque case recevrait 2,5 % des arrêts. Ce n\'est pas le cas, et c\'est la prison qui décide. Un calcul exact et des parties simulées en direct pour savoir quel groupe acheter.',
     visuel: {
       type: 'barres',
       donnees: 'monopoly-groupes',
@@ -615,7 +653,7 @@ const LABO_FICHES = [
       legende: 'Part des lancers de dés qui finissent sur une case du groupe, en moyenne par case. Si le plateau était équitable, chaque case recevrait 2,5 %.',
     },
     blocs: [
-      { type: 'question', titre: 'La question', texte: 'Si toutes les cases avaient la même chance d\'être visitées, chacune recevrait 1/40, soit 2,5 % des arrêts. Est-ce le cas ? Et quel groupe de couleur vaut-il mieux acheter ?' },
+      { type: 'question', titre: 'La question', texte: 'Si toutes les cases avaient la même chance d\'être visitées, chacune recevrait 1/40, soit 2,5 % des arrêts. Est-ce le cas ? Et sinon, faut-il se ruer sur les cases orange, ou un autre groupe de couleur vaut-il mieux ?' },
       { type: 'donnees', titre: 'Les données', texte: 'Pas de données à télécharger : on les fabrique de deux façons. Une **simulation** lance les dés un million de fois et compte les arrêts. Un **calcul exact** décrit le plateau comme une chaîne de Markov et en tire les probabilités à long terme. Les deux méthodes concordent à 0,02 point près.' },
       { type: 'methode', titre: 'Les règles modélisées', texte: ['Deux dés à 6 faces, et un double fait rejouer.', 'Trois doubles de suite, la case « Allez en prison » ou une carte « Allez en prison » envoient en prison.', 'Les cartes qui déplacent le pion sont appliquées : 7 cartes Chance sur 16 (Départ, Rue de la Paix, Henri-Martin, Villette, Gare de Lyon, « Reculez de 3 cases », prison) et 3 cartes Caisse de communauté sur 16 (Départ, Belleville, prison).', 'Par défaut, on paie pour sortir de prison dès le tour suivant.', 'Une observation = un lancer de dés : on note la case où le pion finit son déplacement.'] },
       {
@@ -729,7 +767,7 @@ const LABO_FICHES = [
         },
       },
       { type: 'limite', titre: 'Les limites', texte: ['Les cartes sont tirées au hasard à chaque fois, comme si le paquet était remélangé ; dans le jeu, elles sont remises sous la pile.', 'Le modèle ignore les choix des joueurs, les enchères, les hypothèques et les faillites.', 'Les prix et loyers sont ceux de l\'édition classique en euros. Le calcul de rentabilité suppose des hôtels partout, ce qu\'aucune partie n\'atteint d\'un coup.'] },
-      { type: 'retenir', titre: 'À retenir', texte: 'Une seule règle, la prison, suffit à déformer tout le plateau. La chaîne de Markov donne les probabilités exactes, la simulation les retrouve, et la loi des grands nombres explique pourquoi les deux finissent par coïncider.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Oui, s\'il faut choisir : l\'orange est le groupe le plus fréquenté et le plus vite remboursé, même si le vert rapporte davantage par lancer. Une seule règle, la prison, suffit à déformer tout le plateau. La chaîne de Markov donne les probabilités exactes, la simulation les retrouve, et la loi des grands nombres explique pourquoi les deux finissent par coïncider.' },
     ],
     sources: [
       { titre: 'Robert B. Ash et Richard L. Bishop, « Monopoly as a Markov Process », Mathematics Magazine, vol. 45, n° 1, 1972, p. 26-29' },
@@ -741,7 +779,7 @@ const LABO_FICHES = [
       { titre: 'Le script de calcul de cette fiche : chaîne de Markov exacte, 118 états', url: 'datasets/monopoly-markov.js' },
     ],
   },
-  { id: 'prenoms-mode', rubrique: 'datasets', statut: 'a-venir', titre: 'Les prénoms qui reviennent à la mode tous les 100 ans' },
+  { id: 'prenoms-mode', rubrique: 'datasets', statut: 'a-venir', titre: 'Les Kevin reviendront-ils à la mode dans cent ans ?' },
   { id: 'pokemon-stats', rubrique: 'datasets', statut: 'a-venir', titre: 'Pokémon : le type le plus fort est-il le plus fréquent ?' },
 
   // ---------- Les graphiques qui mentent ----------
@@ -750,8 +788,8 @@ const LABO_FICHES = [
     rubrique: 'mensonges',
     statut: 'publiee',
     date: '2026-10-18',
-    titre: 'Le salaire moyen vous ment',
-    accroche: 'Dans cette entreprise, le salaire moyen est de 3 290 €. Pourtant, 18 salariés sur 20 gagnent moins que ça. Et en France, deux salariés sur trois gagnent moins que le salaire moyen.',
+    titre: 'Comment la majorité peut-elle gagner moins que la moyenne ?',
+    accroche: 'Dans cette entreprise, le salaire moyen est de 3 290 €. Pourtant, 18 salariés sur 20 gagnent moins que ça. En France, c\'est environ deux salariés sur trois. Personne n\'a triché sur les chiffres : tout se joue dans quelques très hauts salaires.',
     visuel: {
       type: 'paire',
       donnees: 'salaires',
@@ -881,7 +919,7 @@ const LABO_FICHES = [
           'La médiane a ses angles morts : elle ne dit rien de l\'écart entre le bas et le haut. Les déciles complètent le tableau.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'La moyenne répond à « combien chacun aurait-il si on partageait tout également ? ». La médiane répond à « combien gagne une personne typique ? ». Pour un salaire, c\'est presque toujours la deuxième question qu\'on se pose.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Quelques très hauts salaires tirent la moyenne vers le haut sans bouger la médiane : voilà comment la majorité peut se retrouver en dessous. La moyenne répond à « combien chacun aurait-il si on partageait tout également ? ». La médiane répond à « combien gagne une personne typique ? ». Pour un salaire, c\'est presque toujours la deuxième question qu\'on se pose.' },
     ],
     sources: [
       { titre: 'Insee, « Les salaires dans le secteur privé en 2024 », Insee Première n° 2079, octobre 2025', url: 'https://www.insee.fr/fr/statistiques/8657156' },
@@ -896,8 +934,8 @@ const LABO_FICHES = [
     rubrique: 'mensonges',
     statut: 'publiee',
     date: '2026-10-19',
-    titre: 'L\'axe qui ne part pas de zéro',
-    accroche: 'Juillet 2012, à la télévision américaine : un impôt qui passe de 35 % à 39,6 % devient une colonne plus de cinq fois plus haute que l\'autre. Aucun chiffre n\'est faux. Il a suffi de couper le bas de l\'axe.',
+    titre: 'Comment faire exploser un impôt sans changer un chiffre ?',
+    accroche: 'Juillet 2012, à la télévision américaine : un impôt qui passe de 35 % à 39,6 % devient une colonne plus de cinq fois plus haute que l\'autre. Aucun chiffre n\'est faux. Alors, où est le tour de passe-passe ?',
     visuel: {
       type: 'paire',
       donnees: 'impot-bush',
@@ -938,7 +976,7 @@ const LABO_FICHES = [
           donnees: 'facteurs-mensonge',
           titre: 'Facteur de mensonge de quelques graphiques',
           alt: 'Barres horizontales. Fox Business 2012, en couleur : 35. Magasins avec un axe à 48 k€ : 25. New York Times 1978 : 14,8. Graphique honnête : 1.',
-          legende: 'Fox Business : calculé ci-dessus. Magasins : l\'exemple fictif de la fiche « Quel graphique pour quelle question ? ». New York Times : le calcul de Tufte, voir plus bas.',
+          legende: 'Fox Business : calculé ci-dessus. Magasins : l\'exemple fictif de la fiche « Votre graphique répond-il à la bonne question ? ». New York Times : le calcul de Tufte, voir plus bas.',
         },
       },
       {
@@ -971,7 +1009,7 @@ const LABO_FICHES = [
         titre: 'Barres : zéro obligatoire. Courbes : pas forcément.',
         texte: [
           'Une **barre** se lit par sa longueur. L\'œil compare des longueurs ; elles doivent donc partir du même zéro.',
-          'Une **courbe** ou un **nuage de points** se lisent par la position et la pente. L\'axe peut commencer ailleurs qu\'à zéro, à condition de l\'indiquer clairement. Un axe à zéro peut même écraser une variation qui compte : la fiche « Quel graphique pour quelle question ? » le montre avec le CO₂ de Mauna Loa.',
+          'Une **courbe** ou un **nuage de points** se lisent par la position et la pente. L\'axe peut commencer ailleurs qu\'à zéro, à condition de l\'indiquer clairement. Un axe à zéro peut même écraser une variation qui compte : la fiche « Votre graphique répond-il à la bonne question ? » le montre avec le CO₂ de Mauna Loa.',
           'Une température corporelle de 39 °C contre 37 °C ne se lit pas sur un axe qui part de 0 °C : ce qui compte, c\'est l\'écart à la normale. Montrez alors l\'écart lui-même, en barres qui partent de zéro.',
         ],
       },
@@ -1000,7 +1038,7 @@ const LABO_FICHES = [
           'Couper l\'axe n\'est pas toujours tricher : sur une courbe, c\'est souvent nécessaire. Correll et ses collègues recommandent de choisir l\'échelle selon la taille des écarts qui comptent vraiment, et de le dire.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Une barre est une longueur : elle part de zéro, toujours. Avant de croire un écart entre deux barres, regardez où commence l\'axe et refaites la division.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Pour faire exploser un impôt sans toucher aux chiffres, il suffit de couper le bas de l\'axe. Une barre est une longueur : elle part de zéro, toujours. Avant de croire un écart entre deux barres, regardez où commence l\'axe et refaites la division.' },
     ],
     sources: [
       { titre: 'Media Matters, « A History Of Dishonest Fox Charts », 2012 (capture du graphique du 31 juillet 2012)', url: 'https://www.mediamatters.org/fox-friends/history-dishonest-fox-charts' },
@@ -1019,7 +1057,7 @@ const LABO_FICHES = [
     rubrique: 'mensonges',
     statut: 'publiee',
     date: '2026-10-19',
-    titre: 'Cherry picking : choisir la période qui arrange',
+    titre: 'Peut-on « prouver » que la planète se refroidit ?',
     accroche: 'Entre 2016 et 2022, la température mondiale a baissé. Entre 1970 et 2025, elle a monté de 1,1 °C. Les deux phrases sont vraies ; la première est pourtant un mensonge. Tout est dans le choix des dates.',
     visuel: {
       type: 'paire',
@@ -1138,7 +1176,7 @@ const LABO_FICHES = [
           'Choisir une période n\'est pas toujours tricher : étudier l\'effet d\'une loi demande de regarder avant et après. La faute est de choisir les dates **après** avoir vu les données, pour obtenir le résultat voulu.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Sur une courbe qui fait des dents de scie, on peut trouver presque n\'importe quelle tendance en choisissant bien ses dates. Demandez toujours la série entière, et vérifiez que la conclusion résiste quand on bouge les bornes.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Oui, à condition de ne montrer que quelques années bien choisies : sur une courbe qui fait des dents de scie, on peut trouver presque n\'importe quelle tendance. Mais depuis 1970, aucune période de 11 ans ou plus ne « refroidit ». Demandez toujours la série entière, et vérifiez que la conclusion résiste quand on bouge les bornes.' },
     ],
     sources: [
       { titre: 'NASA Goddard Institute for Space Studies, GISS Surface Temperature Analysis (GISTEMP v4), fichier GLB.Ts+dSST.csv, version du 8 octobre 2026', url: 'https://data.giss.nasa.gov/gistemp/' },
@@ -1155,48 +1193,97 @@ const LABO_FICHES = [
     rubrique: 'mensonges',
     statut: 'publiee',
     date: '2026-10-19',
-    titre: 'Le sondage parfait… auprès des mauvaises personnes',
-    accroche: '1936 : le Literary Digest recueille 2,4 millions de réponses et annonce la défaite de Roosevelt. Roosevelt gagne avec 61 % des voix. Gallup, avec 50 000 personnes, avait vu juste. Un gros échantillon mal choisi se trompe avec beaucoup d\'assurance.',
+    citations: true,
+    parcours: 'L\'enquête, en quatre expériences',
+    titre: 'Peut-on se tromper avec 2,4 millions de réponses ?',
+    accroche: '1936 : un magazine recueille 2,4 millions de réponses, un jeune institut en recueille 50 000, et ils annoncent des vainqueurs opposés. Pariez, puis démontez vous-même le mécanisme : un biais ne se voit pas, et il ne baisse pas quand le sondage grossit.',
     visuel: {
-      type: 'paire',
-      donnees: 'digest-1936',
-      mauvais: {
-        type: 'barres',
-        groupe: 'digest',
-        titre: 'Le sondage du Literary Digest, 1936',
-        alt: 'Deux barres horizontales : Landon 57,1 %, Roosevelt 42,9 %. Landon est largement en tête.',
-        legende: '2,4 millions de bulletins retournés, une marge d\'erreur de 0,06 point : Landon semble imbattable.',
-      },
-      corrige: {
-        type: 'barres',
-        titre: 'Le sondage et les urnes, 1936',
-        alt: 'Quatre barres horizontales. Sondage du Digest, en gris : Landon 57,1 %, Roosevelt 42,9 %. Urnes, en couleur : Landon 37,5 %, Roosevelt 62,5 %.',
-        legende: 'Les urnes inversent le résultat : 19,5 points d\'erreur sur la part de Roosevelt. Parts calculées sur les seules voix Roosevelt et Landon.',
-      },
+      type: 'interactif',
+      module: 'pari',
+      donnees: 'pari-1936',
+      titre: 'Part de Roosevelt dans les voix Roosevelt + Landon, 1936',
+      alt: 'Barres horizontales. The Literary Digest : 42,9 %. Gallup : 55,7 %. Résultat des urnes, en couleur : 62,5 %.',
+      legende: 'Parts calculées sur les seules voix Roosevelt et Landon, d\'après le comptage du magazine et les résultats officiels.[^1,3,12]',
+      tableau: false,
     },
     blocs: [
       {
         type: 'probleme',
-        titre: 'Le plus gros sondage de l\'histoire',
-        texte: 'En 1936, le magazine américain **The Literary Digest** envoie 10 millions de bulletins à ses lecteurs et à des listes d\'abonnés au téléphone et de propriétaires de voitures. 2,38 millions reviennent remplis. Verdict : le républicain Alf Landon l\'emporte avec **57 %** des voix et 370 grands électeurs. Le jour de l\'élection, Franklin D. Roosevelt obtient **60,8 %** des voix, gagne 46 États sur 48 et 523 grands électeurs contre 8. Le Digest, qui avait prédit juste les élections précédentes, disparaît deux ans plus tard.',
-      },
-      {
-        type: 'definition',
-        titre: 'Le biais d\'échantillon',
-        texte: 'Un échantillon est **biaisé** quand il diffère de la population d\'une façon systématique, qui ne disparaît pas en interrogeant plus de monde. Deux filtres ont joué en 1936 :',
+        titre: 'Dix millions de bulletins',
+        texte: 'À l\'été 1936, **The Literary Digest** envoie 10 millions de bulletins, à des noms tirés des annuaires téléphoniques, des listes d\'automobilistes, d\'adhérents de clubs et d\'électeurs inscrits.[^2,3] Il en récupère 2 376 523.[^2] Le verdict tombe le 31 octobre : **Landon 1 293 669, Roosevelt 972 897**, soit 54 % contre 41 % de l\'ensemble des réponses, et 370 grands électeurs pour Landon.[^1,2,3] Le magazine est sûr de lui : ses sondages ont annoncé le bon vainqueur quatre fois de suite, et il écrit que ses chiffres ne sont « ni pondérés, ni ajustés, ni interprétés ».[^2]',
         suite: [
-          '**La base de sondage** : en pleine crise, avoir le téléphone, une voiture ou un abonnement à un magazine signale un foyer plutôt aisé, plus favorable à Landon.',
-          '**La non-réponse** : sur 10 millions de bulletins, moins d\'un quart revient, et ceux qui prennent la peine de répondre votent plus souvent Landon que les autres. Peverill Squire (1988), puis Sharon Lohr et Michael Brick (2017), concluent que ce second filtre a pesé le plus : si tous les destinataires avaient répondu, le Digest aurait sans doute prédit la victoire de Roosevelt.',
+          'Quelques jours plus tard, Franklin D. Roosevelt obtient **60,8 %** des voix, 46 États sur 48 et 523 grands électeurs contre 8.[^2,12] Le Digest disparaît deux ans après.[^3,13]',
         ],
       },
       {
         type: 'interactif',
-        titre: 'Faites vos sondages',
-        texte: 'Choisissez qui interroger et combien de personnes, puis lancez des sondages. **Au hasard**, chaque électeur a la même chance d\'être tiré : Roosevelt y pèse 62,5 %, son vrai score. **Comme le Literary Digest**, le tirage se fait parmi les électeurs que les deux filtres laissent passer : Roosevelt n\'y pèse que 42,9 %, le score mesuré par le magazine. Comparez 100 réponses au hasard et 2,27 millions de réponses biaisées.',
+        etiquette: 'Expérience 1',
+        titre: 'D\'abord, le hasard marche',
+        texte: 'Oublions 1936 une minute. Imaginez une urne géante où Roosevelt pèse 62,5 %, et piochez des électeurs **au hasard**. Avec 10 personnes, c\'est la loterie. Essayez : lancez 20 sondages de 10 réponses, puis 20 de 1 000. Interroger 100 fois plus de monde resserre nettement le nuage autour de la bonne valeur. Voilà pourquoi quelques milliers de réponses suffisent à sonder un pays entier, et pourquoi on se dit que plus, c\'est forcément mieux.',
         visuel: {
           type: 'interactif',
           module: 'sondage',
           donnees: 'sondage-1936',
+          seulement: 'hasard',
+          tailles: [10, 100, 1000, 10000],
+          min: 0,
+          max: 100,
+          pas: 2,
+          titre: 'Part de Roosevelt dans chaque sondage au hasard',
+          alt: 'Exemple interactif : on choisit le nombre de réponses, puis on lance des sondages au hasard. Chaque sondage devient un point sur un axe de 0 à 100 %, avec le vrai résultat, 62,5 %, et la majorité, 50 %.',
+          legende: 'Les tirages ont lieu dans votre navigateur, à partir de la part réelle de Roosevelt dans les voix Roosevelt + Landon.[^12]',
+          tableau: false,
+        },
+      },
+      {
+        type: 'definition',
+        titre: 'Mais ce hasard, le Digest ne l\'avait pas',
+        texte: 'Un échantillon est **biaisé** quand il diffère de la population d\'une façon systématique, qui ne disparaît pas en interrogeant plus de monde.[^14] Entre l\'électorat américain et les bulletins dépouillés par le Digest, deux filtres s\'interposent :',
+        suite: [
+          '**La liste.** Qui reçoit un bulletin ? Dès 1938, Gallup accuse les annuaires et les listes d\'automobilistes : en pleine crise, ils surreprésenteraient les foyers aisés, plus favorables à Landon.[^2,5] C\'est l\'explication que répètent la plupart des manuels.[^2,3]',
+          '**La réponse.** Qui prend la peine de le renvoyer ? Seuls 24 % des destinataires le font.[^2,3] En 1976, Maurice Bryson soutient que c\'est là, et non dans la liste, que tout se joue, et il parle de « mythe statistique ».[^2,6]',
+        ],
+      },
+      {
+        type: 'interactif',
+        etiquette: 'Expérience 2',
+        titre: 'Menez l\'enquête : quel filtre a tout fait basculer ?',
+        texte: 'Chaque jeton représente 1 % des gens. Réglez la liste et le taux de réponse de chaque camp, puis regardez ce qui reste à l\'arrivée. Trois défis :',
+        suite: [
+          '**Défi 1.** Avec le scénario « Seulement la liste », le sondage se trompe-t-il de vainqueur ?',
+          '**Défi 2.** Faites répondre très peu de monde, moins de 10 %, sans fausser le résultat. Qu\'est-ce qui compte vraiment : le taux de réponse, ou l\'écart de taux entre les deux camps ?',
+          '**Défi 3.** Partez d\'« Aucun filtre » et faites gagner Landon en touchant le moins possible aux curseurs.',
+        ],
+        visuel: {
+          type: 'interactif',
+          module: 'filtres',
+          donnees: 'filtres-1936',
+          titre: 'Les deux filtres',
+          alt: 'Exemple interactif : trois curseurs règlent la part de Roosevelt sur la liste et le taux de réponse de chaque camp. Trois grilles de cent jetons montrent l\'électorat, la liste et les bulletins renvoyés. Les résultats sont aussi donnés en texte.',
+          legende: 'Valeurs de 1936 : part de la liste estimée par Dominic Lusinchi, 56,6 % (intervalle de confiance à 95 % : 53,1 à 60,1).[^3] Taux de retour, 18 % et 31 %, calculés ici à partir de son tableau 2. Lusinchi écrit « un cinquième » et « près d\'un tiers ». Les scénarios à un seul filtre sont des expériences de pensée, pas des estimations.',
+          tableau: false,
+        },
+      },
+      {
+        type: 'resultat',
+        titre: 'Le coupable n\'était pas celui qu\'on croit',
+        texte: 'Un sondage Gallup de mai 1937 a demandé aux Américains s\'ils avaient reçu et renvoyé le bulletin du Digest : la meilleure pièce du dossier.[^3,4] Lusinchi le redresse en 2012 et conclut :',
+        suite: [
+          '**Les listes penchaient bien du côté de Landon, mais pas assez pour tout expliquer.** Une majorité des possesseurs de voiture ou de téléphone (53,9 %) préfèrent Roosevelt.[^3] Si tous les destinataires avaient répondu, le Digest aurait annoncé Roosevelt à 56,6 %, aussi bien que Gallup.[^3]',
+          '**Les partisans de Landon répondent beaucoup plus.** Près d\'un tiers d\'entre eux renvoient le bulletin, contre un cinquième de ceux de Roosevelt.[^3] Les répondants donnent 42,9 % à Roosevelt, les silencieux 60,9 %.[^3]',
+          '**Le partage de l\'erreur :** environ 6 points pour la liste, près de 14 pour la non-réponse.[^3] Un calcul plus ancien de Peverill Squire donnait au contraire 11 points à la liste et 7 à la non-réponse, mais Lusinchi le juge faussé, car il ne corrige pas la surreprésentation des répondants dans le sondage de 1937.[^3,4]',
+        ],
+      },
+      {
+        type: 'interactif',
+        etiquette: 'Expérience 3',
+        titre: 'Le duel : 100 réponses contre 2,27 millions',
+        texte: 'À présent, le match qui a fait la légende du Digest. Dans le mode « Comme le Literary Digest », le tirage se fait parmi les électeurs que les deux filtres laissent passer : Roosevelt n\'y pèse que 42,9 %. Lancez le duel et comparez le **nuage bleu**, large mais centré sur la vérité, au **point rouge**, minuscule et ailleurs.',
+        visuel: {
+          type: 'interactif',
+          module: 'sondage',
+          donnees: 'sondage-1936',
+          duel: { hasard: 100, biaise: 2266566 },
           titre: 'Part de Roosevelt dans chaque sondage simulé',
           alt: 'Exemple interactif : on choisit la méthode (au hasard ou comme le Literary Digest) et la taille de l\'échantillon, puis on lance des sondages. Chaque sondage devient un point sur un axe de 25 à 80 %, avec le vrai résultat, 62,5 %, et la majorité, 50 %.',
           legende: 'Les tirages ont lieu dans votre navigateur. Au hasard, les points se resserrent autour du vrai résultat quand l\'échantillon grandit. Biaisés, ils se resserrent aussi… autour de la mauvaise valeur.',
@@ -1206,10 +1293,10 @@ const LABO_FICHES = [
       {
         type: 'maths',
         titre: 'La marge d\'erreur ne mesure que le hasard',
-        texte: 'La marge d\'erreur annoncée avec un sondage suppose un tirage au hasard. Elle mesure la malchance du tirage, pas les défauts de la méthode.',
+        texte: 'La marge d\'erreur annoncée avec un sondage suppose un tirage au hasard. Elle mesure la malchance du tirage, pas les défauts de la méthode.[^2,7]',
         equations: [
           { eq: 'marge à 95 % = 1,96 × √( p (1 − p) / n )', note: 'p est la part mesurée, n le nombre de réponses. Pour 1 000 réponses et p proche de 50 % : ± 3,1 points.' },
-          { eq: 'n = 2 266 566   ⟶   marge ≈ ± 0,06 point', note: 'Les réponses du Digest qui départagent Roosevelt et Landon. La marge est minuscule. L\'erreur réelle, elle, est de 42,9 − 62,5 = − 19,5 points : plus de 300 fois la marge.' },
+          { eq: 'n = 2 266 566   ⟶   marge ≈ ± 0,06 point', note: 'Les réponses du Digest qui départagent Roosevelt et Landon, avec p = 42,9 %.[^1] La marge est minuscule. L\'erreur réelle est de 42,9 − 62,5 = − 19,5 points : environ 300 fois la marge. À partir de parts arrondies, Lusinchi écrit 19,6 ; les 5,9 et 13,7 points de son partage donnent la même somme.[^3]' },
           { eq: 'erreur quadratique moyenne = biais² + variance', note: 'La variance, le hasard du tirage, baisse comme 1/n. Le biais ne dépend pas de n. Multiplier les réponses rend le sondage plus sûr de lui, pas plus juste.' },
         ],
         visuel: {
@@ -1218,39 +1305,61 @@ const LABO_FICHES = [
           reference: { valeur: 19.5, libelle: 'Erreur réelle du Digest : 19,5 points' },
           titre: 'Marge d\'erreur d\'un sondage aléatoire selon le nombre de réponses',
           alt: 'Courbe qui plonge : 9,8 points pour 100 réponses, 3,1 pour 1 000, 0,98 pour 10 000, 0,44 pour 50 000, puis presque zéro. Une ligne horizontale à 19,5 points marque l\'erreur réelle du Literary Digest, très au-dessus.',
-          legende: 'Marge à 95 % dans le pire cas, p = 50 %. Avec 2,27 millions de réponses, la marge tombe à 0,07 point ; l\'erreur du Digest reste à 19,5 points. Les abscisses ne sont pas à l\'échelle.',
+          legende: 'Marge à 95 % dans le pire cas, p = 50 %, d\'où 0,07 point et non 0,06 pour 2,27 millions de réponses. Les abscisses ne sont pas à l\'échelle.',
         },
       },
       {
-        type: 'maths',
-        titre: '2,3 millions de réponses valaient 6 personnes',
-        texte: 'Le statisticien Xiao-Li Meng (2018) a écrit l\'erreur d\'un sondage comme le produit de trois termes : la qualité des données, leur quantité, et la difficulté de la question.',
+        type: 'interactif',
+        etiquette: 'Expérience 4',
+        titre: 'Combien de personnes vaut votre sondage ?',
+        texte: 'Le statisticien Xiao-Li Meng a écrit en 2018 l\'erreur d\'un sondage comme le produit de trois termes : qualité des données, quantité, difficulté de la question.[^8] On en tire une question redoutable : à quel tirage au hasard ce sondage équivaut-il ? Faites monter le nombre de réponses à biais constant, et regardez le dernier chiffre : **il ne bouge presque plus**.',
         equations: [
-          { eq: 'erreur = ρ × √( (N − n) / n ) × σ', note: 'N = 44 434 510 votants Roosevelt ou Landon, n = 2 266 566 réponses, σ = √(p (1 − p)) ≈ 0,48 la dispersion des votes. ρ mesure le lien entre « répondre » et « voter Roosevelt » : il vaut 0 pour un tirage au hasard.' },
-          { eq: 'ρ = − 0,195 / (4,31 × 0,48) ≈ − 0,09', note: 'Une corrélation minuscule, que personne ne remarquerait dans un tableau. Multipliée par √((N − n)/n) ≈ 4,3, elle produit 19,5 points d\'erreur.' },
-          { eq: 'n équivalent = p (1 − p) / erreur² = 0,234 / 0,195² ≈ 6', note: 'Un tirage au hasard de 6 électeurs aurait eu, en moyenne, la même erreur quadratique que les 2,27 millions de réponses du Digest. Meng parle du **paradoxe des big data** : plus la population est grande, plus un léger biais coûte cher.' },
+          { eq: 'erreur = ρ × √( (N − n) / n ) × σ', note: 'N = 44 434 510 votants Roosevelt ou Landon[^12], n le nombre de réponses, σ = √(p (1 − p)) ≈ 0,48 la dispersion des votes. ρ mesure le lien entre « répondre » et « voter Roosevelt » : il vaut 0 en moyenne pour un tirage au hasard.[^8]' },
+          { eq: 'ρ = − 0,195 / (4,31 × 0,48) ≈ − 0,09', note: 'Notre calcul pour le Digest, avec la formule de Meng. Une corrélation que personne ne remarquerait dans un tableau.' },
+          { eq: 'n équivalent = p (1 − p) / (biais² + p (1 − p) / n) ≈ 6', note: 'Le tirage au hasard qui aurait la même erreur quadratique. Pour le Digest : **6 personnes**. Pour Gallup, biaisé de 6,8 points : environ 50 sur ses 50 000. Meng parle de **paradoxe des big data** : plus il y a de données, plus on se trompe avec assurance si l\'on oublie leur qualité.[^8]' },
         ],
+        visuel: {
+          type: 'interactif',
+          module: 'qualite',
+          donnees: 'qualite-1936',
+          titre: 'Marge d\'erreur annoncée et biais, en points',
+          alt: 'Exemple interactif : deux curseurs règlent le nombre de réponses et le biais. Deux barres comparent la marge d\'erreur annoncée au biais. Le texte donne la taille du tirage au hasard équivalent.',
+          legende: 'Population et vote de la présidentielle de 1936. Un seul sondage ne permet pas de séparer le biais de la malchance : l\'équivalent donne un ordre de grandeur, pas une valeur exacte.',
+          tableau: false,
+        },
       },
       {
         type: 'donnees',
-        titre: 'Gallup avait prévu le résultat… et l\'erreur du Digest',
-        texte: 'Le jeune institut de George Gallup interroge 50 000 personnes choisies pour ressembler à l\'électorat, et annonce Roosevelt gagnant. Plus fort : avant même la publication du Digest, Gallup tire 3 000 noms dans les mêmes listes que le magazine et prédit son résultat à 1 point près. Le biais était prévisible ; il tenait aux listes et aux réponses, pas au nombre.',
+        titre: 'Gallup avait prévu l\'erreur du Digest',
+        texte: 'Le jeune institut de George Gallup interroge environ 50 000 personnes choisies pour ressembler à l\'électorat, et annonce Roosevelt gagnant.[^7,13] Plus fort : avant la publication du Digest, il tire 3 000 noms dans le même type de listes et prédit le résultat du magazine à 1 point près.[^7] Le biais était donc prévisible.',
         visuel: {
           type: 'barres',
           donnees: 'sondages-1936',
           titre: 'Part de Roosevelt selon chaque source, 1936',
           alt: 'Barres horizontales. Literary Digest, 2,4 millions de réponses : 43 %. Gallup, prévision du résultat du Digest : 44 %. Gallup, 50 000 personnes : 56 %. Résultat des urnes, en couleur : 62 %.',
-          legende: 'Chiffres arrondis de Freedman, Pisani et Purves. Gallup a vu le vainqueur, mais sous-estimé Roosevelt de 6 points : sa méthode des quotas avait aussi ses biais, qui le trahiront en 1948.',
+          legende: 'Chiffres arrondis de Freedman, Pisani et Purves.[^7] Gallup a vu le vainqueur, mais sous-estimé Roosevelt de près de 7 points.[^3] Sa méthode des quotas n\'était pas un tirage au hasard, et elle le trahira en 1948.[^3,7]',
+        },
+      },
+      {
+        type: 'methode',
+        titre: 'L\'antidote était sur le bulletin',
+        texte: 'Le bulletin du Digest demandait aussi pour qui l\'on avait voté en **1932**. Or le résultat de 1932 était connu : il suffisait de comparer pour voir que les électeurs de Roosevelt manquaient à l\'appel, et de **redresser** en leur donnant plus de poids. Sharon Lohr et Michael Brick ont refait le calcul en 2017, État par État : Roosevelt passe de 16 à 26 États, et devient majoritaire en grands électeurs.[^2] Des lecteurs l\'avaient proposé dès 1936 dans le New York Times. Le magazine refusait par principe.[^2]',
+        visuel: {
+          type: 'barres',
+          donnees: 'redressement-1936',
+          titre: 'Grands électeurs de Roosevelt, 1936',
+          alt: 'Barres horizontales. Digest, chiffres bruts : 161. Digest, redressé par le vote de 1932 : 276. Résultat réel, en couleur : 523. Il en fallait 266 sur 531 pour gagner.',
+          legende: 'Il fallait 266 grands électeurs sur 531 pour gagner.[^2,12] Le redressement désigne le bon vainqueur, mais reste très loin du score réel : il réduit le biais sans le supprimer.[^2]',
         },
       },
       {
         type: 'erreur',
         titre: 'Les Literary Digest d\'aujourd\'hui',
         texte: [
-          '**Les votes en ligne** ouverts à tous : ne répondent que ceux qui passent par là et qui ont un avis.',
-          '**Les avis clients** : les très contents et les très mécontents écrivent, la majorité tranquille se tait.',
-          '**Le sondage dans son entourage** ou auprès de ses abonnés : ils vous ressemblent.',
-          '**Les sondages de 2016 aux États-Unis** : le bilan de l\'association américaine des sondeurs (AAPOR) relève que beaucoup de sondages par État ne corrigeaient pas la surreprésentation des diplômés, plus nombreux à répondre et moins favorables à Donald Trump.',
+          '**La vaccination contre le Covid aux États-Unis, 2021.** Environ 250 000 réponses par semaine pour l\'enquête Delphi-Facebook, et 17 points de surestimation en mai 2021 par rapport aux chiffres officiels. Une enquête Axios-Ipsos, environ 1 000 réponses, se trompe de 4,2 points. Les auteurs montrent qu\'une enquête de 250 000 réponses peut n\'être pas plus précise qu\'un tirage au hasard de 10 personnes.[^9]',
+          '**Les sondages d\'État en 2016 aux États-Unis.** Beaucoup ne corrigeaient pas la surreprésentation des diplômés, plus nombreux à répondre et moins favorables à Donald Trump.[^10,11]',
+          '**Les grands panels en ligne.** Lusinchi les rapproche de la liste du Digest : très vastes, mais avec des trous de couverture et, souvent, peu de réponses.[^3]',
+          '**Les votes en ligne, les avis clients, le sondage auprès de vos abonnés.** Posez la même question : qui passe par là, et qui prend la peine de répondre ?',
         ],
       },
       {
@@ -1258,34 +1367,46 @@ const LABO_FICHES = [
         titre: 'Le réflexe',
         texte: [
           'Demandez **qui a pu répondre** : quelle liste, quel canal, quel horaire ?',
-          'Demandez **qui a voulu répondre** : quel taux de réponse ? Les absents pensent-ils comme les autres ?',
-          'Comparez l\'échantillon à la **population connue** (âge, sexe, diplôme, région, par exemple d\'après l\'Insee) et redressez-le si besoin.',
-          'Ne vous laissez pas impressionner par **la taille** : 1 000 personnes bien tirées valent mieux qu\'un million de volontaires.',
+          'Demandez **qui a voulu répondre** : quel taux de réponse ? Les absents pensent-ils comme les autres ? « Tout sondage à faible taux de réponse est probablement biaisé », conclut Lusinchi.[^3]',
+          'Comparez l\'échantillon à une **population connue** (âge, sexe, diplôme, région, vote passé) et redressez-le si besoin.[^2]',
+          'Ne vous laissez pas impressionner par **la taille**. La qualité des données compte bien plus que leur quantité.[^8,9]',
+          'Lisez la **marge d\'erreur** comme un minimum : elle oublie presque toujours ce qui n\'est pas le hasard du tirage.[^2]',
         ],
       },
       {
         type: 'limite',
         titre: 'Les limites',
         texte: [
-          'L\'exemple interactif simplifie : le mode « Literary Digest » tire au hasard dans un électorat où Roosevelt pèse 42,9 %, le score observé par le magazine. Il ne sépare pas les deux filtres, base de sondage et non-réponse.',
-          'Les parts sont calculées sur les seules voix Roosevelt et Landon. Sur l\'ensemble des suffrages, Roosevelt obtient 60,8 % : les autres candidats, dont William Lemke, en recueillent 2,7 %.',
-          'Le poids exact de chaque filtre reste discuté : Dominic Lusinchi (2012) conteste par exemple l\'idée que les listes du Digest étaient surtout des listes de riches.',
-          'Le calcul de Meng suppose que l\'erreur vient entièrement du biais. Il donne un ordre de grandeur, pas une valeur exacte.',
+          'Les expériences simplifient. Le mode « Literary Digest » tire au hasard dans un électorat où Roosevelt pèse 42,9 %, et l\'expérience 2 applique les mêmes taux de réponse à tout le monde : Lusinchi montre pourtant qu\'ils varient selon l\'âge, le métier ou l\'équipement.[^3]',
+          'Tout le partage entre liste et non-réponse repose sur un sondage fait six mois après, par quotas, sur la mémoire des gens, et sur 764 personnes qui disent avoir reçu un bulletin.[^3] Lusinchi le dit lui-même : ses résultats ne sont pas définitifs, et le poids exact de chaque filtre reste discuté.[^3,4]',
+          'Les parts sont souvent calculées sur les seules voix Roosevelt et Landon, d\'où 62,5 % pour Roosevelt. Sur l\'ensemble des suffrages, il obtient 60,8 %, et les candidats mineurs, dont William Lemke, environ 2,7 %.[^12] Les résultats officiels varient aussi légèrement selon les sources.[^12]',
+          'Lohr et Brick ajoutent une nuance : le Digest publiait sa méthode et son taux de réponse, dépassant ceux de nombreux sondages actuels.[^2] Sa vraie faute est de n\'avoir pas tenu compte de l\'incertitude que tout cela impliquait.[^2]',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Un échantillon se juge à la façon dont il a été choisi, pas à sa taille. La marge d\'erreur mesure le hasard, jamais le biais : un sondage énorme et biaisé se trompe avec une précision parfaite.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Oui, et lourdement : les réponses du Digest valaient, en ordre de grandeur, un tirage au hasard de 6 personnes. Un échantillon se juge à la façon dont il a été choisi, pas à sa taille. La marge d\'erreur mesure le hasard, jamais le biais : un sondage énorme et biaisé se trompe avec une précision parfaite.' },
     ],
+    // Les numéros [^n] du texte renvoient à cet ordre : ne pas réordonner sans les mettre à jour
     sources: [
-      { titre: 'Peverill Squire, « Why the 1936 Literary Digest Poll Failed », Public Opinion Quarterly, vol. 52, n° 1, 1988, p. 125-133' },
-      { titre: 'Sharon L. Lohr et J. Michael Brick, « Roosevelt Predicted to Win: Revisiting the 1936 Literary Digest Poll », Statistics, Politics and Policy, vol. 8, n° 1, 2017', url: 'https://doi.org/10.1515/spp-2016-0006' },
-      { titre: 'Dominic Lusinchi, « "President" Landon and the 1936 Literary Digest Poll: Were Automobile and Telephone Owners to Blame? », Social Science History, vol. 36, n° 1, 2012, p. 23-54' },
-      { titre: 'David Freedman, Robert Pisani et Roger Purves, Statistics, 4e édition, W. W. Norton, 2007, chapitre 19 « Sample Surveys »' },
+      { titre: 'The Literary Digest, « Landon, 1,293,669; Roosevelt, 972,897: Final Returns in "The Digest\'s" Poll of Ten Million Voters », vol. 122, 31 octobre 1936, p. 5-6', note: 'Article non consulté directement, cité d\'après Lohr et Brick.' },
+      { titre: 'Sharon L. Lohr et J. Michael Brick, « Roosevelt Predicted to Win: Revisiting the 1936 Literary Digest Poll », Statistics, Politics and Policy, vol. 8, n° 1, 2017, p. 65-84', url: 'https://doi.org/10.1515/spp-2016-0006' },
+      { titre: 'Dominic Lusinchi, « "President" Landon and the 1936 Literary Digest Poll: Were Automobile and Telephone Owners to Blame? », Social Science History, vol. 36, n° 1, 2012, p. 23-54', url: 'https://doi.org/10.1017/S014555320001035X' },
+      { titre: 'Peverill Squire, « Why the 1936 Literary Digest Poll Failed », Public Opinion Quarterly, vol. 52, n° 1, 1988, p. 125-133', url: 'https://doi.org/10.1086/269085', note: 'Non consulté directement, cité d\'après Lusinchi.' },
+      { titre: 'George Gallup, « Government and the Sampling Referendum », Journal of the American Statistical Association, vol. 33, 1938, p. 131-142', note: 'Non consulté directement, cité d\'après Lohr et Brick.' },
+      { titre: 'Maurice C. Bryson, « The Literary Digest Poll: Making of a Statistical Myth », The American Statistician, vol. 30, 1976, p. 184-185', note: 'Non consulté directement, cité d\'après Lohr et Brick et Lusinchi.' },
+      { titre: 'David Freedman, Robert Pisani et Roger Purves, Statistics, 4e édition, W. W. Norton, 2007, chapitre 19 « Sample Surveys »', note: 'Tableau et méthode de Gallup vérifiés à travers un support de cours qui les reprend, pas dans le livre.' },
       { titre: 'Xiao-Li Meng, « Statistical paradises and paradoxes in big data (I): Law of large populations, big data paradox, and the 2016 US presidential election », The Annals of Applied Statistics, vol. 12, n° 2, 2018, p. 685-726', url: 'https://doi.org/10.1214/18-AOAS1161SF' },
-      { titre: 'Courtney Kennedy et al., « An Evaluation of the 2016 Election Polls in the United States », Public Opinion Quarterly, vol. 82, n° 1, 2018, p. 1-33' },
-      { titre: 'Wikipédia (en anglais), « The Literary Digest » : prévision du sondage de 1936 et prévision de Gallup', url: 'https://en.wikipedia.org/wiki/The_Literary_Digest' },
+      { titre: 'Valerie C. Bradley et al., « Unrepresentative big surveys significantly overestimated US vaccine uptake », Nature, vol. 600, 2021, p. 695-700', url: 'https://doi.org/10.1038/s41586-021-04198-4' },
+      { titre: 'Courtney Kennedy et al., « An Evaluation of the 2016 Election Polls in the United States », Public Opinion Quarterly, vol. 82, n° 1, 2018, p. 1-33', url: 'https://doi.org/10.1093/poq/nfx047' },
+      { titre: 'Drew DeSilver, « Q&A: Political polls and the 2016 election », Pew Research Center, 4 mai 2017, entretien avec Courtney Kennedy', url: 'https://www.pewresearch.org/short-reads/2017/05/04/qa-political-polls-and-the-2016-election/' },
       { titre: 'Wikipédia (en anglais), « 1936 United States presidential election » : résultats officiels', url: 'https://en.wikipedia.org/wiki/1936_United_States_presidential_election' },
+      { titre: 'Wikipédia (en anglais), « The Literary Digest » : prévision du sondage de 1936 et prévision de Gallup', url: 'https://en.wikipedia.org/wiki/The_Literary_Digest' },
       { titre: 'Wikipédia, « Biais d\'échantillonnage »', url: 'https://fr.wikipedia.org/wiki/Biais_d%27%C3%A9chantillonnage' },
     ],
+    inspiration: {
+      texte: 'La forme de cette fiche (partir du concret, faire manipuler avant d\'expliquer, des défis) s\'inspire de Nicky Case,',
+      titre: 'To Build a Better Ballot, 2016, domaine public (CC0)',
+      url: 'https://ncase.me/ballot/',
+    },
   },
 
   // ---------- Quel graphique ? ----------
@@ -1294,7 +1415,7 @@ const LABO_FICHES = [
     rubrique: 'choisir',
     statut: 'publiee',
     date: '2026-10-18',
-    titre: 'Quel graphique pour quelle question ?',
+    titre: 'Votre graphique répond-il à la bonne question ?',
     accroche: 'Ne partez pas du graphique qui vous plaît. Partez de la question que vous posez à vos données, et de ce que l\'œil sait lire : une position, mieux qu\'un angle ; une longueur, mieux qu\'une surface.',
     visuel: {
       type: 'selecteur',
@@ -1439,7 +1560,7 @@ const LABO_FICHES = [
       {
         type: 'maths',
         titre: 'Distribution : la boîte à moustaches, mode d\'emploi',
-        texte: 'John Tukey a popularisé la boîte à moustaches en 1977 pour résumer une distribution en cinq nombres. Appliquée aux 20 salaires de la fiche « Le salaire moyen vous ment », elle désigne d\'elle-même les deux salaires de direction.',
+        texte: 'John Tukey a popularisé la boîte à moustaches en 1977 pour résumer une distribution en cinq nombres. Appliquée aux 20 salaires de la fiche « Comment la majorité peut-elle gagner moins que la moyenne ? », elle désigne d\'elle-même les deux salaires de direction.',
         equations: [
           { eq: 'Q1 = 2 075 €   ·   Me = 2 325 €   ·   Q3 = 2 750 €', note: 'Les quartiles coupent les valeurs rangées en quatre groupes égaux. Méthode de Tukey : Q1 est la médiane de la moitié basse (les 10 plus petits salaires), Q3 celle de la moitié haute. D\'autres méthodes interpolent autrement et donnent 2 087,5 € et 2 725 € : les méthodes diffèrent un peu, jamais beaucoup.' },
           { eq: 'EI = Q3 − Q1 = 675 €', note: 'L\'écart interquartile, la largeur de la boîte : la moitié centrale des salariés tient dans 675 €.' },
@@ -1485,7 +1606,7 @@ const LABO_FICHES = [
           'Les magasins et les marques sont fictifs. Le CO₂ de Mauna Loa et le quartet d\'Anscombe sont des données publiées.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Une question, un graphique. Si un graphique doit répondre à deux questions, faites-en deux. Et dans le doute, choisissez la position sur un axe commun : c\'est ce que l\'œil lit le mieux.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Un graphique répond à la bonne question quand il n\'en traite qu\'une, sous une forme que l\'œil lit bien. S\'il doit répondre à deux questions, faites-en deux. Et dans le doute, choisissez la position sur un axe commun : c\'est ce que l\'œil lit le mieux.' },
     ],
     sources: [
       { titre: 'Jacques Bertin, Sémiologie graphique. Les diagrammes, les réseaux, les cartes, Mouton et Gauthier-Villars, 1967' },
@@ -1508,8 +1629,8 @@ const LABO_FICHES = [
       { titre: 'Wikipédia, « Boîte à moustaches »', url: 'https://fr.wikipedia.org/wiki/Bo%C3%AEte_%C3%A0_moustaches' },
     ],
   },
-  { id: 'camembert-ou-barres', rubrique: 'choisir', statut: 'a-venir', titre: 'Camembert ou barres : le test des 5 secondes' },
-  { id: 'double-axe', rubrique: 'choisir', statut: 'a-venir', titre: 'Pourquoi fuir les graphiques à deux axes' },
+  { id: 'camembert-ou-barres', rubrique: 'choisir', statut: 'a-venir', titre: 'Camembert ou barres : qui gagne le test des 5 secondes ?' },
+  { id: 'double-axe', rubrique: 'choisir', statut: 'a-venir', titre: 'Un graphique à deux axes peut-il tout faire dire ?' },
 
   // ---------- Notions ----------
   {
@@ -1687,12 +1808,12 @@ const LABO_FICHES = [
         texte: [
           'Les douze mois sont fictifs, fabriqués avec le modèle de la cause commune : c\'est pour cela que la corrélation partielle tombe si nettement à zéro. Sur des données réelles, il reste souvent un peu de lien, dû à d\'autres facteurs.',
           'La chaleur ne brûle pas la peau : ce sont les ultraviolets. La température sert ici de mesure commode du beau temps et du temps passé dehors. Les UV culminent autour du solstice, fin juin, quand la chaleur culmine en juillet et août.',
-          'r ne mesure que les liens en ligne droite. Une relation en U peut donner r = 0 : voir le quartet d\'Anscombe dans la fiche « Quel graphique pour quelle question ? ».',
+          'r ne mesure que les liens en ligne droite. Une relation en U peut donner r = 0 : voir le quartet d\'Anscombe dans la fiche « Votre graphique répond-il à la bonne question ? ».',
           'Le test de Student suppose des observations indépendantes. Douze mois qui se suivent ne le sont pas tout à fait : la p-valeur donne un ordre de grandeur, pas une certitude.',
           'Ajuster ne corrige que les facteurs mesurés. Un facteur caché inconnu reste caché : seule l\'expérience aléatoire les neutralise tous.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Corrélation n\'est pas causalité, mais ce n\'est pas rien : c\'est un indice. Pour remonter à la cause, écartez le hasard, cherchez le facteur caché et retirez-le du calcul. Et quand c\'est possible, tirez au sort.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Non : glaces et coups de soleil ont une cause commune, la chaleur. Corrélation n\'est pas causalité, mais ce n\'est pas rien : c\'est un indice. Pour remonter à la cause, écartez le hasard, cherchez le facteur caché et retirez-le du calcul. Et quand c\'est possible, tirez au sort.' },
     ],
     sources: [
       { titre: 'Karl Pearson, « Mathematical Contributions to the Theory of Evolution. III. Regression, Heredity, and Panmixia », Philosophical Transactions of the Royal Society A, vol. 187, 1896, p. 253-318' },
@@ -1716,8 +1837,8 @@ const LABO_FICHES = [
     rubrique: 'notions',
     statut: 'publiee',
     date: '2026-10-19',
-    titre: 'Le biais du survivant : les avions qui reviennent',
-    accroche: 'Les bombardiers rentrent criblés de balles sur les ailes. Réflexe : blinder les ailes. Mauvaise idée. Les trous qu\'on voit sont ceux qu\'un avion encaisse sans tomber. Il faut blinder là où il n\'y en a pas.',
+    titre: 'Faut-il blinder un avion là où il est criblé de balles ?',
+    accroche: 'Les bombardiers rentrent criblés de balles sur les ailes. Réflexe : blinder les ailes. Mauvaise idée. Les trous qu\'on voit sont ceux qu\'un avion encaisse sans tomber. Il faut blinder là où il n\'y en a pas : c\'est le biais du survivant.',
     visuel: {
       type: 'image',
       schema: 'biais-selection-avion',
@@ -1793,7 +1914,7 @@ const LABO_FICHES = [
           'Le calcul suppose que les impacts tombent au hasard, en proportion de la surface de chaque zone. C\'est une approximation : rien ne garantit que les tirs se répartissaient ainsi.',
         ],
       },
-      { type: 'retenir', titre: 'À retenir', texte: 'Les données ne montrent que ce qui a survécu au filtre. Avant de conclure, demandez-vous qui manque à l\'appel : la réponse est souvent là où il n\'y a rien à voir.' },
+      { type: 'retenir', titre: 'À retenir', texte: 'Non : les trous à regarder sont ceux qui manquent. Les données ne montrent que ce qui a survécu au filtre. Avant de conclure, demandez-vous qui manque à l\'appel : la réponse est souvent là où il n\'y a rien à voir.' },
     ],
     sources: [
       { titre: 'Abraham Wald, A Method of Estimating Plane Vulnerability Based on Damage of Survivors, Statistical Research Group, Columbia University, 1943 ; réédité par le Center for Naval Analyses, CRC 432, 1980' },
@@ -1805,6 +1926,6 @@ const LABO_FICHES = [
       { titre: 'Wikipédia, « Biais du survivant »', url: 'https://fr.wikipedia.org/wiki/Biais_du_survivant' },
     ],
   },
-  { id: 'mediane-moyenne', rubrique: 'notions', statut: 'a-venir', titre: 'Médiane, moyenne, mode : trois façons de dire « typique »' },
-  { id: 'loi-grands-nombres', rubrique: 'notions', statut: 'a-venir', titre: 'La loi des grands nombres, avec une pièce de monnaie' },
+  { id: 'mediane-moyenne', rubrique: 'notions', statut: 'a-venir', titre: 'Qu\'est-ce que ça veut dire, être « typique » ?' },
+  { id: 'loi-grands-nombres', rubrique: 'notions', statut: 'a-venir', titre: 'Après dix piles, la pièce va-t-elle enfin tomber sur face ?' },
 ];
