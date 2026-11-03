@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cahier d'épreuves, page 03</title>
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#efefec">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../../fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="../../js/theme-init.js"></script>
+  <link rel="stylesheet" href="../../css/tokens.css">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/components.css">
+  <link rel="stylesheet" href="../enigme.css">
+  <link rel="stylesheet" href="../../css/utilities.css">
+</head>
+
+<body data-root="../.." data-derive="2">
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+  <site-header>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="site-header__brand" href="../../index.html">Pierre Duchesne</a>
+        <a class="link text-sm" href="../../index.html#outils">Sommaire</a>
+      </div>
+    </header>
+  </site-header>
+
+  <main id="contenu">
+    <header class="page-head">
+      <div class="container grid">
+        <div class="grid__band grid--baseline">
+          <span class="folio sm-col-1-2 md-col-8-8 col-12-12">03</span>
+          <span class="eyebrow sm-col-3-4 md-col-1-4 col-1-4">Cahier d'épreuves</span>
+        </div>
+        <hr class="rule rule--strong col-1-12 enigme__filet--decale" data-reveal>
+        <h1 class="title-1 col-1-7 md-col-1-6">Épreuve non corrigée</h1>
+        <p class="lead col-8-12 md-col-1-6" data-reveal>La note du correcteur n'a pas été imprimée.</p>
+      </div>
+    </header>
+
+    <section class="section section--tight" aria-label="Texte à relire">
+      <div class="container grid">
+        <!-- Note du correcteur : huit coquilles. Garder la lettre fausse, pas la lettre juste. Dans l'ordre de lecture. -->
+        <p class="enigme__texte col-3-9 md-col-3-8">Une page se compose comme une maison se <span class="derive">conslruit</span> : d'abord la grille, <span class="derive">ensuete</span> le texte. Chaque colonne reçoit sa part de mots, chaque <span class="derive">fitet</span> <span class="derive">sépate</span> sans décorer. Le lecteur ne voit rien de ce <span class="derive">travair</span>, et c'est bien ainsi. Mais avant le <span class="derive">tiiage</span>, quelqu'un doit encore relire l'<span class="derive">épneuve</span>, ligne après ligne, lentement, sans jamais se fier à sa <span class="derive">mémeire</span>.</p>
+      </div>
+    </section>
+
+    <section class="section section--ruled section--tight" aria-label="Réponse">
+      <div class="container grid">
+        <div class="col-1-7 md-col-1-6">
+          <form class="enigme__form" data-enigme data-racine="../" autocomplete="off" novalidate>
+            <div class="field">
+              <label class="label" for="mot">Votre mot</label>
+              <input class="input" id="mot" name="mot" type="text" spellcheck="false" autocapitalize="off" aria-describedby="mot-erreur">
+              <p class="error" id="mot-erreur" hidden></p>
+            </div>
+            <button class="btn btn--primary" type="submit">Valider</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-labelledby="titre-indices">
+      <div class="container grid">
+        <div class="col-1-7 md-col-1-6 enigme__indices">
+          <h2 class="eyebrow" id="titre-indices">Indices</h2>
+          <details class="disclosure">
+            <summary class="disclosure__summary">Indice 1</summary>
+            <div class="disclosure__body">
+              <p>Ce texte n'a jamais été relu. Relisez-le. Regardez aussi ce qui n'a pas été imprimé : la source de la page (Ctrl+U sur ordinateur).</p>
+            </div>
+          </details>
+          <details class="disclosure">
+            <summary class="disclosure__summary">Indice 2</summary>
+            <div class="disclosure__body">
+              <p>La source dit : huit coquilles, garder la lettre fausse et non la lettre juste, dans l'ordre de lecture.</p>
+            </div>
+          </details>
+          <details class="disclosure">
+            <summary class="disclosure__summary">Indice 3</summary>
+            <div class="disclosure__body">
+              <p>Première coquille : « conslruit ». La lettre fausse est le l, et non le t qu'on attendait. Il en reste sept.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <site-footer>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>© 2026 Pierre Duchesne</p>
+        <p class="eyebrow">Data · Maths · Code</p>
+      </div>
+    </footer>
+  </site-footer>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script type="module" src="../enigme.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+/* =========================================================
+   enigme.css
+   Styles du Cahier d'épreuves. Chargé par les pages de enigme/ seules.
+   Exceptions au design system : voir spec-iris.md, section 6 (E1 à E15).
+   ========================================================= */
+
+@layer components {
+  /* ---------- Placements absents de layout.css ---------- */
+  @media (min-width: 48rem) {
+    .md-col-2-8 { grid-column: 2 / 9; }
+    .md-col-4-4 { grid-column: 4 / 5; }
+    .md-col-8-8 { grid-column: 8 / 9; }
+  }
+
+  @media (min-width: 64rem) {
+    .col-3-9 { grid-column: 3 / 10; }
+    .col-6-6 { grid-column: 6 / 7; }
+    .col-6-10 { grid-column: 6 / 11; }
+    .col-12-12 { grid-column: 12 / 13; }
+  }
+
+  /* ---------- Formulaire et indices ---------- */
+  .enigme__consigne {
+    margin-block-end: var(--space-3);
+  }
+
+  .enigme__indices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  /* ---------- Ligne chiffrée (niveaux 2 et 5) ---------- */
+  .enigme__ligne {
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    line-height: var(--leading-xl);
+  }
+
+  /* ---------- Niveau 1 : bande voilée (E1, E2, E3) ---------- */
+  .voile { min-block-size: calc(var(--space-20) * 2); display: grid; align-content: center; }
+  .voile__texte { color: var(--color-bg); margin-inline-start: 58%; }
+  .voile:hover .voile__texte,
+  .voile:focus .voile__texte,
+  .voile.is-devoile .voile__texte { color: var(--color-text); }
+  .voile:focus { outline: none; }
+  .voile__texte::selection { color: var(--color-bg); background-color: var(--color-text); }
+
+  /* ---------- Niveau 3 : coquilles (E5, E6) ---------- */
+  .enigme__texte {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .derive { position: relative; inset-block-start: 2px; }
+
+  .enigme__filet--decale {
+    margin-inline-start: calc(var(--grid-gutter) / 2);
+  }
+
+  /* ---------- Niveau 4 : quarante filets (E7, E8, E9) ---------- */
+  .filets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--grid-gutter); }
+  .filets__groupe { display: grid; gap: var(--space-2); }
+  .filet { display: block; block-size: var(--border-width-strong); }
+  .filet--a { background-color: light-dark(#77776f, #ecece8); }
+  .filet--b { background-color: light-dark(#77776f, #34342f); }
+  @media (min-width: 64rem) {
+    .filets__groupe:nth-child(2) { margin-block-start: var(--space-1); }
+    .filets__groupe:nth-child(3) { margin-block-start: var(--space-2); }
+    .filets__groupe:nth-child(4) { margin-block-start: var(--space-3); }
+    .filets__groupe:nth-child(5) { margin-block-start: var(--space-4); }
+  }
+  @media (max-width: 47.99rem) {
+    .filets { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-6); }
+  }
+
+  /* Filet tracé à l'arrivée : même règle que .rule[data-reveal], avec la cascade du groupe */
+  .has-motion .filet[data-reveal] {
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-slow) var(--ease-in-out);
+    transition-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger));
+  }
+
+  .has-motion .filet[data-reveal].is-revealed {
+    transform: none;
+  }
+
+  /* ---------- Niveau 5 : table et calque de contrôle (E10 à E15) ---------- */
+  .enigme__calque { display: none; }
+
+  @media (hover: none) {
+    .enigme__calque { display: inline-flex; }
+  }
+
+  .enigme__etat--on { display: none; }
+
+  .calque {
+    grid-column: 1 / -1;
+    display: grid;
+    row-gap: var(--space-half);
+  }
+
+  @media (min-width: 64rem) {
+    .calque {
+      grid-template-columns: subgrid;
+      column-gap: var(--grid-gutter);
+    }
+  }
+
+  @media (max-width: 63.99rem) {
+    .calque__ligne {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--space-half);
+    }
+  }
+
+  .calque__case {
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--leading-base);
+    padding-block: var(--space-1);
+    text-align: center;
+  }
+
+  /* Calque désactivé : les lignes de la table et l'en-tête sortent de la grille */
+  .calque__ligne { overflow-x: clip; }
+  .calque__ligne:nth-child(1) > * { translate: calc(3 * (100% + var(--grid-gutter))) 0; }
+  .calque__ligne:nth-child(2) > * { translate: calc(-2 * (100% + var(--grid-gutter))) 0; }
+  .calque__ligne:nth-child(3) > * { translate: calc(1 * (100% + var(--grid-gutter))) 0; }
+  [data-hors-grille] { translate: var(--space-3) var(--space-1); rotate: -1deg; }
+
+  @media (max-width: 63.99rem) {
+    .calque__ligne:nth-child(1) > * { translate: calc(3 * (100% + var(--space-half))) 0; }
+    .calque__ligne:nth-child(2) > * { translate: calc(-2 * (100% + var(--space-half))) 0; }
+    .calque__ligne:nth-child(3) > * { translate: calc(1 * (100% + var(--space-half))) 0; }
+  }
+
+  /* Calque activé : la page se remet en place, seules les colonnes ouvertes restent lisibles */
+  html:has(.grid-overlay.is-visible) .calque__ligne > * { translate: none; }
+  html:has(.grid-overlay.is-visible) [data-hors-grille] { translate: none; rotate: none; }
+  html:has(.grid-overlay.is-visible) .calque__case:not(.calque__case--ouverte) { color: var(--color-bg); }
+  html:has(.grid-overlay.is-visible) .enigme__etat--off { display: none; }
+  html:has(.grid-overlay.is-visible) .enigme__etat--on { display: inline; }
+}
