@@ -115,6 +115,14 @@ const PLACES = [
     address: 'Toulouse – Centre', lat: 43.6009, lng: 1.4292,
     hours: '–', tags: ['Émerveillement','Art'], highlight: true, contributor: 'Romain S',
   },
+  {
+    id: 'tlse_14', city: 'Toulouse',
+    name: 'La Maison du Curry', type: 'Restaurant', neighborhood: 'Saint-Sernin',
+    moods: ['Entre amis'], budget: '–',
+    description: 'Resto indien super savoureux. Cadre moderne. Assiettes gourmandes et colorées.',
+    address: '51 rue du Taur, Toulouse', lat: 43.6072, lng: 1.4422,
+    hours: '–', tags: ['Indien', 'Curry'], highlight: false, contributor: 'Romain S',
+  },
 
   // ══════════════════════════════════════════
   //  MADRID

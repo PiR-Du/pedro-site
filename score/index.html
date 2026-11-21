@@ -46,7 +46,7 @@
           </div>
           <hr class="rule rule--strong col-1-12" data-reveal>
           <h1 class="title-1 view__title col-1-8 md-col-1-6" id="welcome-title" tabindex="-1">Notez chaque manche, célébrez chaque victoire.</h1>
-          <p class="lead col-9-12 md-col-1-6">Suivi de scores pour vos soirées jeux : saisie rapide, classement en direct, graphiques et trophées.</p>
+          <p class="lead col-9-12 md-col-1-6">Choisissez le jeu et le nombre de joueurs : la feuille de score applique son décompte. Classement en direct, graphiques et trophées.</p>
         </div>
       </header>
 
@@ -62,7 +62,7 @@
             </div>
             <div class="stack stack--1">
               <button type="button" class="btn btn--primary btn--block" data-action="new-game">Nouvelle partie</button>
-              <p class="hint">Configurez les joueurs, choisissez un jeu et commencez à noter les scores.</p>
+              <p class="hint">Skull King, Les Caprices du Roi, Cartographers ou partie libre.</p>
             </div>
             <div class="stack stack--1">
               <button type="button" class="btn btn--block" data-action="history">Historique</button>
@@ -89,21 +89,35 @@
           </header>
 
           <form class="col-5-12 md-col-4-8 stack stack--4" id="setup-form">
-            <div class="field">
-              <label class="label" for="game-name-input">Nom du jeu</label>
-              <input class="input" id="game-name-input" type="text" placeholder="Catan, Wingspan, Les Aventuriers du Rail" value="Soirée Jeux">
+            <fieldset class="field">
+              <legend class="label">Jeu</legend>
+              <div class="chip-group" id="game-picker"></div>
+              <p class="hint" id="game-hint"></p>
+            </fieldset>
+            <div class="stack stack--4" id="free-fields">
+              <div class="field">
+                <label class="label" for="game-name-input">Nom du jeu</label>
+                <input class="input" id="game-name-input" type="text" placeholder="Catan, Wingspan, Les Aventuriers du Rail" value="Soirée Jeux">
+              </div>
+              <div class="field">
+                <label class="label" for="score-direction">Sens du score</label>
+                <select class="select" id="score-direction">
+                  <option value="high">Le plus haut score gagne</option>
+                  <option value="low">Le plus bas score gagne</option>
+                </select>
+              </div>
             </div>
             <div class="field">
-              <label class="label" for="score-direction">Sens du score</label>
-              <select class="select" id="score-direction">
-                <option value="high">Le plus haut score gagne</option>
-                <option value="low">Le plus bas score gagne</option>
-              </select>
+              <span class="label" id="count-label">Nombre de joueurs <span class="label__optional" id="count-range"></span></span>
+              <div class="stepper stepper--count" role="group" aria-labelledby="count-label">
+                <button type="button" class="stepper__btn" data-action="count" data-step="-1" aria-label="Un joueur de moins">−</button>
+                <output class="stepper__value" id="player-count" aria-live="polite">2</output>
+                <button type="button" class="stepper__btn" data-action="count" data-step="1" aria-label="Un joueur de plus">+</button>
+              </div>
             </div>
             <fieldset class="field">
-              <legend class="label">Joueurs <span class="label__optional">(2 à 8)</span></legend>
+              <legend class="label">Joueurs</legend>
               <div id="player-list"></div>
-              <button type="button" class="btn btn--block" id="add-player-btn" data-action="add-player">Ajouter un joueur</button>
             </fieldset>
             <div class="btn-group">
               <button type="button" class="btn btn--quiet" data-action="welcome">Retour</button>
@@ -124,34 +138,38 @@
               <h2 class="title-2 view__title" id="game-display-name" tabindex="-1">Jeu</h2>
             </div>
             <div class="col-8-12 md-col-5-8 btn-group">
-              <button type="button" class="btn btn--sm" data-action="undo">Annuler la dernière manche</button>
+              <button type="button" class="btn btn--sm" data-action="undo" data-rounds-only>Annuler la dernière manche</button>
               <button type="button" class="btn btn--danger btn--sm" data-action="abandon">Abandonner</button>
               <button type="button" class="btn btn--primary btn--sm" data-action="end">Terminer la partie</button>
             </div>
           </div>
 
-          <form class="col-1-5 md-col-1-4 stack" id="round-form">
-            <h3 class="eyebrow">Scores, manche <span id="current-round-num">1</span></h3>
+          <form class="col-1-5 md-col-1-4 stack" id="round-form" novalidate>
+            <h3 class="eyebrow" id="form-title">Scores, manche 1</h3>
             <div id="score-inputs"></div>
+            <p class="hint" id="form-summary" aria-live="polite" hidden></p>
+            <p class="error" id="form-error" role="alert" hidden></p>
             <button type="button" class="btn btn--sm btn--block" id="copy-last-round-btn" data-action="copy-round" hidden>Copier la manche précédente</button>
-            <button type="submit" class="btn btn--primary btn--block">Valider la manche</button>
-            <p class="hint"><span class="kbd">Tab</span> et flèches pour naviguer, <span class="kbd">Entrée</span> pour valider.</p>
+            <button type="button" class="btn btn--sm btn--block" id="form-back-btn" data-action="form-back" hidden>Modifier les annonces</button>
+            <button type="submit" class="btn btn--primary btn--block" id="form-submit">Valider la manche</button>
+            <p class="hint" id="form-help"><span class="kbd">Tab</span> pour passer d'un champ à l'autre, <span class="kbd">Entrée</span> pour avancer.</p>
           </form>
 
-          <div class="col-7-12 md-col-5-8 stack stack--6">
+          <div class="col-7-12 md-col-5-8 stack stack--6" id="game-side">
             <section class="stack stack--2" aria-labelledby="standings-title">
               <h3 class="eyebrow" id="standings-title">Classement en direct</h3>
               <ol class="standings" id="leaderboard" aria-live="polite"></ol>
+              <p class="hint" id="tiebreak-hint" hidden>En cas d'égalité, le joueur dont les Sujets valent le moins l'emporte.</p>
             </section>
 
-            <section class="stack stack--2" aria-labelledby="stats-title">
+            <section class="stack stack--2" aria-labelledby="stats-title" data-rounds-only>
               <h3 class="eyebrow" id="stats-title">Statistiques</h3>
               <div id="live-stats-grid">
                 <p class="empty">Jouez une manche pour voir les statistiques.</p>
               </div>
             </section>
 
-            <section class="stack stack--2" aria-labelledby="chart-title">
+            <section class="stack stack--2" aria-labelledby="chart-title" data-rounds-only>
               <div class="tool__bar">
                 <h3 class="eyebrow" id="chart-title">Graphique</h3>
                 <div class="segmented" role="group" aria-label="Type de graphique">
@@ -167,12 +185,12 @@
               <p id="chart-no-data" class="empty">Validez une manche pour voir le graphique.</p>
             </section>
 
-            <section class="stack stack--2" aria-labelledby="rounds-title">
+            <section class="stack stack--2" aria-labelledby="rounds-title" data-rounds-only>
               <h3 class="eyebrow" id="rounds-title">Historique des manches</h3>
               <div id="round-history-wrap" class="table-scroll">
                 <p class="empty">Aucune manche pour le moment.</p>
               </div>
-              <p class="hint">Un clic sur un score permet de le corriger.</p>
+              <p class="hint">Un clic sur un score rouvre la manche pour la corriger.</p>
             </section>
           </div>
         </div>

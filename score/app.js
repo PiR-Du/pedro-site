@@ -1,14 +1,77 @@
 // ============================================================
+// JEUX
+// ============================================================
+// Chaque jeu décrit sa feuille de score :
+// - 'rounds' : un score libre par joueur et par manche ;
+// - 'bids'   : annonce, plis et bonus à chaque manche (Skull King) ;
+// - 'sheet'  : une feuille unique remplie en fin de partie (Les Caprices du Roi) ;
+// - 'seasons': deux décrets, pièces et monstres à chaque saison (Cartographers).
+const GAMES = {
+  skullking: {
+    label: 'Skull King', kind: 'bids', min: 2, max: 8, rounds: 10, direction: 'high',
+    hint: '2 à 8 joueurs, 10 manches. À la manche n, chacun reçoit n cartes. Annonce réussie : 20 points par pli (ou 10 × n pour une annonce de zéro), plus les bonus. Annonce ratée : −10 par pli d\'écart (ou −10 × n pour une annonce de zéro ratée).',
+  },
+  caprices: {
+    label: 'Les Caprices du Roi', kind: 'sheet', min: 2, max: 5, direction: 'high',
+    hint: '2 à 5 joueurs, 4 manches, décompte en fin de partie : valeur des Sujets, les deux caprices communs et les quatre caprices à +30, +20, +15 et +10.',
+  },
+  cartographers: {
+    label: 'Cartographers', kind: 'seasons', min: 2, max: 8, rounds: 4, direction: 'high',
+    hint: '2 à 8 joueurs, 4 saisons. Chaque saison compte deux décrets (printemps A et B, été B et C, automne C et D, hiver D et A), plus 1 point par pièce et −1 par case vide voisine d\'un monstre.',
+  },
+  free: {
+    label: 'Partie libre', kind: 'rounds', min: 2, max: 8,
+    hint: 'N\'importe quel jeu : un score par joueur et par manche.',
+  },
+};
+const GAME_ORDER = ['skullking', 'caprices', 'cartographers', 'free'];
+
+// Cartographers : les décrets comptés à chaque saison
+const SEASONS = [
+  { name: 'Printemps', edicts: ['A', 'B'] },
+  { name: 'Été', edicts: ['B', 'C'] },
+  { name: 'Automne', edicts: ['C', 'D'] },
+  { name: 'Hiver', edicts: ['D', 'A'] },
+];
+const SEASON_FIELDS = ['e1', 'e2', 'coins', 'monsters'];
+
+const TIEBREAK_HINTS = {
+  sheet: 'En cas d\'égalité, le joueur dont les Sujets valent le moins l\'emporte.',
+  seasons: 'En cas d\'égalité, le joueur qui a perdu le moins de points à cause des monstres l\'emporte.',
+};
+
+// Feuille des Caprices du Roi. Les valeurs au-delà des exemples du livret
+// (suite de 8 cartes, famille de 5) ne sont pas connues : elles se saisissent.
+const CAPRICE_ROWS = [
+  { key: 'sujets', label: 'Valeur des Sujets' },
+  { key: 'ordre', label: '« De l\'ordre ! »' },
+  { key: 'union', label: '« L\'union fait la force ! »', max: 75 },
+  { key: 'c30', label: 'Caprice à +30', check: 30 },
+  { key: 'c20', label: 'Caprice à +20', check: 20 },
+  { key: 'c15', label: 'Caprice à +15', check: 15 },
+  { key: 'c10', label: 'Caprice à +10', check: 10 },
+];
+
+function gameDef(g) { return GAMES[g?.game] || GAMES.free; }
+function kindOf(g) { return gameDef(g).kind; }
+
+// ============================================================
 // ÉTAT
 // ============================================================
 // Chaque joueur porte une série de données (1 à 8), définie dans css/tokens.css.
 const SERIES_NAMES = ['Rouge', 'Encre', 'Bleu', 'Vert', 'Ocre', 'Gris', 'Prune', 'Sarcelle'];
+const SERIES_ORDER = [1, 3, 4, 5, 7, 8, 2, 6];
 // Couleurs des parties enregistrées avant la refonte, converties vers une série.
 const LEGACY_COLORS = ['#7c3aed', '#2563eb', '#059669', '#dc2626', '#d97706', '#db2777', '#0891b2', '#65a30d'];
 
+function readJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (e) { return fallback; }
+}
+
 let state = {
   currentGame: null,
-  history: JSON.parse(localStorage.getItem('boardnight_history') || '[]'),
+  history: readJson('boardnight_history', []),
+  setupGame: 'skullking',
   setupPlayers: [],
   avatarEditIdx: null,
   pendingSeries: null,
@@ -39,7 +102,33 @@ function formatDate(iso) {
 }
 
 function plural(n, word) {
-  return `${n} ${word}${n > 1 ? 's' : ''}`;
+  return `${n} ${word}${Math.abs(n) > 1 ? 's' : ''}`;
+}
+
+function signed(n) {
+  return n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '0';
+}
+
+function toInt(v) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// Résumé de l'avancement, pour l'en-tête de partie et le bandeau de reprise
+function progressText(g) {
+  if (kindOf(g) === 'sheet') return 'Décompte de fin de partie';
+  if (kindOf(g) === 'seasons') {
+    const n = g.rounds.length;
+    if (n >= SEASONS.length) return `${SEASONS.length} saisons jouées`;
+    return `${SEASONS[n].name}, saison ${n + 1} sur ${SEASONS.length}`;
+  }
+  const done = `${plural(g.rounds.length, 'manche')} terminée${g.rounds.length > 1 ? 's' : ''}`;
+  if (kindOf(g) === 'bids') {
+    const total = gameDef(g).rounds;
+    if (g.rounds.length >= total) return `${total} manches jouées`;
+    return `Manche ${g.rounds.length + 1} sur ${total} · ${done}`;
+  }
+  return `Manche ${g.rounds.length + 1} en cours · ${done}`;
 }
 
 function showView(v) {
@@ -49,13 +138,27 @@ function showView(v) {
   if (v === 'welcome') renderWelcome();
   if (v === 'history') renderHistory();
   if (v === 'game') {
-    document.getElementById('game-display-name').textContent = state.currentGame.name;
-    updateRoundInfo(); renderLeaderboard(); renderScoreInputs(); renderRoundHistory(); renderChart(); renderLiveStats();
+    const g = state.currentGame;
+    document.getElementById('game-display-name').textContent = g.name;
+    const isSheet = kindOf(g) === 'sheet';
+    document.querySelectorAll('[data-rounds-only]').forEach(el => { el.hidden = isSheet; });
+    // La feuille des Caprices a une colonne par joueur : elle prend 8 colonnes de la grille
+    document.getElementById('round-form').className = isSheet ? 'col-1-8 stack' : 'col-1-5 md-col-1-4 stack';
+    document.getElementById('game-side').className = isSheet ? 'col-9-12 stack stack--6' : 'col-7-12 md-col-5-8 stack stack--6';
+    const tiebreak = document.getElementById('tiebreak-hint');
+    tiebreak.textContent = TIEBREAK_HINTS[kindOf(g)] || '';
+    tiebreak.hidden = !TIEBREAK_HINTS[kindOf(g)];
+    refreshGame();
   }
   if (v === 'awards') renderAwards();
   window.scrollTo(0, 0);
   // Le titre de la vue reçoit le focus : le changement est annoncé aux lecteurs d'écran
   view.querySelector('.view__title')?.focus({ preventScroll: true });
+}
+
+function refreshGame() {
+  updateRoundInfo(); renderLeaderboard(); renderScoreInputs();
+  if (kindOf(state.currentGame) !== 'sheet') { renderRoundHistory(); renderChart(); renderLiveStats(); }
 }
 
 function toast(msg, type = 'default', dur = 2800) {
@@ -86,12 +189,14 @@ function showConfirm(msg, onConfirm, confirmLabel = 'Confirmer', danger = false)
 // ============================================================
 function gameRow(g, idx) {
   const top3 = (g.finalRanked || []).slice(0, 3);
+  const meta = [plural(g.players?.length || 0, 'joueur')];
+  if (kindOf(g) !== 'sheet') meta.push(plural(g.rounds?.length || 0, 'manche'));
   return `
     <li class="result">
       <span class="eyebrow">${formatDate(g.date)}</span>
       <h3 class="result__title"><button type="button" class="entry__link" data-action="review" data-index="${idx}">${escapeHtml(g.name)}</button></h3>
       <p class="result__body">${top3.map((p, r) => `${r + 1}. ${escapeHtml(p.name)} ${p.total}`).join(' · ')}</p>
-      <span class="eyebrow result__meta">${plural(g.players?.length || 0, 'joueur')} · ${plural(g.rounds?.length || 0, 'manche')}</span>
+      <span class="eyebrow result__meta">${meta.join(' · ')}</span>
     </li>`;
 }
 
@@ -106,59 +211,82 @@ function renderWelcome() {
 // CONFIGURATION
 // ============================================================
 function initSetup() {
-  // Reprend les joueurs de la dernière partie
+  // Reprend le jeu et les joueurs de la dernière partie
   const last = state.history[state.history.length - 1];
+  state.setupGame = GAMES[last?.game] ? last.game : 'skullking';
   if (last && last.players && last.players.length >= 2) {
     state.setupPlayers = last.players.map((p, i) => ({ name: p.name, series: seriesOf(p, i) }));
   } else {
     state.setupPlayers = [{ name: 'Joueur 1', series: 1 }, { name: 'Joueur 2', series: 3 }];
   }
+  renderSetup();
+}
+
+function renderSetup() {
+  const def = GAMES[state.setupGame];
+  document.getElementById('game-picker').innerHTML = GAME_ORDER.map(key => `
+    <button type="button" class="chip" data-action="pick-game" data-game="${key}" aria-pressed="${key === state.setupGame}">${GAMES[key].label}</button>`).join('');
+  document.getElementById('game-hint').textContent = def.hint;
+  document.getElementById('free-fields').hidden = def.kind !== 'rounds';
+  document.getElementById('count-range').textContent = `(${def.min} à ${def.max})`;
+  setPlayerCount(state.setupPlayers.length);
+}
+
+function pickGame(key) {
+  if (!GAMES[key]) return;
+  state.setupGame = key;
+  renderSetup();
+}
+
+// Ajuste la liste des joueurs au nombre voulu, dans les bornes du jeu
+function setPlayerCount(n) {
+  const def = GAMES[state.setupGame];
+  n = Math.max(def.min, Math.min(def.max, n));
+  while (state.setupPlayers.length > n) state.setupPlayers.pop();
+  while (state.setupPlayers.length < n) {
+    const used = state.setupPlayers.map(p => p.series);
+    const free = SERIES_ORDER.find(s => !used.includes(s)) || 1;
+    state.setupPlayers.push({ name: `Joueur ${state.setupPlayers.length + 1}`, series: free });
+  }
+  document.getElementById('player-count').textContent = n;
+  document.querySelector('[data-action="count"][data-step="-1"]').disabled = n <= def.min;
+  document.querySelector('[data-action="count"][data-step="1"]').disabled = n >= def.max;
   renderSetupPlayers();
 }
 
 function renderSetupPlayers() {
-  const list = document.getElementById('player-list');
-  list.innerHTML = state.setupPlayers.map((p, i) => `
+  document.getElementById('player-list').innerHTML = state.setupPlayers.map((p, i) => `
     <div class="player-row">
       <button type="button" class="avatar swatch--${p.series}" data-action="pick-color" data-index="${i}" aria-label="Changer la couleur de ${escapeHtml(p.name)}, actuellement ${SERIES_NAMES[p.series - 1]}">${escapeHtml(p.name.trim().charAt(0) || '?')}</button>
       <input class="input" type="text" value="${escapeHtml(p.name)}" placeholder="Nom du joueur" aria-label="Nom du joueur ${i + 1}" data-index="${i}">
-      <button type="button" class="btn btn--quiet btn--sm" data-action="remove-player" data-index="${i}">Retirer<span class="sr-only"> ${escapeHtml(p.name)}</span></button>
     </div>`).join('');
-  document.getElementById('add-player-btn').hidden = state.setupPlayers.length >= 8;
-}
-
-function addPlayerRow() {
-  if (state.setupPlayers.length >= 8) return;
-  const i = state.setupPlayers.length;
-  const used = state.setupPlayers.map(p => p.series);
-  const free = [1, 3, 4, 5, 7, 8, 2, 6].find(s => !used.includes(s)) || (i % 8) + 1;
-  state.setupPlayers.push({ name: `Joueur ${i + 1}`, series: free });
-  renderSetupPlayers();
-  document.querySelector(`#player-list .input[data-index="${i}"]`)?.select();
-}
-
-function removePlayer(i) {
-  if (state.setupPlayers.length <= 2) { toast('Il faut au moins 2 joueurs.', 'error'); return; }
-  state.setupPlayers.splice(i, 1);
-  renderSetupPlayers();
 }
 
 function startGame() {
-  const names = state.setupPlayers.map(p => p.name.trim()).filter(Boolean);
-  if (names.length < 2) { toast('Ajoutez au moins 2 joueurs.', 'error'); return; }
-  const gameName = document.getElementById('game-name-input').value.trim() || 'Soirée Jeux';
-  const direction = document.getElementById('score-direction').value;
+  const def = GAMES[state.setupGame];
+  const players = state.setupPlayers.map((p, i) => ({ ...p, name: p.name.trim() || `Joueur ${i + 1}` }));
+  if (players.length < def.min || players.length > def.max) { toast(`${def.label} se joue de ${def.min} à ${def.max} joueurs.`, 'error'); return; }
 
-  state.currentGame = {
+  const isFree = def.kind === 'rounds';
+  const g = {
     id: Date.now(),
-    name: gameName,
-    direction,
+    game: state.setupGame,
+    name: isFree ? (document.getElementById('game-name-input').value.trim() || 'Soirée Jeux') : def.label,
+    direction: isFree ? document.getElementById('score-direction').value : def.direction,
     date: new Date().toISOString(),
-    players: state.setupPlayers.map((p, i) => ({ ...p, name: p.name.trim() || `Joueur ${i + 1}` })),
+    players,
     rounds: [],
+    details: [],
     currentRound: 1,
+    pending: null,
+    editing: null,
   };
-
+  if (def.kind === 'sheet') {
+    g.sheet = {};
+    CAPRICE_ROWS.forEach(row => { g.sheet[row.key] = players.map(() => (row.check ? false : 0)); });
+    g.rounds = [players.map(() => 0)];
+  }
+  state.currentGame = g;
   saveCurrentGame();
   showView('game');
 }
@@ -188,27 +316,71 @@ function confirmAvatar() {
 }
 
 // ============================================================
-// PARTIE
+// SKULL KING : DÉCOMPTE
+// ============================================================
+// Annonce de zéro : 10 × nombre de cartes si réussie, −10 × nombre de cartes sinon.
+// Annonce d'au moins un pli : 20 par pli si réussie, −10 par pli d'écart sinon.
+// Les bonus ne comptent que si l'annonce est réussie.
+function skullKingScore(cards, bid, tricks, bonus) {
+  if (bid === 0) return tricks === 0 ? 10 * cards + bonus : -10 * cards;
+  if (tricks === bid) return 20 * bid + bonus;
+  return -10 * Math.abs(tricks - bid);
+}
+
+// ============================================================
+// LES CAPRICES DU ROI : DÉCOMPTE
+// ============================================================
+// ============================================================
+// CARTOGRAPHERS : DÉCOMPTE
+// ============================================================
+// Saison : deux décrets + 1 par pièce sur la piste − 1 par case vide voisine d'un monstre.
+// Les pièces restent sur la piste : elles rapportent à chaque saison.
+function seasonScore(d, i) {
+  return d.e1[i] + d.e2[i] + d.coins[i] - d.monsters[i];
+}
+
+// Points perdus aux monstres sur toute la partie (départage)
+function monsterLosses(g) {
+  return g.players.map((_, i) => (g.details || []).reduce((s, d) => s + (d ? d.monsters[i] : 0), 0));
+}
+
+// Intitulé court d'une manche (tableau, graphique) et nom dans une phrase
+function roundLabel(g, i) {
+  return kindOf(g) === 'seasons' ? SEASONS[i].name : `M${i + 1}`;
+}
+function roundName(g, i) {
+  return kindOf(g) === 'seasons' ? SEASONS[i].name.toLowerCase() : `manche ${i + 1}`;
+}
+
+function capriceTotals(g) {
+  return g.players.map((_, i) => CAPRICE_ROWS.reduce((sum, row) => {
+    const v = g.sheet[row.key][i];
+    return sum + (row.check ? (v ? row.check : 0) : toInt(v));
+  }, 0));
+}
+
+// ============================================================
+// PARTIE : AFFICHAGE
 // ============================================================
 function updateRoundInfo() {
-  const g = state.currentGame;
-  document.getElementById('round-info').textContent = `Manche ${g.currentRound} en cours · ${plural(g.rounds.length, 'manche')} terminée${g.rounds.length > 1 ? 's' : ''}`;
-  document.getElementById('current-round-num').textContent = g.currentRound;
+  document.getElementById('round-info').textContent = progressText(state.currentGame);
 }
 
 function renderLeaderboard() {
   const g = state.currentGame; if (!g) return;
   const ranked = getRanked(g);
   const leaderTotal = ranked[0].total;
+  const showTrend = kindOf(g) !== 'sheet';
   document.getElementById('leaderboard').innerHTML = ranked.map((p, rank) => {
-    const prev = g.rounds.length > 1 ? getPrevRank(g, p.idx) : rank + 1;
-    const delta = prev - (rank + 1);
     const trend = [];
-    if (rank > 0 && g.rounds.length > 0) {
+    if (rank > 0 && (g.rounds.length > 0 || !showTrend)) {
       const gap = g.direction === 'high' ? leaderTotal - p.total : p.total - leaderTotal;
       trend.push(`écart ${gap}`);
     }
-    if (g.rounds.length > 1 && delta !== 0) trend.push(delta > 0 ? `+${delta} place${delta > 1 ? 's' : ''}` : `−${Math.abs(delta)} place${delta < -1 ? 's' : ''}`);
+    if (showTrend && g.rounds.length > 1) {
+      const delta = getPrevRank(g, p.idx) - (rank + 1);
+      if (delta !== 0) trend.push(delta > 0 ? `+${delta} place${delta > 1 ? 's' : ''}` : `−${Math.abs(delta)} place${delta < -1 ? 's' : ''}`);
+    }
     return `
       <li class="standing${rank === 0 ? ' standing--leader' : ''}">
         <span class="folio">${rank + 1}</span>
@@ -220,8 +392,41 @@ function renderLeaderboard() {
   }).join('');
 }
 
+function setFormChrome({ title, submit, summary = '', back = false, copy = false, submitHidden = false }) {
+  document.getElementById('form-title').textContent = title;
+  const submitBtn = document.getElementById('form-submit');
+  submitBtn.textContent = submit;
+  submitBtn.hidden = submitHidden;
+  const sum = document.getElementById('form-summary');
+  sum.textContent = summary;
+  sum.hidden = !summary;
+  const backBtn = document.getElementById('form-back-btn');
+  backBtn.hidden = !back;
+  if (back) backBtn.textContent = back;
+  document.getElementById('copy-last-round-btn').hidden = !copy;
+  document.getElementById('form-help').hidden = submitHidden;
+  showFormError('');
+}
+
+function showFormError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg ? `Erreur : ${msg}` : '';
+  el.hidden = !msg;
+}
+
 function renderScoreInputs() {
   const g = state.currentGame; if (!g) return;
+  const kind = kindOf(g);
+  if (kind === 'bids') renderBidInputs(g);
+  else if (kind === 'seasons') renderSeasonInputs(g);
+  else if (kind === 'sheet') renderSheet(g);
+  else renderFreeInputs(g);
+}
+
+// Partie libre : un score par joueur
+function renderFreeInputs(g) {
+  const editing = g.editing;
+  const values = editing != null ? g.rounds[editing] : null;
   document.getElementById('score-inputs').innerHTML = g.players.map((p, i) => `
     <div class="score-row">
       ${avatarHtml(p, i)}
@@ -230,12 +435,212 @@ function renderScoreInputs() {
         <button type="button" class="stepper__btn" data-step="-1" data-index="${i}" aria-label="Retirer 1 point à ${escapeHtml(p.name)}">−</button>
         <button type="button" class="stepper__btn" data-step="1" data-index="${i}" aria-label="Ajouter 1 point à ${escapeHtml(p.name)}">+</button>
       </div>
-      <input class="input" type="number" inputmode="numeric" id="score-${i}" value="0" data-index="${i}">
+      <input class="input" type="number" inputmode="numeric" id="score-${i}" value="${values ? values[i] ?? 0 : 0}" data-index="${i}">
     </div>`).join('');
-
-  document.getElementById('copy-last-round-btn').hidden = g.rounds.length === 0;
+  setFormChrome(editing != null
+    ? { title: `Correction, manche ${editing + 1}`, submit: 'Enregistrer la correction', back: 'Annuler la correction' }
+    : { title: `Scores, manche ${g.rounds.length + 1}`, submit: 'Valider la manche', copy: g.rounds.length > 0 });
 }
 
+// Skull King : annonces d'abord, puis plis et bonus
+function bidPhase(g) {
+  if (g.editing != null) return 'all';
+  return g.pending?.phase === 'tricks' ? 'tricks' : 'bids';
+}
+
+function renderBidInputs(g) {
+  const total = gameDef(g).rounds;
+  const wrap = document.getElementById('score-inputs');
+  if (g.editing == null && g.rounds.length >= total) {
+    wrap.innerHTML = `<p class="empty">Les ${total} manches sont jouées. Terminez la partie pour voir le podium, ou cliquez sur un score pour le corriger.</p>`;
+    setFormChrome({ title: 'Partie complète', submit: '', submitHidden: true });
+    return;
+  }
+  const ri = g.editing ?? g.rounds.length;
+  const cards = ri + 1;
+  const phase = bidPhase(g);
+  const d = phase === 'all' ? g.details[ri] : null;
+  const bids = d ? d.bids : (g.pending?.bids || []);
+
+  const field = (kind, label, i, value, extra = '') => `
+    <div class="field">
+      <label class="label" for="${kind}-${i}">${label}</label>
+      <input class="input" type="number" inputmode="numeric" id="${kind}-${i}" data-field="${kind}" data-index="${i}" value="${value}" ${extra}>
+    </div>`;
+
+  wrap.innerHTML = g.players.map((p, i) => {
+    const fields = [];
+    if (phase === 'tricks') {
+      fields.push(`<div class="field"><span class="label">Annonce</span><span class="bid-row__fixed">${bids[i]}</span></div>`);
+    } else {
+      fields.push(field('bid', 'Annonce', i, d ? d.bids[i] : (bids[i] ?? 0), `min="0" max="${cards}"`));
+    }
+    if (phase !== 'bids') {
+      const tricks = d ? d.tricks[i] : (bids[i] ?? 0);
+      fields.push(field('tricks', 'Plis', i, tricks, `min="0" max="${cards}"`));
+      fields.push(field('bonus', 'Bonus', i, d ? d.bonus[i] : 0, 'step="10"'));
+    }
+    return `
+      <div class="bid-row" role="group" aria-label="${escapeHtml(p.name)}">
+        ${avatarHtml(p, i)}
+        <span class="bid-row__name">${escapeHtml(p.name)}</span>
+        <output class="bid-row__result" id="result-${i}"></output>
+        <div class="bid-row__fields">${fields.join('')}</div>
+      </div>`;
+  }).join('');
+
+  const title = phase === 'all' ? `Correction, manche ${cards}` : `Manche ${cards} · ${plural(cards, 'carte')}`;
+  if (phase === 'bids') setFormChrome({ title, submit: 'Valider les annonces' });
+  else if (phase === 'tricks') setFormChrome({ title, submit: 'Valider la manche', back: 'Modifier les annonces' });
+  else setFormChrome({ title, submit: 'Enregistrer la correction', back: 'Annuler la correction' });
+  updateBidPreview();
+}
+
+function readBidForm(g) {
+  const ri = g.editing ?? g.rounds.length;
+  const phase = bidPhase(g);
+  const val = (kind, i) => toInt(document.getElementById(`${kind}-${i}`)?.value);
+  const bids = g.players.map((_, i) => (phase === 'tricks' ? g.pending.bids[i] : val('bid', i)));
+  const tricks = phase === 'bids' ? null : g.players.map((_, i) => val('tricks', i));
+  const bonus = phase === 'bids' ? null : g.players.map((_, i) => val('bonus', i));
+  return { ri, cards: ri + 1, phase, bids, tricks, bonus };
+}
+
+// Résultat de chaque joueur et contrôle des totaux, à chaque frappe
+function updateBidPreview() {
+  const g = state.currentGame;
+  if (kindOf(g) !== 'bids' || !document.getElementById('result-0')) return;
+  const f = readBidForm(g);
+  const bidSum = f.bids.reduce((a, b) => a + b, 0);
+  g.players.forEach((_, i) => {
+    const out = document.getElementById('result-' + i);
+    if (f.phase === 'bids') { out.textContent = ''; return; }
+    const s = skullKingScore(f.cards, f.bids[i], f.tricks[i], f.bonus[i]);
+    out.textContent = signed(s);
+    out.classList.toggle('is-negative', s < 0);
+  });
+  let summary = `Annonces : ${bidSum} pour ${plural(f.cards, 'pli')}.`;
+  if (f.phase !== 'bids') {
+    const trickSum = f.tricks.reduce((a, b) => a + b, 0);
+    summary += ` Plis notés : ${trickSum} sur ${f.cards}.`;
+  }
+  const sum = document.getElementById('form-summary');
+  sum.textContent = summary;
+  sum.hidden = false;
+}
+
+function validateBidForm(f) {
+  const bad = (arr, label) => arr && arr.some(v => v < 0 || v > f.cards) ? `chaque ${label} doit être entre 0 et ${f.cards}.` : '';
+  const err = bad(f.bids, 'annonce') || bad(f.tricks, 'nombre de plis');
+  if (err) return err;
+  // Un pli peut disparaître (Kraken), donc moins de plis que de cartes est admis
+  if (f.tricks && f.tricks.reduce((a, b) => a + b, 0) > f.cards) return `il y a au plus ${plural(f.cards, 'pli')} dans cette manche.`;
+  if (f.bonus && f.bonus.some(b => b < 0)) return 'un bonus ne peut pas être négatif.';
+  return '';
+}
+
+// Cartographers : deux décrets, pièces et monstres pour chaque joueur
+function renderSeasonInputs(g) {
+  const wrap = document.getElementById('score-inputs');
+  if (g.editing == null && g.rounds.length >= SEASONS.length) {
+    wrap.innerHTML = '<p class="empty">Les quatre saisons sont jouées. Terminez la partie pour voir le podium, ou cliquez sur un score pour le corriger.</p>';
+    setFormChrome({ title: 'Partie complète', submit: '', submitHidden: true });
+    return;
+  }
+  const ri = g.editing ?? g.rounds.length;
+  const season = SEASONS[ri];
+  const d = g.editing != null ? g.details[ri] : null;
+  const labels = { e1: `Décret ${season.edicts[0]}`, e2: `Décret ${season.edicts[1]}`, coins: 'Pièces', monsters: 'Monstres (−)' };
+  // Les pièces ne se perdent pas : on reprend le total de la saison précédente
+  const initial = (k, i) => (d ? d[k][i] : k === 'coins' ? (g.details?.[ri - 1]?.coins?.[i] ?? 0) : 0);
+
+  wrap.innerHTML = g.players.map((p, i) => `
+    <div class="bid-row" role="group" aria-label="${escapeHtml(p.name)}">
+      ${avatarHtml(p, i)}
+      <span class="bid-row__name">${escapeHtml(p.name)}</span>
+      <output class="bid-row__result" id="result-${i}"></output>
+      <div class="bid-row__fields bid-row__fields--2">${SEASON_FIELDS.map(k => `
+        <div class="field">
+          <label class="label" for="${k}-${i}">${labels[k]}</label>
+          <input class="input" type="number" inputmode="numeric" min="0" id="${k}-${i}" data-field="${k}" data-index="${i}" value="${initial(k, i)}">
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const summary = 'Pièces : le total de la piste. Monstres : les points perdus, en positif.';
+  if (d) setFormChrome({ title: `Correction, ${season.name.toLowerCase()}`, submit: 'Enregistrer la correction', back: 'Annuler la correction', summary });
+  else setFormChrome({ title: `${season.name} · décrets ${season.edicts.join(' et ')}`, submit: 'Valider la saison', summary });
+  updateSeasonPreview();
+}
+
+function readSeasonForm(g) {
+  const f = { ri: g.editing ?? g.rounds.length };
+  SEASON_FIELDS.forEach(k => { f[k] = g.players.map((_, i) => toInt(document.getElementById(`${k}-${i}`)?.value)); });
+  return f;
+}
+
+function updateSeasonPreview() {
+  const g = state.currentGame;
+  if (kindOf(g) !== 'seasons' || !document.getElementById('result-0')) return;
+  const f = readSeasonForm(g);
+  g.players.forEach((_, i) => {
+    const s = seasonScore(f, i);
+    const out = document.getElementById('result-' + i);
+    out.textContent = signed(s);
+    out.classList.toggle('is-negative', s < 0);
+  });
+}
+
+// Les Caprices du Roi : feuille de fin de partie
+function renderSheet(g) {
+  const totals = capriceTotals(g);
+  const head = g.players.map((p, i) => `<th scope="col">${playerCell(p, i)}</th>`).join('');
+  const rows = CAPRICE_ROWS.map(row => {
+    const cells = g.players.map((p, i) => {
+      const v = g.sheet[row.key][i];
+      if (row.check) {
+        return `<td><button type="button" class="chip" data-action="toggle-caprice" data-field="${row.key}" data-index="${i}" aria-pressed="${!!v}" aria-label="${row.label}, rempli par ${escapeHtml(p.name)}">${v ? '+' + row.check : '0'}</button></td>`;
+      }
+      return `<td><input class="input" type="number" inputmode="numeric" min="0" ${row.max ? `max="${row.max}"` : ''} data-field="${row.key}" data-index="${i}" value="${v}" aria-label="${row.label}, ${escapeHtml(p.name)}"></td>`;
+    }).join('');
+    return `<tr>
+      <th scope="row"><span class="sheet__label">${row.label}</span></th>
+      ${cells}
+    </tr>`;
+  }).join('');
+  document.getElementById('score-inputs').innerHTML = `
+    <div class="table-scroll">
+      <table class="score-table sheet">
+        <thead><tr><th scope="col">Catégorie</th>${head}</tr></thead>
+        <tbody>${rows}
+          <tr class="sheet__total"><th scope="row">Total</th>${totals.map(t => `<td class="score-table__total">${t}</td>`).join('')}</tr>
+        </tbody>
+      </table>
+    </div>`;
+  setFormChrome({ title: 'Feuille de score', submit: 'Terminer la partie', summary: 'Un caprice se coche pour chaque joueur qui le remplit.' });
+}
+
+function updateSheet(field, i, value) {
+  const g = state.currentGame;
+  const row = CAPRICE_ROWS.find(r => r.key === field);
+  if (!row) return;
+  if (row.check) g.sheet[field][i] = !g.sheet[field][i];
+  else g.sheet[field][i] = Math.max(0, row.max ? Math.min(row.max, toInt(value)) : toInt(value));
+  g.rounds = [capriceTotals(g)];
+  saveCurrentGame();
+  renderLeaderboard();
+  if (row.check) {
+    // Le bouton est redessiné : on lui rend le focus
+    renderSheet(g);
+    document.querySelector(`[data-action="toggle-caprice"][data-field="${field}"][data-index="${i}"]`)?.focus();
+  } else {
+    document.querySelectorAll('.sheet .score-table__total').forEach((td, pi) => { td.textContent = g.rounds[0][pi]; });
+  }
+}
+
+// ============================================================
+// PARTIE : SAISIE
+// ============================================================
 function copyLastRound() {
   const g = state.currentGame; if (!g || !g.rounds.length) return;
   const last = g.rounds[g.rounds.length - 1];
@@ -245,22 +650,78 @@ function copyLastRound() {
 
 function submitRound() {
   const g = state.currentGame; if (!g) return;
-  const scores = g.players.map((_, i) => parseInt(document.getElementById('score-' + i).value) || 0);
-  g.rounds.push(scores);
-  g.currentRound++;
-  saveCurrentGame();
-  updateRoundInfo();
-  renderLeaderboard();
-  renderRoundHistory();
-  renderChart();
-  renderLiveStats();
-  g.players.forEach((_, i) => { document.getElementById('score-' + i).value = 0; });
-  document.getElementById('copy-last-round-btn').hidden = false;
-  // Le premier champ reprend le focus pour enchaîner la manche suivante
-  document.getElementById('score-0')?.focus();
+  const kind = kindOf(g);
+  if (kind === 'sheet') { endGame(); return; }
 
+  let scores;
+  let detail = null;
+  if (kind === 'bids') {
+    const f = readBidForm(g);
+    const err = validateBidForm(f);
+    if (err) { showFormError(err); return; }
+    if (f.phase === 'bids') {
+      g.pending = { phase: 'tricks', bids: f.bids };
+      saveCurrentGame();
+      renderScoreInputs();
+      document.getElementById('tricks-0')?.select();
+      return;
+    }
+    scores = g.players.map((_, i) => skullKingScore(f.cards, f.bids[i], f.tricks[i], f.bonus[i]));
+    detail = { bids: f.bids, tricks: f.tricks, bonus: f.bonus };
+  } else if (kind === 'seasons') {
+    const f = readSeasonForm(g);
+    if (SEASON_FIELDS.some(k => f[k].some(v => v < 0))) { showFormError('les valeurs se saisissent en positif, les monstres compris.'); return; }
+    scores = g.players.map((_, i) => seasonScore(f, i));
+    detail = { e1: f.e1, e2: f.e2, coins: f.coins, monsters: f.monsters };
+  } else {
+    scores = g.players.map((_, i) => toInt(document.getElementById('score-' + i).value));
+  }
+
+  const wasEditing = g.editing;
+  if (wasEditing != null) {
+    g.rounds[wasEditing] = scores;
+    if (detail) g.details[wasEditing] = detail;
+    g.editing = null;
+  } else {
+    g.rounds.push(scores);
+    g.details = g.details || [];
+    g.details[g.rounds.length - 1] = detail;
+    g.currentRound = g.rounds.length + 1;
+    g.pending = null;
+  }
+  saveCurrentGame();
+  refreshGame();
+  document.querySelector('#score-inputs input')?.select();
+
+  const seasons = kind === 'seasons';
+  if (wasEditing != null) { toast(seasons ? `${SEASONS[wasEditing].name} corrigé.` : `Manche ${wasEditing + 1} corrigée.`); return; }
   checkDramaticMoments(g);
-  toast(`Manche ${g.currentRound - 1} enregistrée.`, 'success');
+  toast(seasons ? `${SEASONS[g.rounds.length - 1].name} enregistré.` : `Manche ${g.rounds.length} enregistrée.`);
+  if (gameDef(g).rounds && g.rounds.length >= gameDef(g).rounds) {
+    const last = seasons ? 'Dernière saison jouée' : 'Dernière manche jouée';
+    setTimeout(() => toast(`${last}. Terminez la partie pour voir le podium.`, 'default', 4000), 1200);
+  }
+}
+
+// Bouton secondaire du formulaire : retour aux annonces ou fin de correction
+function formBack() {
+  const g = state.currentGame; if (!g) return;
+  if (g.editing != null) g.editing = null;
+  else if (g.pending) g.pending = { phase: 'bids', bids: g.pending.bids };
+  saveCurrentGame();
+  renderScoreInputs();
+  document.querySelector('#score-inputs input')?.select();
+}
+
+function editRound(roundIdx) {
+  const g = state.currentGame; if (!g || g._readonly) return;
+  if (['bids', 'seasons'].includes(kindOf(g)) && !g.details?.[roundIdx]) { toast('Cette manche n\'a pas de détail à corriger.', 'error'); return; }
+  g.editing = roundIdx;
+  saveCurrentGame();
+  renderScoreInputs();
+  const form = document.getElementById('round-form');
+  form.scrollIntoView({ block: 'start' });
+  form.querySelector('input')?.select();
 }
 
 function undoLastRound() {
@@ -270,14 +731,12 @@ function undoLastRound() {
     `Annuler la manche ${g.rounds.length} ? Les scores seront perdus.`,
     () => {
       g.rounds.pop();
-      g.currentRound--;
+      if (g.details) g.details.length = g.rounds.length;
+      g.currentRound = g.rounds.length + 1;
+      g.editing = null;
+      g.pending = null;
       saveCurrentGame();
-      updateRoundInfo();
-      renderLeaderboard();
-      renderRoundHistory();
-      renderChart();
-      renderLiveStats();
-      document.getElementById('copy-last-round-btn').hidden = g.rounds.length === 0;
+      refreshGame();
       toast('Manche annulée.');
     },
     'Annuler la manche',
@@ -295,11 +754,22 @@ function renderRoundHistory() {
   const totals = getTotals(g);
   // Meilleur score de chaque manche
   const roundBests = g.rounds.map(r => g.direction === 'high' ? Math.max(...r) : Math.min(...r));
+  // Détail d'une case : annonce et plis (Skull King), décrets, pièces et monstres (Cartographers)
+  const detailText = (pi, ri) => {
+    const d = g.details?.[ri];
+    if (!d) return '';
+    if (d.coins) return `décrets ${d.e1[pi]} et ${d.e2[pi]}, ${plural(d.coins[pi], 'pièce')}, monstres −${d.monsters[pi]}`;
+    return `annonce ${d.bids[pi]}, ${plural(d.tricks[pi], 'pli')}, bonus ${d.bonus[pi]}`;
+  };
+  const cellLabel = (p, pi, ri, val) => {
+    const extra = detailText(pi, ri);
+    return `${escapeHtml(p.name)}, ${roundName(g, ri)} : ${val}${extra ? ', ' + extra : ''}. Corriger`;
+  };
   wrap.innerHTML = `<table class="score-table">
     <thead>
       <tr>
         <th scope="col">Joueur</th>
-        ${g.rounds.map((_, i) => `<th scope="col">M${i + 1}</th>`).join('')}
+        ${g.rounds.map((_, i) => `<th scope="col">${roundLabel(g, i)}</th>`).join('')}
         <th scope="col">Total</th>
       </tr>
     </thead>
@@ -309,34 +779,14 @@ function renderRoundHistory() {
           <th scope="row">${playerCell(p, pi)}</th>
           ${g.rounds.map((r, ri) => {
             const val = r[pi] ?? 0;
-            return `<td><button type="button" class="score-table__cell${val === roundBests[ri] ? ' is-best' : ''}" data-action="edit-cell" data-player="${pi}" data-round="${ri}" aria-label="${escapeHtml(p.name)}, manche ${ri + 1} : ${val}. Corriger">${val}</button></td>`;
+            const extra = detailText(pi, ri);
+            const title = extra ? ` title="${extra.charAt(0).toUpperCase() + extra.slice(1)}"` : '';
+            return `<td><button type="button" class="score-table__cell${val === roundBests[ri] ? ' is-best' : ''}" data-action="edit-round" data-round="${ri}" aria-label="${cellLabel(p, pi, ri, val)}"${title}>${val}</button></td>`;
           }).join('')}
           <td class="score-table__total">${totals.find(t => t.idx === pi)?.total ?? 0}</td>
         </tr>`).join('')}
     </tbody>
   </table>`;
-}
-
-function editCell(playerIdx, roundIdx, trigger) {
-  const g = state.currentGame; if (!g) return;
-  const cell = trigger.closest('td');
-  const cur = g.rounds[roundIdx][playerIdx] ?? 0;
-  cell.innerHTML = `<input class="input" type="number" inputmode="numeric" value="${cur}" aria-label="Nouveau score">`;
-  const input = cell.querySelector('input');
-  let cancelled = false;
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') input.blur();
-    if (e.key === 'Escape') { cancelled = true; input.blur(); }
-  });
-  input.addEventListener('blur', () => {
-    if (!cancelled) g.rounds[roundIdx][playerIdx] = parseInt(input.value) || 0;
-    saveCurrentGame();
-    renderRoundHistory();
-    renderLeaderboard();
-    renderChart();
-    renderLiveStats();
-  });
-  input.select();
 }
 
 // ============================================================
@@ -412,6 +862,13 @@ function renderLiveStats() {
     { label: 'Plus régulier', value: mostConsistent.name, sub: 'variance ' + Math.round(mostConsistent.v) },
   ];
 
+  // Skull King : annonces réussies
+  const exact = exactBids(g);
+  if (exact) {
+    const best = totals.reduce((a, b) => exact[a.idx] >= exact[b.idx] ? a : b);
+    stats.push({ label: 'Annonces réussies', value: best.name, sub: exact[best.idx] + ' sur ' + nRounds });
+  }
+
   if (streak >= 2 && streakPlayer !== null) {
     stats.push({ label: 'Série en cours', value: g.players[streakPlayer].name, sub: streak + " manches d'affilée" });
   }
@@ -425,6 +882,12 @@ function renderLiveStats() {
   panel.innerHTML = `<dl class="spec">${stats.map(s => `
     <dt class="spec__term">${s.label}</dt>
     <dd class="spec__value"><strong>${escapeHtml(s.value)}</strong> <span class="muted">${escapeHtml(s.sub)}</span></dd>`).join('')}</dl>`;
+}
+
+// Nombre d'annonces réussies par joueur, ou null hors Skull King
+function exactBids(g) {
+  if (kindOf(g) !== 'bids' || !g.details?.length) return null;
+  return g.players.map((_, i) => g.details.filter(d => d && d.bids[i] === d.tricks[i]).length);
 }
 
 // ============================================================
@@ -441,7 +904,7 @@ function renderChart() {
   wrap.hidden = !hasData;
   if (!hasData) return;
 
-  const labels = g.rounds.map((_, i) => `M${i + 1}`);
+  const labels = g.rounds.map((_, i) => roundLabel(g, i));
   const mode = state.chartMode;
   const colors = g.players.map((p, i) => cssColor(`--color-data-${seriesOf(p, i)}`));
   const partialTotals = ri => g.players.map((_, i) => g.rounds.slice(0, ri + 1).reduce((s, r) => s + (r[i] ?? 0), 0));
@@ -514,10 +977,18 @@ function switchChart(mode, el) {
 function endGame() {
   const g = state.currentGame;
   if (!g) return;
-  if (!g.rounds.length) { toast("Jouez au moins une manche d'abord.", 'error'); return; }
+  const kind = kindOf(g);
+  if (kind !== 'sheet' && !g.rounds.length) { toast("Jouez au moins une manche d'abord.", 'error'); return; }
+  let msg = `Terminer la partie « ${g.name} » ?`;
+  if (gameDef(g).rounds && g.rounds.length < gameDef(g).rounds) {
+    msg = `Terminer la partie après ${plural(g.rounds.length, kind === 'seasons' ? 'saison' : 'manche')} sur ${gameDef(g).rounds} ?`;
+  }
   showConfirm(
-    `Terminer la partie « ${g.name} » ?`,
+    msg,
     () => {
+      if (kind === 'sheet') g.rounds = [capriceTotals(g)];
+      g.editing = null;
+      g.pending = null;
       const ranked = getRanked(g);
       g.winner = ranked[0].name;
       g.finalRanked = ranked;
@@ -549,7 +1020,7 @@ function abandonGame() {
 // RÉSULTATS
 // ============================================================
 function statHtml(value, label) {
-  return `<p class="stat"><span class="numeral numeral--sm">${escapeHtml(value)}</span><span class="eyebrow">${label}</span></p>`;
+  return `<p class="stat"><span class="numeral numeral--sm">${escapeHtml(String(value))}</span><span class="eyebrow">${label}</span></p>`;
 }
 
 function renderAwards() {
@@ -573,13 +1044,27 @@ function renderAwards() {
       <p class="ledger__text">${escapeHtml(a.desc)}</p>
     </li>`).join('');
 
-  const allScores = g.rounds.flatMap(r => r);
   const gap = Math.abs(g.finalRanked[0].total - (g.finalRanked[1]?.total ?? 0));
-  document.getElementById('awards-summary').innerHTML =
-    statHtml(g.rounds.length, 'Manches') +
-    statHtml(g.players.length, 'Joueurs') +
-    statHtml(Math.max(...allScores), 'Record de manche') +
-    statHtml(gap, "Points d'écart final");
+  let summary;
+  if (kindOf(g) === 'sheet') {
+    const filled = CAPRICE_ROWS.filter(r => r.check).reduce((s, r) => s + g.sheet[r.key].filter(Boolean).length, 0);
+    summary = statHtml(g.players.length, 'Joueurs') +
+      statHtml(g.finalRanked[0].total, 'Score du vainqueur') +
+      statHtml(filled, 'Caprices remplis') +
+      statHtml(gap, "Points d'écart final");
+  } else if (kindOf(g) === 'seasons') {
+    summary = statHtml(g.rounds.length, 'Saisons') +
+      statHtml(g.players.length, 'Joueurs') +
+      statHtml(Math.max(...g.rounds.flat()), 'Meilleure saison') +
+      statHtml(gap, "Points d'écart final");
+  } else {
+    const allScores = g.rounds.flatMap(r => r);
+    summary = statHtml(g.rounds.length, 'Manches') +
+      statHtml(g.players.length, 'Joueurs') +
+      statHtml(Math.max(...allScores), 'Record de manche') +
+      statHtml(gap, "Points d'écart final");
+  }
+  document.getElementById('awards-summary').innerHTML = summary;
 }
 
 // ============================================================
@@ -598,7 +1083,7 @@ function renderHistory() {
     }
   });
   const topPlayer = Object.entries(allPlayers).sort((a, b) => b[1].wins - a[1].wins)[0];
-  const totalRounds = state.history.reduce((s, g) => s + (g.rounds?.length || 0), 0);
+  const totalRounds = state.history.reduce((s, g) => s + (kindOf(g) === 'sheet' ? 0 : (g.rounds?.length || 0)), 0);
 
   document.getElementById('global-stats').innerHTML =
     statHtml(state.history.length, 'Parties jouées') +
@@ -635,8 +1120,8 @@ const ACTIONS = {
   'welcome': () => showView('welcome'),
   'resume': () => showView('game'),
   'discard': discardCurrentGame,
-  'add-player': addPlayerRow,
-  'remove-player': el => removePlayer(Number(el.dataset.index)),
+  'pick-game': el => pickGame(el.dataset.game),
+  'count': el => setPlayerCount(state.setupPlayers.length + Number(el.dataset.step)),
   'pick-color': el => openAvatarModal(Number(el.dataset.index)),
   'select-color': selectColor,
   'confirm-color': confirmAvatar,
@@ -644,9 +1129,11 @@ const ACTIONS = {
   'end': endGame,
   'abandon': abandonGame,
   'copy-round': copyLastRound,
+  'form-back': formBack,
+  'toggle-caprice': el => updateSheet(el.dataset.field, Number(el.dataset.index)),
   'chart': el => switchChart(el.dataset.mode, el),
   'review': el => reviewGame(Number(el.dataset.index)),
-  'edit-cell': el => editCell(Number(el.dataset.player), Number(el.dataset.round), el),
+  'edit-round': el => editRound(Number(el.dataset.round)),
 };
 
 document.addEventListener('click', e => {
@@ -661,8 +1148,18 @@ document.getElementById('player-list').addEventListener('input', e => {
   if (e.target.matches('.input')) state.setupPlayers[Number(e.target.dataset.index)].name = e.target.value;
 });
 
-// Pas-à-pas : appui long à la souris ou au doigt, activation simple au clavier
 const scoreInputs = document.getElementById('score-inputs');
+
+// Saisie : aperçu Skull King et feuille des Caprices mis à jour à chaque frappe
+scoreInputs.addEventListener('input', e => {
+  const g = state.currentGame; if (!g) return;
+  showFormError('');
+  if (kindOf(g) === 'bids') updateBidPreview();
+  if (kindOf(g) === 'seasons') updateSeasonPreview();
+  if (kindOf(g) === 'sheet' && e.target.dataset.field) updateSheet(e.target.dataset.field, Number(e.target.dataset.index), e.target.value);
+});
+
+// Pas-à-pas de la partie libre : appui long à la souris ou au doigt, activation simple au clavier
 scoreInputs.addEventListener('pointerdown', e => {
   const btn = e.target.closest('[data-step]');
   if (btn) startStep(Number(btn.dataset.index), Number(btn.dataset.step));
@@ -672,8 +1169,16 @@ scoreInputs.addEventListener('click', e => {
   if (btn && e.detail === 0) stepScore(Number(btn.dataset.index), Number(btn.dataset.step));
 });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => scoreInputs.addEventListener(type, stopStep, true));
+
+// Entrée passe au champ suivant, puis valide sur le dernier
 scoreInputs.addEventListener('keydown', e => {
-  if (e.target.matches('.input')) scoreKeyNav(e, Number(e.target.dataset.index), state.currentGame.players.length);
+  if (e.key !== 'Enter' || !e.target.matches('input')) return;
+  e.preventDefault();
+  const inputs = [...scoreInputs.querySelectorAll('input')];
+  const next = inputs[inputs.indexOf(e.target) + 1];
+  if (next) next.select();
+  else if (kindOf(state.currentGame) === 'sheet') e.target.blur();
+  else submitRound();
 });
 
 // Le graphique reprend les couleurs du thème quand celui-ci change
@@ -695,7 +1200,7 @@ document.addEventListener('click', e => {
       const banner = document.getElementById('resume-banner');
       banner.hidden = false;
       banner.querySelector('.resume-game-name').textContent = g.name;
-      banner.querySelector('.resume-round').textContent = `Manche ${g.currentRound}, ${plural(g.rounds.length, 'manche')} terminée${g.rounds.length > 1 ? 's' : ''}`;
+      banner.querySelector('.resume-round').textContent = progressText(g);
     }
   } catch (e) { localStorage.removeItem('boardnight_current'); }
 })();
@@ -722,10 +1227,15 @@ function getTotals(g) {
 
 function getRanked(g) {
   const totals = getTotals(g);
+  // Les Caprices du Roi : à égalité, la plus faible valeur de Sujets l'emporte
+  const sujets = kindOf(g) === 'sheet' ? g.sheet.sujets.map(toInt) : null;
+  // Cartographers : à égalité, le moins de points perdus aux monstres l'emporte
+  const monsters = kindOf(g) === 'seasons' ? monsterLosses(g) : null;
   return totals.sort((a,b) => {
     const diff = g.direction === 'high' ? b.total - a.total : a.total - b.total;
     if (diff !== 0) return diff;
-    // Tie-break: player index (stable)
+    if (sujets && sujets[a.idx] !== sujets[b.idx]) return sujets[a.idx] - sujets[b.idx];
+    if (monsters && monsters[a.idx] !== monsters[b.idx]) return monsters[a.idx] - monsters[b.idx];
     return a.idx - b.idx;
   });
 }
@@ -756,19 +1266,7 @@ function stopStep() { clearInterval(_stepInterval); _stepInterval = null; }
 
 function stepScore(i, d) {
   const input = document.getElementById('score-'+i);
-  input.value = parseInt(input.value||0) + d;
-}
-
-function scoreKeyNav(e, i, total) {
-  if (e.key === 'Enter' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (i < total - 1) document.getElementById('score-'+(i+1))?.focus();
-    else submitRound();
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (i > 0) document.getElementById('score-'+(i-1))?.focus();
-  }
+  if (input) input.value = toInt(input.value) + d;
 }
 
 function checkDramaticMoments(g) {
@@ -934,10 +1432,172 @@ function computeStats(g) {
   };
 }
 
+// Joueur(s) qui ont la meilleure valeur, ex æquo compris.
+// Renvoie null si la valeur ne passe pas le seuil `ok`, ou si tout le monde est à égalité :
+// un trophée partagé par toute la table ne distingue personne.
+function bestOf(g, values, ok, low = false) {
+  const v = low ? Math.min(...values) : Math.max(...values);
+  if (!ok(v)) return null;
+  const names = g.players.filter((_, i) => values[i] === v).map(p => p.name);
+  if (names.length === g.players.length) return null;
+  return { v, who: names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}` : names[0] };
+}
+
+function fois(n) { return `${n} fois`; }
+
+// Trophées des Caprices du Roi : la partie n'a qu'une feuille, pas de manches
+function capriceAwards(g) {
+  const ranked = g.finalRanked;
+  const awards = [];
+  const add = (title, b, desc) => { if (b) awards.push({ title, player: b.who, desc: desc(b.v) }); };
+  const col = key => g.sheet[key].map(toInt);
+
+  awards.push({ title: 'Le Favori du Roi', player: ranked[0].name, desc: `Vainqueur avec ${ranked[0].total} pts. Le roi est comblé.` });
+  if (ranked.length > 1) {
+    const last = ranked[ranked.length - 1];
+    awards.push({ title: 'Le Disgracié', player: last.name, desc: `Dernière place avec ${last.total} pts. Le roi a la mémoire courte, heureusement.` });
+  }
+  if (ranked.length >= 2 && ranked[0].total === ranked[1].total) {
+    awards.push({ title: 'Départagé', player: ranked[1].name, desc: `Même total que ${ranked[0].name}, mais des Sujets de plus grande valeur. Le roi préfère les humbles.` });
+  }
+
+  add('Le Recruteur', bestOf(g, col('sujets'), v => v > 0), v => `Les Sujets les plus précieux du royaume : ${v} pts de cartes.`);
+  add('Le Maître de l\'Ordre', bestOf(g, col('ordre'), v => v > 0), v => `${v} pts avec « De l'ordre ! ». Une suite impeccable, le roi applaudit.`);
+  add('Le Rassembleur', bestOf(g, col('union'), v => v > 0), v => `${v} pts avec « L'union fait la force ! ». Toute une caste derrière lui.`);
+
+  const capCount = g.players.map((_, i) => CAPRICE_ROWS.filter(r => r.check && g.sheet[r.key][i]).length);
+  const capPoints = g.players.map((_, i) => CAPRICE_ROWS.reduce((s, r) => s + (r.check && g.sheet[r.key][i] ? r.check : 0), 0));
+  add('Le Courtisan', bestOf(g, capCount, v => v > 0), v => `${v} caprice${v > 1 ? 's' : ''} sur 4 remplis. Toujours le premier à flatter Sa Majesté.`);
+  add('Le Chouchou', bestOf(g, g.sheet.c30.map(Number), v => v > 0), () => 'A rempli le caprice à +30, le plus cher aux yeux du roi.');
+
+  // Plus de la moitié des points viennent des caprices
+  const share = g.players.map((_, i) => {
+    const total = g.finalRanked.find(p => p.idx === i)?.total || 0;
+    return total > 0 ? Math.round(100 * capPoints[i] / total) : 0;
+  });
+  add('L\'Opportuniste', bestOf(g, share, v => v >= 50), v => `${v} % de ses points viennent des caprices. Il sait ce que le roi veut entendre.`);
+
+  // Aucun caprice rempli, alors qu'un autre joueur en a rempli au moins un
+  if (Math.max(...capCount) > 0) {
+    add('Le Rebelle', bestOf(g, capCount, v => v === 0, true), () => 'Aucun caprice rempli. Le roi a pris note.');
+  }
+  return awards;
+}
+
+// Trophées de Skull King : annonces, plis et bonus de chaque manche
+function skullKingAwards(g) {
+  const ranked = g.finalRanked;
+  const awards = [];
+  const add = (title, b, desc) => { if (b) awards.push({ title, player: b.who, desc: desc(b.v) }); };
+  const rounds = g.details.map((d, ri) => d && { ...d, ri, cards: ri + 1 }).filter(Boolean);
+  const n = rounds.length;
+  const per = fn => g.players.map((_, i) => rounds.reduce((s, d) => s + fn(d, i), 0));
+
+  const exact = per((d, i) => d.bids[i] === d.tricks[i] ? 1 : 0);
+  const zeros = per((d, i) => d.bids[i] === 0 && d.tricks[i] === 0 ? 1 : 0);
+  const bonus = per((d, i) => d.bids[i] === d.tricks[i] ? d.bonus[i] : 0);
+  const over = per((d, i) => d.tricks[i] < d.bids[i] ? 1 : 0);
+  const under = per((d, i) => d.tricks[i] > d.bids[i] ? 1 : 0);
+  const bigBid = g.players.map((_, i) => Math.max(0, ...rounds.filter(d => d.bids[i] === d.tricks[i]).map(d => d.bids[i])));
+  const bestRound = g.players.map((_, i) => Math.max(...g.rounds.map(r => r[i] ?? 0)));
+  const worstRound = g.players.map((_, i) => Math.min(...g.rounds.map(r => r[i] ?? 0)));
+
+  awards.push({ title: 'Le Skull King', player: ranked[0].name, desc: `Maître des sept mers avec ${ranked[0].total} pts. Tout l'équipage salue son capitaine.` });
+  if (ranked.length > 1) {
+    const last = ranked[ranked.length - 1];
+    awards.push({ title: 'Le Moussaillon', player: last.name, desc: `Dernière place avec ${last.total} pts. Il reste du pont à briquer.` });
+    const gap = ranked[0].total - ranked[1].total;
+    if (gap <= 20) awards.push({ title: 'Le Second', player: ranked[1].name, desc: `${gap} pts d'écart avec le capitaine. Une seule annonce de plus et le navire changeait de main.` });
+  }
+
+  add('Le Devin', bestOf(g, exact, v => v > 0), v => `${v} annonce${v > 1 ? 's' : ''} tenue${v > 1 ? 's' : ''} sur ${n}. Il lit dans les cartes.`);
+  add('Le Passager clandestin', bestOf(g, zeros, v => v >= 2), v => `${v} annonces de zéro tenues. Personne ne l'a vu monter à bord.`);
+  add('Le Chasseur de trésors', bestOf(g, bonus, v => v >= 20), v => `${v} pts de bonus encaissés : pirates, sirènes et 14 ramassés au bon moment.`);
+  add('Le Grand Pari', bestOf(g, bigBid, v => v >= 3), v => `A annoncé ${v} plis et les a tous pris. Audace récompensée.`);
+  add('L\'Abordage', bestOf(g, bestRound, v => v > 0), v => `${v} pts en une seule manche. Le plus beau coup de la partie.`);
+  add('Le Naufragé', bestOf(g, worstRound, v => v < 0, true), v => `${signed(v)} en une seule manche. Le navire a coulé corps et biens.`);
+  add('Les Yeux plus gros que le ventre', bestOf(g, over, v => v >= 2), v => `${fois(v)} moins de plis que promis. L'appétit, pas la prise.`);
+  add('Le Pilleur malgré lui', bestOf(g, under, v => v >= 2), v => `${fois(v)} plus de plis que prévu. Le butin lui tombait dessus sans qu'il le veuille.`);
+
+  // En tête du classement après le plus grand nombre de manches
+  const lead = g.players.map(() => 0);
+  g.rounds.forEach((_, ri) => {
+    const partial = g.players.map((__, i) => g.rounds.slice(0, ri + 1).reduce((s, r) => s + (r[i] ?? 0), 0));
+    const top = Math.max(...partial);
+    partial.forEach((v, i) => { if (v === top) lead[i]++; });
+  });
+  add('Le Capitaine au long cours', bestOf(g, lead, v => v >= 3), v => `En tête après ${v} manches. Il a tenu la barre.`);
+
+  // Les trois dernières manches, les plus chargées en cartes
+  if (g.rounds.length >= 5) {
+    const finish = g.players.map((_, i) => g.rounds.slice(-3).reduce((s, r) => s + (r[i] ?? 0), 0));
+    add('Le Vent en poupe', bestOf(g, finish, v => v > 0), v => `${v} pts sur les trois dernières manches, quand les mains sont les plus grosses.`);
+  }
+  return awards;
+}
+
+// Trophées de Cartographers : décrets, pièces et monstres de chaque saison
+function cartographersAwards(g) {
+  const ranked = g.finalRanked;
+  const awards = [];
+  const add = (title, b, desc) => { if (b) awards.push({ title, player: b.who, desc: desc(b.v) }); };
+  const rounds = g.details.map((d, ri) => d && { ...d, ri }).filter(Boolean);
+  const per = fn => g.players.map((_, i) => rounds.reduce((s, d) => s + fn(d, i), 0));
+  const pts = v => `${v} pt${Math.abs(v) > 1 ? 's' : ''}`;
+
+  const edictPts = per((d, i) => d.e1[i] + d.e2[i]);
+  const coinPts = per((d, i) => d.coins[i]);
+  const monsters = monsterLosses(g);
+  const bestSeason = g.players.map((_, i) => Math.max(...g.rounds.map(r => r[i] ?? 0)));
+  // Meilleur total sur un même décret (chaque décret compte deux saisons)
+  const bestEdict = g.players.map((_, i) => {
+    const byLetter = {};
+    rounds.forEach(d => {
+      const [a, b] = SEASONS[d.ri].edicts;
+      byLetter[a] = (byLetter[a] || 0) + d.e1[i];
+      byLetter[b] = (byLetter[b] || 0) + d.e2[i];
+    });
+    return Math.max(0, ...Object.values(byLetter));
+  });
+
+  awards.push({ title: 'Le Cartographe royal', player: ranked[0].name, desc: `${pts(ranked[0].total)} de réputation. Sa carte rejoint la bibliothèque de la reine.` });
+  if (ranked.length > 1) {
+    const last = ranked[ranked.length - 1];
+    awards.push({ title: 'Le Gribouilleur', player: last.name, desc: `Dernière place avec ${pts(last.total)}. Une carte qui tient plus du croquis.` });
+    const gap = ranked[0].total - ranked[1].total;
+    if (gap === 0) awards.push({ title: 'Départagé', player: ranked[1].name, desc: `Même total que ${ranked[0].name}, mais plus de points perdus aux monstres. La reine n'aime pas les frontières mal gardées.` });
+    else if (gap <= 5) awards.push({ title: 'À une case près', player: ranked[1].name, desc: `${pts(gap)} d'écart avec le vainqueur. Une forêt bien placée et la carte changeait de main.` });
+  }
+
+  add('Le Légiste', bestOf(g, edictPts, v => v > 0), v => `${pts(v)} gagnés avec les décrets. Il lit les ordres de la reine mieux que personne.`);
+  add('Le Spécialiste', bestOf(g, bestEdict, v => v >= 10), v => `${pts(v)} sur un seul décret. Il en a fait sa spécialité.`);
+  add('La Saison dorée', bestOf(g, bestSeason, v => v > 0), v => `${pts(v)} en une seule saison. La plus belle page de la partie.`);
+  add('Le Marchand', bestOf(g, coinPts, v => v >= 5), v => `${pts(v)} rapportés par les pièces. Chaque pièce paie à chaque saison.`);
+  add('Le Rempart', bestOf(g, monsters, () => true, true), v => (v === 0 ? 'Aucun point perdu aux monstres. Ses frontières sont sûres.' : `Seulement ${pts(v)} perdus aux monstres. Ses frontières tiennent.`));
+  add('La Proie des monstres', bestOf(g, monsters, v => v >= 5), v => `${pts(v)} perdus aux monstres. Les embuscades l'ont trouvé à chaque fois.`);
+
+  // L'hiver est la saison la plus courte : bien finir compte double
+  if (g.rounds.length === SEASONS.length) {
+    add('L\'Hiver triomphal', bestOf(g, g.rounds[SEASONS.length - 1], v => v > 0), v => `${pts(v)} en hiver, la saison la plus courte.`);
+  }
+
+  // En tête du classement après le plus grand nombre de saisons
+  const lead = g.players.map(() => 0);
+  g.rounds.forEach((_, ri) => {
+    const partial = g.players.map((__, i) => g.rounds.slice(0, ri + 1).reduce((s, r) => s + (r[i] ?? 0), 0));
+    const top = Math.max(...partial);
+    partial.forEach((v, i) => { if (v === top) lead[i]++; });
+  });
+  add('Le Pionnier', bestOf(g, lead, v => v >= 3), v => `En tête après ${v} saisons sur ${g.rounds.length}. Il a tracé la route.`);
+  return awards;
+}
+
 function generateAwards(g) {
+  if (kindOf(g) === 'sheet' && g.sheet) return capriceAwards(g);
+  if (kindOf(g) === 'seasons' && g.details?.some(Boolean)) return cartographersAwards(g);
+  if (kindOf(g) === 'bids' && g.details?.some(Boolean)) return skullKingAwards(g);
   const ranked = g.finalRanked;
   const stats = g.stats;
-  const totals = getTotals(g);
   const awards = [];
 
   // Champion (always first, always displayed)
@@ -956,12 +1616,12 @@ function generateAwards(g) {
   }
 
   // Gambler : highest variance (distinct from wall)
-  if (stats.gambler && stats.gambler.name !== stats.wall?.name) {
+  if (stats.gambler && stats.gambler.name !== stats.wall?.name && g.rounds.length > 1) {
     awards.push({ priority: 3, title:'Le Flambeur', player: stats.gambler.name, desc: `Scores imprévisibles sur chaque manche. Vit pour le chaos.` });
   }
 
   // Wall : most consistent (distinct from gambler)
-  if (stats.wall && stats.wall.name !== stats.gambler?.name) {
+  if (stats.wall && stats.wall.name !== stats.gambler?.name && g.rounds.length > 1) {
     const wallIsWinner = ranked[0].name === stats.wall.name;
     awards.push({ priority: 4, title:'Le Mur', player: stats.wall.name, desc: wallIsWinner ? `Régularité absolue ET victoire. Le combo parfait.` : `Scores ultra-réguliers. Pas premier, mais imperturbable.` });
   }
@@ -1026,8 +1686,8 @@ function generateAwards(g) {
   }
 
   // Round wins trophy
-  const roundWinLeader = g.players.reduce((a,b) => stats.roundWins[a.idx] >= stats.roundWins[b.idx] ? a : b,
-    {...g.players[0], idx: 0});
+  const roundWinLeader = g.players.map((p, idx) => ({ ...p, idx }))
+    .reduce((a,b) => stats.roundWins[a.idx] >= stats.roundWins[b.idx] ? a : b);
   if (stats.roundWins[roundWinLeader.idx] >= Math.ceil(g.rounds.length * 0.5)) {
     awards.push({ priority: 16, title:'Le Dominateur', player: roundWinLeader.name, desc: `A remporté ${stats.roundWins[roundWinLeader.idx]} manche${stats.roundWins[roundWinLeader.idx]>1?'s':''} sur ${g.rounds.length}. Une présence écrasante.` });
   }

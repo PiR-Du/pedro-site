@@ -1716,6 +1716,115 @@
     gap: var(--space-1);
   }
 
+  /* Compteur de joueurs : − valeur + */
+  .stepper--count {
+    align-self: start;
+  }
+
+  .stepper__value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--space-6);
+    border-inline-start: var(--border-width) solid var(--color-border-strong);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stepper__value + .stepper__btn {
+    border-inline-start: var(--border-width) solid var(--color-border-strong);
+  }
+
+  /* Manche à annonce (Skull King) : nom et résultat, puis les champs */
+  .bid-row {
+    display: grid;
+    grid-template-columns: var(--avatar-size) minmax(0, 1fr) auto;
+    column-gap: var(--space-1);
+    row-gap: var(--space-1);
+    align-items: center;
+    padding-block: var(--space-2);
+    border-block-start: var(--border);
+  }
+
+  .bid-row__name {
+    font-weight: var(--weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bid-row__result {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bid-row__result.is-negative {
+    color: var(--color-danger);
+  }
+
+  .bid-row__fields {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-1);
+  }
+
+  /* Saison de Cartographers : quatre champs sur deux lignes */
+  .bid-row__fields--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bid-row__fields .input {
+    text-align: end;
+    font-family: var(--font-mono);
+  }
+
+  .bid-row__fixed {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-block-size: var(--control-height);
+    padding-inline: var(--space-2);
+    border: var(--border);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+  }
+
+  /* Feuille de fin de partie : une ligne par catégorie, une colonne par joueur */
+  /* L'intitulé reste visible quand la feuille défile en largeur sur mobile */
+  .sheet th[scope="row"] {
+    position: sticky;
+    inset-inline-start: 0;
+    padding-block: var(--space-1);
+    background-color: var(--color-bg);
+    white-space: normal;
+    min-inline-size: var(--space-16);
+  }
+
+  .sheet .input {
+    inline-size: var(--space-10);
+    padding-inline: var(--space-1);
+  }
+
+  .sheet__label {
+    display: block;
+    font-weight: var(--weight-medium);
+  }
+
+  .sheet__total th,
+  .sheet__total td {
+    border-block-start: var(--border-strong);
+    font-weight: var(--weight-bold);
+  }
+
+  .sheet .chip {
+    min-inline-size: var(--space-10);
+    justify-content: center;
+    font-family: var(--font-mono);
+  }
+
   /* Podium : trois lignes, le rang en chiffre de titre */
   .podium {
     border-block-end: var(--border-strong);

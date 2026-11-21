@@ -19,6 +19,7 @@ const MEDIA = [
     { id: "m13", title: "Moi Capitaine", type: "Film", contributor: "Pedro", main_genre: "Drame", sub_genres: ["Migrant", "Aventure"], main_emotion: "Empathie", complexity: 3, ambiance: "Intense", public: "Solo", favorite: false, pitch: "Deux jeunes Sénégalais traversent le Sahara et la Méditerranée pour atteindre l'Europe et leurs rêves.", platform: "" },
     { id: "m14", title: "The Killers of the Flower Moon", type: "Film", contributor: "Pedro", main_genre: "Drame", sub_genres: ["Historique", "Crime", "Western"], main_emotion: "Choc", complexity: 4, ambiance: "Sombre", public: "Solo", favorite: false, pitch: "Dans l'Oklahoma des années 20, les membres de la tribu Osage disparaissent les uns après les autres après la découverte de pétrole sur leurs terres.", platform: "Apple TV+" },
     { id: "m15", title: "Sister Act", type: "Film", contributor: "Pedro", main_genre: "Comédie", sub_genres: ["Musique"], main_emotion: "Drôle", complexity: 1, ambiance: "Feel-good", public: "Famille", favorite: false, pitch: "Planquée par la police dans un couvent, une chanteuse de Vegas révolutionne la chorale de religières avec de la soul.", platform: "" },
+    { id: "m16", title: "Film Club Kid", type: "Film", contributor: "Romain", main_genre: "Drame", sub_genres: ["Queer", "Famille"], main_emotion: "Empathie", ambiance: "Tendre", favorite: false, pitch: "Un organisateur de soirées underground doit s'occuper d'un fils dont il ignorait totalement l'existence. Queer. Émouvant. Tendre." },
 
 
     // ═══════════════════════════════

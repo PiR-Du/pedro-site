@@ -325,7 +325,7 @@ Inspiré des primitives In View, Text Effect, Animated Group et Animated Number 
 | Carte | `.map`, `.map-marker`, `.map-tooltip` : habillage de Leaflet, tuiles désaturées par `--map-filter` |
 | Graphe | `.graph`, `.graph__node`, `.graph__hub`, `.graph__link` : carte mentale D3 (branches courbes et points ronds, seule exception aux angles droits) stylée par classes |
 | Sudoku | `.sudoku`, `.sudoku__cell`, `.numpad` |
-| Suivi de scores | `.view`, `.avatar`, `.standings`, `.score-row`, `.stepper`, `.score-table`, `.podium`, `.color-picker` |
+| Suivi de scores | `.view`, `.avatar`, `.standings`, `.score-row`, `.stepper` (et `.stepper__value` pour le nombre de joueurs), `.bid-row` (manche à annonce, Skull King), `.sheet` (feuille de fin de partie, Les Caprices du Roi), `.score-table`, `.podium`, `.color-picker` |
 
 Gabarits : accueil (affiche, chiffres, sommaire numéroté), outil à filtres (médiathèque, web, ville, encyclopédie), outil à deux colonnes (batch cooking, sudoku), outil à vues (suivi de scores).
 
