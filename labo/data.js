@@ -536,6 +536,48 @@ const LABO_DONNEES = {
     adversaire: 'Landon',
     methodes: { hasard: 'Au hasard dans tout l\'électorat', biaise: 'Comme le Literary Digest' },
   },
+
+  // Pokémon, générations 1 à 9 : les 1 025 espèces dans leur forme de base. Un Pokémon à double type compte dans ses deux types.
+  // Calculé depuis labo/datasets/pokemon.js (script : labo/datasets/pokemon-prepare.py). r de Pearson = −0,51, rang de Spearman = −0,57.
+  'pokemon-types': {
+    x: { libelle: 'Nombre de Pokémon du type', court: 'Pokémon' },
+    y: { libelle: 'Total des stats moyen', court: 'de total moyen', decimales: 1 },
+    points: [
+      ['Dragon', 70, 504.8], ['Acier', 65, 479.7], ['Combat', 73, 467.1], ['Ténèbres', 69, 459.6], ['Psy', 102, 457.5], ['Glace', 48, 453.6],
+      ['Feu', 81, 449.5], ['Spectre', 65, 447.5], ['Électrik', 69, 442.2], ['Roche', 74, 442.1], ['Vol', 109, 435.2], ['Sol', 75, 431.7],
+      ['Fée', 64, 428.9], ['Eau', 154, 419.1], ['Plante', 127, 415.8], ['Poison', 83, 412.8], ['Normal', 131, 402.8], ['Insecte', 92, 374.9],
+    ].map(([label, x, y]) => ({ label, x, y })),
+  },
+  'pokemon-effectifs': {
+    colonneLabel: 'Type',
+    colonneValeur: 'Nombre de Pokémon (type principal ou secondaire)',
+    items: [
+      ['Eau', 154], ['Normal', 131], ['Plante', 127], ['Vol', 109], ['Psy', 102], ['Insecte', 92], ['Poison', 83], ['Feu', 81], ['Sol', 75],
+      ['Roche', 74], ['Combat', 73], ['Dragon', 70], ['Ténèbres', 69], ['Électrik', 69], ['Acier', 65], ['Spectre', 65], ['Fée', 64], ['Glace', 48],
+    ].map(([label, valeur]) => ({ label, valeur, accent: label === 'Eau' || label === 'Dragon' })),
+  },
+  // Formes finales seulement (568 espèces qui n'évoluent plus) : le stade d'évolution ne brouille plus la comparaison
+  'pokemon-finaux': {
+    decimales: 1,
+    colonneLabel: 'Type',
+    colonneValeur: 'Total des stats moyen des formes finales',
+    items: [
+      ['Dragon', 578.5], ['Acier', 533.5], ['Feu', 532.7], ['Psy', 528.7], ['Combat', 523.8], ['Glace', 518.5], ['Fée', 517.7], ['Ténèbres', 517.5], ['Spectre', 513.6],
+      ['Sol', 511.2], ['Électrik', 511.0], ['Roche', 510.7], ['Plante', 505.0], ['Vol', 503.3], ['Poison', 500.7], ['Eau', 498.5], ['Normal', 479.1], ['Insecte', 466.1],
+    ].map(([label, valeur]) => ({ label, valeur, accent: label === 'Dragon' || label === 'Eau' })),
+  },
+  'pokemon-stades': {
+    decimales: 1,
+    colonneLabel: 'Stade d\'évolution',
+    colonneValeur: 'Total des stats moyen',
+    items: [
+      { label: 'Stade 1 (541)', valeur: 389.7 },
+      { label: 'Stade 2 (363)', valeur: 453.3 },
+      { label: 'Stade 3 (121)', valeur: 520.7 },
+      { label: 'Peut évoluer (457)', valeur: 326.2 },
+      { label: 'Forme finale (568)', valeur: 509.3, accent: true },
+    ],
+  },
 };
 
 // ═══════════════════════════════
@@ -780,7 +822,89 @@ const LABO_FICHES = [
     ],
   },
   { id: 'prenoms-mode', rubrique: 'datasets', statut: 'a-venir', titre: 'Les Kevin reviendront-ils à la mode dans cent ans ?' },
-  { id: 'pokemon-stats', rubrique: 'datasets', statut: 'a-venir', titre: 'Pokémon : le type le plus fort est-il le plus fréquent ?' },
+  {
+    id: 'pokemon-stats',
+    rubrique: 'datasets',
+    statut: 'publiee',
+    date: '2026-11-23',
+    titre: 'Pokémon : le type le plus fort est-il le plus fréquent ?',
+    accroche: 'L\'Eau est le type le plus répandu, le Dragon le plus fort, et les deux classements vont plutôt en sens inverse. Un tableau de bord pour fouiller les 1 025 espèces : stats, talents et attaques, par type, génération et stade.',
+    visuel: {
+      type: 'nuage',
+      donnees: 'pokemon-types',
+      tendance: true,
+      coefficient: true,
+      titre: 'Nombre de Pokémon et total des stats moyen, par type',
+      alt: 'Nuage de 18 points, un par type. La tendance descend : r = −0,51. En haut à gauche, Dragon (70 Pokémon, 505 de moyenne) et Acier (65, 480). En bas à droite, Eau (154, 419), Normal (131, 403) et Plante (127, 416). Tout en bas, Insecte (92, 375).',
+      legende: 'Un point par type, formes de base seulement. Plus un type est fréquent, plus ses Pokémon sont faibles en moyenne : les types les plus peuplés sont ceux qui comptent le plus de Pokémon pas encore évolués.',
+    },
+    blocs: [
+      { type: 'question', titre: 'La question', texte: 'On croise des Pokémon Eau partout, des Dragon presque jamais. Est-ce que le type le plus courant est aussi le plus fort ? Ou bien la rareté se paie-t-elle en stats ?' },
+      { type: 'donnees', titre: 'Les données', texte: ['**1 351 lignes** : les 1 025 espèces des générations 1 à 9, plus 326 formes alternatives (Méga-évolutions, formes régionales, Gigamax…).', 'Pour chacune : le ou les types, la génération, les **six stats de base** (PV, Attaque, Défense, Attaque spéciale, Défense spéciale, Vitesse), la taille, le poids, les **talents** (dont le talent caché), le stade d\'évolution et la liste des **attaques** qu\'elle peut apprendre.', 'Au total, 312 talents et 833 attaques différents.'] },
+      { type: 'methode', titre: 'La méthode', texte: ['On compare les formes de base, pour compter chaque espèce une seule fois.', 'Un Pokémon à double type compte dans ses deux types : Dracaufeu est à la fois Feu et Vol.', 'La force d\'un Pokémon est résumée par son **total des stats**, la somme des six stats de base. C\'est une mesure grossière : elle ignore les talents, les attaques et les faiblesses de type.', 'Un Pokémon est une **forme finale** quand aucune espèce n\'évolue de lui.'] },
+      {
+        type: 'interactif',
+        titre: 'Le tableau de bord',
+        texte: 'Filtrez par type, génération, stade ou forme, choisissez une stat et une dimension de comparaison : tous les graphiques suivent. En bas, cherchez qui possède un talent ou peut apprendre une attaque, triez la liste complète et ouvrez la fiche de n\'importe quel Pokémon.',
+        visuel: {
+          type: 'interactif',
+          module: 'pokedex',
+          script: 'datasets/pokemon.js',
+          tableau: false,
+          titre: 'Tableau de bord Pokémon',
+          alt: 'Tableau de bord interactif : filtres par type, génération, stade d\'évolution et forme ; indicateurs ; graphiques de la stat moyenne par groupe, du profil des six stats, de la répartition, des talents et des attaques les plus fréquents ; recherche par talent ou attaque ; liste triable des Pokémon avec fiche détaillée.',
+          legende: 'Essayez le type Dragon avec « Comparer par génération », puis le mode « Les plus caractéristiques » des attaques.',
+        },
+      },
+      {
+        type: 'resultat',
+        titre: 'L\'Eau domine en nombre',
+        texte: 'L\'Eau compte **154 Pokémon**, deux fois plus que le Dragon (70) et trois fois plus que la Glace (48), le type le plus rare. Le Vol est un cas à part : c\'est de loin le type secondaire le plus fréquent (100 Pokémon), mais le type principal de 9 seulement.',
+        visuel: {
+          type: 'barres',
+          donnees: 'pokemon-effectifs',
+          titre: 'Nombre de Pokémon par type',
+          alt: 'Barres horizontales triées. Eau 154, Normal 131, Plante 127, Vol 109, Psy 102, Insecte 92, Poison 83, Feu 81, Sol 75, Roche 74, Combat 73, Dragon 70, Ténèbres 69, Électrik 69, Acier 65, Spectre 65, Fée 64, Glace 48. Eau et Dragon sont mis en avant.',
+          legende: 'Formes de base, type principal ou secondaire.',
+        },
+      },
+      {
+        type: 'resultat',
+        titre: 'Le stade pèse plus que le type',
+        texte: 'Avant de classer les types, il faut regarder l\'évolution. Une forme finale totalise **509** en moyenne, un Pokémon qui peut encore évoluer **326**. Le fait d\'être une forme finale explique à lui seul **65 %** des différences de total entre Pokémon ; le stade (1, 2 ou 3), 16 % ; le type principal, 5 %.',
+        equations: [
+          { eq: 'η² = variance entre groupes / variance totale', note: 'La part des écarts de total expliquée par un découpage en groupes. 65 % pour « finale ou non », 16 % pour le stade, 5 % pour le type principal, 15 % pour le type principal parmi les seules formes finales.' },
+        ],
+        visuel: {
+          type: 'colonnes',
+          donnees: 'pokemon-stades',
+          valeurs: 'toutes',
+          titre: 'Total des stats moyen selon le stade d\'évolution',
+          alt: 'Cinq colonnes. Stade 1 : 389,7. Stade 2 : 453,3. Stade 3 : 520,7. Peut évoluer : 326,2. Forme finale : 509,3, mise en avant.',
+          legende: 'Entre parenthèses, le nombre de Pokémon. Les deux découpages se superposent : chaque Pokémon compte une fois dans les stades, une fois dans « peut évoluer » ou « forme finale ». Un stade 1 peut être une forme finale : 201 espèces n\'évoluent pas et ne descendent de personne.',
+        },
+      },
+      {
+        type: 'resultat',
+        titre: 'À stade égal, le Dragon reste en tête',
+        texte: 'Parmi les formes finales, le Dragon garde la première place avec **578** de moyenne, loin devant l\'Acier (534) et le Feu (533). L\'Eau recule au 16ᵉ rang sur 18 (499), devant le Normal et l\'Insecte. Le stade n\'explique donc pas tout, mais il aide le Dragon : les deux tiers de ses Pokémon sont des formes finales, contre 55 % de l\'ensemble et 52 % des Insecte.',
+        visuel: {
+          type: 'barres',
+          donnees: 'pokemon-finaux',
+          titre: 'Total des stats moyen des formes finales, par type',
+          alt: 'Barres horizontales triées. Dragon 578,5, Acier 533,5, Feu 532,7, Psy 528,7, Combat 523,8, Glace 518,5, Fée 517,7, Ténèbres 517,5, Spectre 513,6, Sol 511,2, Électrik 511,0, Roche 510,7, Plante 505,0, Vol 503,3, Poison 500,7, Eau 498,5, Normal 479,1, Insecte 466,1.',
+          legende: '568 formes finales. Entre le 2ᵉ et le 15ᵉ type, l\'écart tient en 33 points : seuls le Dragon, en haut, et le Normal et l\'Insecte, en bas, se détachent vraiment.',
+        },
+      },
+      { type: 'limite', titre: 'Les limites', texte: ['Le total des stats ne dit pas tout : un Pokémon Insecte peut avoir un talent ou des attaques qui changent tout, et les affinités de type comptent autant que les stats en combat.', 'Les légendaires ne sont pas signalés dans les données : impossible de mesurer ici combien ils pèsent dans la moyenne de chaque type.', 'Les listes d\'attaques semblent réunir toutes les versions de jeu (Mew en compte 375) : une attaque présente n\'est pas forcément disponible dans le jeu le plus récent.'] },
+      { type: 'retenir', titre: 'À retenir', texte: 'Non : le type le plus fréquent, l\'Eau, est dans le bas du classement, et le plus fort, le Dragon, fait partie des moins nombreux. Plus un type est peuplé, plus ses Pokémon sont faibles en moyenne (r = −0,51). Mais la première explication n\'est pas le type : c\'est l\'évolution, qui sépare les Pokémon encore à évoluer des formes finales.' },
+    ],
+    sources: [
+      { titre: 'PokéAPI, base de données ouverte des jeux Pokémon', url: 'https://pokeapi.co/' },
+      { titre: 'Le script de préparation des données de cette fiche', url: 'datasets/pokemon-prepare.py' },
+      { titre: 'Les données du tableau de bord (1 351 Pokémon, talents et attaques)', url: 'datasets/pokemon.js' },
+    ],
+  },
 
   // ---------- Les graphiques qui mentent ----------
   {

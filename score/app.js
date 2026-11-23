@@ -459,8 +459,11 @@ function initSetup() {
 
 function renderSetup() {
   const def = GAMES[state.setupGame];
-  document.getElementById('game-picker').innerHTML = GAME_ORDER.map(key => `
-    <button type="button" class="chip" data-action="pick-game" data-game="${key}" aria-pressed="${key === state.setupGame}">${GAMES[key].label}</button>`).join('');
+  // Liste déroulante par ordre alphabétique, la partie libre en dernier
+  const keys = GAME_ORDER.filter(k => k !== 'free').sort((a, b) => GAMES[a].label.localeCompare(GAMES[b].label, 'fr'));
+  const picker = document.getElementById('game-picker');
+  picker.innerHTML = [...keys, 'free'].map(key => `<option value="${key}">${escapeHtml(GAMES[key].label)}</option>`).join('');
+  picker.value = state.setupGame;
   document.getElementById('game-hint').textContent = def.hint;
   document.getElementById('free-fields').hidden = state.setupGame !== 'free';
   document.getElementById('count-range').textContent = def.min === def.max ? `(${def.min})` : `(${def.min} à ${def.max})`;
@@ -1647,7 +1650,6 @@ const ACTIONS = {
   'welcome': () => showView('welcome'),
   'resume': () => showView('game'),
   'discard': discardCurrentGame,
-  'pick-game': el => pickGame(el.dataset.game),
   'count': el => setPlayerCount(state.setupPlayers.length + Number(el.dataset.step)),
   'pick-color': el => openAvatarModal(Number(el.dataset.index)),
   'select-color': selectColor,
@@ -1670,6 +1672,7 @@ document.addEventListener('click', e => {
 });
 
 document.getElementById('setup-form').addEventListener('submit', e => { e.preventDefault(); startGame(); });
+document.getElementById('game-picker').addEventListener('change', e => pickGame(e.target.value));
 document.getElementById('round-form').addEventListener('submit', e => { e.preventDefault(); submitRound(); });
 
 document.getElementById('player-list').addEventListener('input', e => {

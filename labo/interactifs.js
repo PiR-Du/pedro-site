@@ -491,5 +491,8 @@ const LaboInteractifs = (() => {
     });
   }
 
-  return { markup, init, has: name => name in MODULES };
+  // Un module rangé dans son propre fichier (labo/pokedex.js) s'enregistre ici, avant le rendu de la page
+  const register = (name, mod) => { MODULES[name] = mod; };
+
+  return { markup, init, register, has: name => name in MODULES };
 })();

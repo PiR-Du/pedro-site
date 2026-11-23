@@ -121,8 +121,9 @@ Chaque fiche des « graphiques qui mentent » a au moins un exemple que le lecte
 | `axe-tronque` | deux `items`, avant puis après | `depart` (axe au chargement), `axeMax`, `reperes: [{ valeur, libelle }]` |
 | `fenetre-tendance` | `points` annuels (`x` = l'année) | `debut`, `fin`, `presets: [{ libelle, debut, fin }]` ou `{ libelle, pire: 10 }` (la période de 10 ans à la pente la plus basse) |
 | `sondage` | `{ reel, biaise, tailles, candidat, adversaire, methodes: { hasard, biaise } }` | aucune |
+| `pokedex` | aucune clé : charge `script` (`datasets/pokemon.js`) à l'ouverture de la fiche. Code dans `labo/pokedex.js`, données régénérées par `datasets/pokemon-prepare.py` | `script`, `tableau: false` |
 
-Un nouveau module s'ajoute à `MODULES` dans `labo/interactifs.js` : une fonction `markup` (les réglages, en HTML) et une fonction `init` (les écouteurs, puis `LaboCharts.mount` ou `LaboCharts.update` pour redessiner).
+Un nouveau module s'ajoute à `MODULES` dans `labo/interactifs.js` : une fonction `markup` (les réglages, en HTML) et une fonction `init` (les écouteurs, puis `LaboCharts.mount` ou `LaboCharts.update` pour redessiner). Un module volumineux peut vivre dans son propre fichier, chargé après `interactifs.js` dans `labo/index.html`, et s'enregistrer avec `LaboInteractifs.register('nom', { markup, init })` (exemple : `labo/pokedex.js`).
 
 ## 4. Images et fichiers de données
 

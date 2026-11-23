@@ -89,11 +89,11 @@
           </header>
 
           <form class="col-5-12 md-col-4-8 stack stack--4" id="setup-form">
-            <fieldset class="field">
-              <legend class="label">Jeu</legend>
-              <div class="chip-group" id="game-picker"></div>
+            <div class="field">
+              <label class="label" for="game-picker">Jeu</label>
+              <select class="select" id="game-picker" aria-describedby="game-hint"></select>
               <p class="hint" id="game-hint"></p>
-            </fieldset>
+            </div>
             <div class="stack stack--4" id="free-fields">
               <div class="field">
                 <label class="label" for="game-name-input">Nom du jeu</label>

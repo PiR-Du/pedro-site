@@ -817,4 +817,114 @@
     gap: var(--space-2);
     min-inline-size: 0;
   }
+
+  /* ---------- Tableau de bord Pokémon (labo/pokedex.js) ---------- */
+  .pokedex__filtres .interactif__field {
+    flex-basis: 11rem;
+  }
+
+  .pokedex__reset {
+    align-self: end;
+  }
+
+  .pokedex__grid {
+    display: grid;
+    gap: var(--space-4) var(--grid-gutter);
+  }
+
+  @media (min-width: 64rem) {
+    .pokedex__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .pokedex__panel {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    min-inline-size: 0;
+    padding-block-start: var(--space-2);
+    border-block-start: var(--border);
+  }
+
+  .pokedex__table th,
+  .pokedex__table td {
+    padding-inline-end: var(--space-2);
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pokedex__table .pokedex__texte {
+    text-align: start;
+  }
+
+  .pokedex__table caption {
+    padding-block-end: var(--space-1);
+    text-align: start;
+  }
+
+  .pokedex__tri {
+    font: inherit;
+    font-weight: var(--weight-bold);
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .pokedex__tri:hover {
+    text-decoration: underline;
+  }
+
+  [aria-sort="ascending"] > .pokedex__tri::after {
+    content: " ↑";
+  }
+
+  [aria-sort="descending"] > .pokedex__tri::after {
+    content: " ↓";
+  }
+
+  .pokedex__nom {
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .pokedex__noms {
+    max-inline-size: var(--measure);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .pokedex__fiche {
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-2) var(--space-3);
+    border-block-start: var(--border-width-strong) solid var(--color-text);
+    border-block-end: var(--border);
+  }
+
+  /* hidden doit l'emporter sur le display des grilles et des boutons */
+  .pokedex__grid[hidden],
+  .pokedex__panel [hidden] {
+    display: none;
+  }
+
+  .pokedex__fiche:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--space-half);
+  }
+
+  .pokedex__fiche-tete {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: start;
+    gap: var(--space-2);
+  }
+
+  .pokedex__fiche-texte {
+    display: grid;
+    gap: var(--space-2);
+    max-inline-size: var(--measure);
+  }
 }
