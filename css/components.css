@@ -1813,6 +1813,26 @@
     font-weight: var(--weight-medium);
   }
 
+  .sheet__hint {
+    display: block;
+    font-weight: var(--weight-regular);
+  }
+
+  /* Akropolis : valeur × étoiles dans une même case */
+  .sheet__pair {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .sheet .sheet__pair .input {
+    inline-size: var(--space-6);
+  }
+
+  .sheet__extra {
+    text-align: end;
+  }
+
   .sheet__total th,
   .sheet__total td {
     border-block-start: var(--border-strong);

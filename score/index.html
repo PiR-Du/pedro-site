@@ -62,7 +62,7 @@
             </div>
             <div class="stack stack--1">
               <button type="button" class="btn btn--primary btn--block" data-action="new-game">Nouvelle partie</button>
-              <p class="hint">Skull King, Les Caprices du Roi, Cartographers ou partie libre.</p>
+              <p class="hint">18 jeux avec leur décompte (Belote, Tarot, Skull King, Akropolis, Citadelles…) ou partie libre.</p>
             </div>
             <div class="stack stack--1">
               <button type="button" class="btn btn--block" data-action="history">Historique</button>
@@ -116,7 +116,7 @@
               </div>
             </div>
             <fieldset class="field">
-              <legend class="label">Joueurs</legend>
+              <legend class="label" id="players-legend">Joueurs</legend>
               <div id="player-list"></div>
             </fieldset>
             <div class="btn-group">
@@ -190,7 +190,7 @@
               <div id="round-history-wrap" class="table-scroll">
                 <p class="empty">Aucune manche pour le moment.</p>
               </div>
-              <p class="hint">Un clic sur un score rouvre la manche pour la corriger.</p>
+              <p class="hint" id="rounds-help">Un clic sur un score rouvre la manche pour la corriger.</p>
             </section>
           </div>
         </div>
