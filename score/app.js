@@ -422,7 +422,7 @@ function showConfirm(msg, onConfirm, confirmLabel = 'Confirmer', danger = false)
 // ============================================================
 // ACCUEIL
 // ============================================================
-function gameRow(g, idx) {
+function gameRow(g, idx, deletable = false) {
   const top3 = (g.finalRanked || []).slice(0, 3);
   const meta = [plural(g.players?.length || 0, 'joueur')];
   if (kindOf(g) !== 'sheet') meta.push(plural(g.rounds?.length || 0, word(g)));
@@ -432,6 +432,7 @@ function gameRow(g, idx) {
       <h3 class="result__title"><button type="button" class="entry__link" data-action="review" data-index="${idx}">${escapeHtml(g.name)}</button></h3>
       <p class="result__body">${top3.map((p, r) => `${r + 1}. ${escapeHtml(p.name)} ${p.total}`).join(' · ')}</p>
       <span class="eyebrow result__meta">${meta.join(' · ')}</span>
+      ${deletable ? `<button type="button" class="btn btn--quiet btn--sm" data-action="delete-game" data-index="${idx}" aria-label="Supprimer la partie ${escapeHtml(g.name)} du ${formatDate(g.date)}">Supprimer</button>` : ''}
     </li>`;
 }
 
@@ -1678,8 +1679,25 @@ function renderHistory() {
     (topPlayer ? statHtml(topPlayer[1].wins, `Victoires de ${escapeHtml(topPlayer[0])}`) : '');
 
   document.getElementById('history-games-list').innerHTML = state.history.length
-    ? state.history.slice().reverse().map((g, i) => gameRow(g, state.history.length - 1 - i)).join('')
+    ? state.history.slice().reverse().map((g, i) => gameRow(g, state.history.length - 1 - i, true)).join('')
     : '<li class="empty">Aucune partie jouée. Lancez votre première partie.</li>';
+}
+
+// Supprime une seule partie de l'historique, après confirmation
+function deleteGame(idx) {
+  const g = state.history[idx];
+  if (!g) return;
+  showConfirm(
+    `Supprimer la partie « ${g.name} » du ${formatDate(g.date)} ? Elle disparaîtra de l'historique et des statistiques.`,
+    () => {
+      state.history.splice(idx, 1);
+      saveHistory();
+      renderHistory();
+      toast('Partie supprimée.');
+    },
+    'Supprimer',
+    true
+  );
 }
 
 function reviewGame(idx) {
@@ -1719,6 +1737,7 @@ const ACTIONS = {
   'draft': el => setDraft(el.dataset.key, el.dataset.value),
   'chart': el => switchChart(el.dataset.mode, el),
   'review': el => reviewGame(Number(el.dataset.index)),
+  'delete-game': el => deleteGame(Number(el.dataset.index)),
   'edit-round': el => editRound(Number(el.dataset.round)),
 };
 
