@@ -450,7 +450,7 @@ function initSetup() {
   const last = state.history[state.history.length - 1];
   state.setupGame = GAMES[last?.game] ? last.game : 'skullking';
   if (last && last.players && last.players.length >= 2) {
-    state.setupPlayers = last.players.map((p, i) => ({ name: p.name, series: seriesOf(p, i) }));
+    state.setupPlayers = last.players.map((p, i) => ({ name: p.name, series: seriesOf(p, i), ...(p.members ? { members: [...p.members] } : {}) }));
   } else {
     state.setupPlayers = [{ name: 'Joueur 1', series: 1 }, { name: 'Joueur 2', series: 3 }];
   }
@@ -498,17 +498,32 @@ function setPlayerCount(n) {
   renderSetupPlayers();
 }
 
+// Belote : nom par défaut des deux membres d'une équipe
+function defaultMember(i, m) { return `Joueur ${2 * i + m + 1}`; }
+
 function renderSetupPlayers() {
-  document.getElementById('player-list').innerHTML = state.setupPlayers.map((p, i) => `
+  const teams = GAMES[state.setupGame].teams;
+  document.getElementById('player-list').innerHTML = state.setupPlayers.map((p, i) => {
+    if (teams && !p.members) p.members = [defaultMember(i, 0), defaultMember(i, 1)];
+    const members = teams ? `
+    <div class="bid-row__fields bid-row__fields--2">${p.members.map((m, mi) => `
+      <input class="input" type="text" value="${escapeHtml(m)}" placeholder="Membre ${mi + 1}" aria-label="Membre ${mi + 1} de ${escapeHtml(p.name)}" data-index="${i}" data-member="${mi}">`).join('')}
+    </div>` : '';
+    return `
     <div class="player-row">
       <button type="button" class="avatar swatch--${p.series}" data-action="pick-color" data-index="${i}" aria-label="Changer la couleur de ${escapeHtml(p.name)}, actuellement ${SERIES_NAMES[p.series - 1]}">${escapeHtml(p.name.trim().charAt(0) || '?')}</button>
       <input class="input" type="text" value="${escapeHtml(p.name)}" placeholder="Nom du joueur" aria-label="Nom du joueur ${i + 1}" data-index="${i}">
-    </div>`).join('');
+    </div>${members}`;
+  }).join('');
 }
 
 function startGame() {
   const def = GAMES[state.setupGame];
-  const players = state.setupPlayers.map((p, i) => ({ ...p, name: p.name.trim() || defaultName(i) }));
+  const players = state.setupPlayers.map((p, i) => {
+    const out = { name: p.name.trim() || defaultName(i), series: p.series };
+    if (def.teams) out.members = [0, 1].map(m => (p.members?.[m] || '').trim() || defaultMember(i, m));
+    return out;
+  });
   if (players.length < def.min || players.length > def.max) { toast(`${def.label} se joue de ${def.min} à ${def.max} joueurs.`, 'error'); return; }
 
   const isFree = state.setupGame === 'free';
@@ -580,6 +595,23 @@ function skullKingScore(cards, bid, tricks, bonus) {
 // gardés par l'équipe qui l'a. Le preneur doit faire plus que la défense, belote et
 // annonces comprises ; sinon il est dedans et la défense prend 162 plus toutes les
 // annonces. Capot du preneur : 250 plus ses annonces.
+const TRUMPS = {
+  coeur: { label: 'Cœur', sym: '♥' },
+  carreau: { label: 'Carreau', sym: '♦' },
+  trefle: { label: 'Trèfle', sym: '♣' },
+  pique: { label: 'Pique', sym: '♠' },
+};
+
+// Les parties d'avant l'ajout des membres n'ont que les noms d'équipe
+function hasMembers(g) { return g.players.every(p => p.members?.length === 2); }
+
+// Nom du joueur qui a pris (ou de l'équipe, pour une ancienne partie)
+function takerName(g, d) {
+  const team = g.players[d.taker];
+  if (!team) return '';
+  return hasMembers(g) && d.takerMember != null ? team.members[d.takerMember] : team.name;
+}
+
 function beloteScore(d) {
   const t = d.taker;
   const o = 1 - t;
@@ -786,7 +818,7 @@ function updateRoundTotal() {
 // BELOTE ET TAROT : SAISIE D'UNE DONNE
 // ============================================================
 function newDraft(g) {
-  if (kindOf(g) === 'belote') return { taker: 0, pts: 82, capot: false, belote: '', ann0: 0, ann1: 0 };
+  if (kindOf(g) === 'belote') return { taker: 0, takerMember: hasMembers(g) ? 0 : null, trump: '', pts: 82, capot: false, belote: '', ann0: 0, ann1: 0 };
   return { taker: 0, called: null, contract: 'garde', bouts: 1, pts: 51, petit: '', poignee: '', chelem: '' };
 }
 
@@ -829,8 +861,13 @@ function renderDealInputs(g) {
   const names = g.players.map((p, i) => ({ v: i, label: p.name }));
   let fields;
   if (kindOf(g) === 'belote') {
+    // Preneur : un des quatre joueurs (siège = équipe × 2 + membre)
+    const taker = hasMembers(g)
+      ? chipGroup('seat', 'Preneur', g.players.flatMap((p, i) => p.members.map((m, mi) => ({ v: 2 * i + mi, label: `${m} (${p.name})` }))), d.taker * 2 + (d.takerMember ?? 0))
+      : chipGroup('taker', 'Preneur', names, d.taker);
     fields = [
-      chipGroup('taker', 'Preneur', names, d.taker),
+      taker,
+      chipGroup('trump', 'Atout', Object.entries(TRUMPS).map(([v, t]) => ({ v, label: `${t.sym} ${t.label}` })), d.trump),
       draftField('pts', 'Points du preneur', d.pts, 'min="0" max="162"'),
       chipGroup('capot', 'Capot du preneur', [{ v: 0, label: 'Non' }, { v: 1, label: 'Oui' }], d.capot ? 1 : 0),
       chipGroup('belote', 'Belote-rebelote', [{ v: '', label: 'Aucune' }, ...names], d.belote),
@@ -868,7 +905,8 @@ function setDraft(key, raw) {
   let v = raw === '' ? '' : /^-?\d+$/.test(raw) ? Number(raw) : raw;
   if (key === 'capot') v = v === 1;
   if (key === 'belote' && v === d.belote) v = '';
-  d[key] = v;
+  if (key === 'seat') { d.taker = Math.floor(v / 2); d.takerMember = v % 2; }
+  else d[key] = v;
   renderDealInputs(g);
   // Le groupe est redessiné : le focus revient au bouton choisi
   document.querySelector(`[data-action="draft"][data-key="${key}"][data-value="${raw}"]`)?.focus();
@@ -886,7 +924,7 @@ function updateDealPreview() {
   });
   const sum = document.getElementById('form-summary');
   if (kindOf(g) === 'belote') {
-    const taker = g.players[d.taker].name;
+    const taker = takerName(g, d);
     sum.textContent = d.capot ? `Capot de ${taker}.` : r.made ? `${taker} fait son contrat.` : `${taker} est dedans.`;
   } else {
     const gap = Math.abs(Math.round(r.diff));
@@ -900,6 +938,7 @@ function validateDeal(g, d) {
     const pts = toInt(d.pts);
     if (!d.capot && (pts < 0 || pts > 162)) return 'les points du preneur sont entre 0 et 162.';
     if (toInt(d.ann0) < 0 || toInt(d.ann1) < 0) return 'les annonces ne peuvent pas être négatives.';
+    if (!TRUMPS[d.trump]) return 'choisissez l\'atout de la donne.';
     return '';
   }
   const pts = parseFloat(d.pts);
@@ -1262,7 +1301,8 @@ function renderRoundHistory() {
     if (!d) return '';
     if (kindOf(g) === 'belote') {
       const r = beloteScore(d);
-      return `preneur ${g.players[d.taker]?.name}, ${d.capot ? 'capot' : `${toInt(d.pts)} pts`}${r.made ? '' : ', dedans'}`;
+      const trump = TRUMPS[d.trump] ? ` à ${TRUMPS[d.trump].label.toLowerCase()}` : '';
+      return `preneur ${takerName(g, d)}${trump}, ${d.capot ? 'capot' : `${toInt(d.pts)} pts`}${r.made ? '' : ', dedans'}`;
     }
     if (kindOf(g) === 'tarot') {
       const r = tarotScore(d, g.players.length);
@@ -1377,7 +1417,16 @@ function renderLiveStats() {
   if (['belote', 'tarot'].includes(kindOf(g)) && g.details?.length) {
     const takes = g.players.map((_, i) => g.details.filter(d => d && d.taker === i).length);
     const best = totals.reduce((a, b) => takes[a.idx] >= takes[b.idx] ? a : b);
-    stats.push({ label: 'Prises', value: best.name, sub: takes[best.idx] + ' sur ' + nRounds });
+    stats.push({ label: kindOf(g) === 'belote' && hasMembers(g) ? 'Prises par équipe' : 'Prises', value: best.name, sub: takes[best.idx] + ' sur ' + nRounds });
+  }
+  // Belote : preneur le plus fréquent parmi les quatre joueurs, et atout le plus pris
+  if (kindOf(g) === 'belote' && hasMembers(g) && g.details?.some(Boolean)) {
+    const deals = g.details.filter(Boolean);
+    const seats = g.players.flatMap((p, i) => p.members.map((m, mi) => ({ name: m, n: deals.filter(d => d.taker === i && d.takerMember === mi).length })));
+    const top = seats.reduce((a, b) => (b.n > a.n ? b : a));
+    if (top.n) stats.push({ label: 'Preneur', value: top.name, sub: `${top.n} sur ${nRounds}` });
+    const trumps = Object.entries(TRUMPS).map(([k, t]) => ({ t, n: deals.filter(d => d.trump === k).length })).sort((a, b) => b.n - a.n);
+    if (trumps[0].n) stats.push({ label: 'Atout le plus pris', value: `${trumps[0].t.sym} ${trumps[0].t.label}`, sub: `${trumps[0].n} sur ${nRounds}` });
   }
 
   // Skull King : annonces réussies
@@ -1586,6 +1635,13 @@ function renderAwards() {
       statHtml(g.players.length, 'Joueurs') +
       statHtml(Math.max(...g.rounds.flat()), 'Meilleure saison') +
       statHtml(gap, "Points d'écart final");
+  } else if (kindOf(g) === 'belote' && g.details?.some(Boolean)) {
+    const deals = g.details.filter(Boolean);
+    const madeCount = deals.filter(d => beloteScore(d).made).length;
+    summary = statHtml(g.rounds.length, 'Donnes') +
+      statHtml(deals.filter(d => d.capot).length, 'Capots') +
+      statHtml(`${Math.round(100 * madeCount / deals.length)} %`, 'Contrats réussis') +
+      statHtml(Math.max(...g.rounds.flat()), 'Plus grosse donne');
   } else {
     const allScores = g.rounds.flatMap(r => r);
     const w = word(g);
@@ -1676,7 +1732,10 @@ document.getElementById('game-picker').addEventListener('change', e => pickGame(
 document.getElementById('round-form').addEventListener('submit', e => { e.preventDefault(); submitRound(); });
 
 document.getElementById('player-list').addEventListener('input', e => {
-  if (e.target.matches('.input')) state.setupPlayers[Number(e.target.dataset.index)].name = e.target.value;
+  if (!e.target.matches('.input')) return;
+  const p = state.setupPlayers[Number(e.target.dataset.index)];
+  if (e.target.dataset.member != null) p.members[Number(e.target.dataset.member)] = e.target.value;
+  else p.name = e.target.value;
 });
 
 const scoreInputs = document.getElementById('score-inputs');
@@ -2187,14 +2246,42 @@ function beloteAwards(g) {
     const last = ranked[ranked.length - 1];
     awards.push({ title: 'Les Mal Coupés', player: last.name, desc: `${last.total} pts. La revanche est déjà réclamée.` });
   }
-  add('Le Preneur', bestOf(g, per((d, i) => (d.taker === i ? 1 : 0)), v => v >= 2), v => `A pris ${fois(v)}. Jamais peur de l'atout.`);
-  add('Le Contrat en béton', bestOf(g, per((d, i) => (d.taker === i && beloteScore(d).made ? 1 : 0)), v => v >= 2), v => `${plural(v, 'contrat')} fait${v > 1 ? 's' : ''}. Quand il prend, il passe.`);
-  add('Dedans', bestOf(g, per((d, i) => (d.taker === i && !beloteScore(d).made ? 1 : 0)), v => v >= 1), v => `${fois(v)} dedans. La défense le remercie.`);
-  add('Le Capot', bestOf(g, per((d, i) => (d.taker === i && d.capot ? 1 : 0)), v => v >= 1), v => `${plural(v, 'capot')}. Tous les plis, sans exception.`);
+  // Joueur par joueur quand les membres sont connus, sinon équipe par équipe
+  const seats = hasMembers(g)
+    ? g.players.flatMap((p, i) => p.members.map((m, mi) => ({ name: m, is: d => d.taker === i && d.takerMember === mi })))
+    : g.players.map((p, i) => ({ name: p.name, is: d => d.taker === i }));
+  const bestSeat = (fn, ok) => {
+    const values = seats.map(s => deals.filter(d => s.is(d)).reduce((sum, d) => sum + fn(d), 0));
+    const v = Math.max(...values);
+    if (!ok(v)) return null;
+    const names = seats.filter((_, k) => values[k] === v).map(s => s.name);
+    if (names.length === seats.length) return null;
+    return { v, who: names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}` : names[0] };
+  };
+  const made = d => (beloteScore(d).made ? 1 : 0);
+
+  add('Le Preneur', bestSeat(() => 1, v => v >= 2), v => `A pris ${fois(v)} sur ${deals.length} donnes. Jamais peur de l'atout.`);
+  if (hasMembers(g)) add('L\'Équipe qui ose', bestOf(g, per((d, i) => (d.taker === i ? 1 : 0)), v => v >= 2), v => `${plural(v, 'prise')} pour l'équipe. On ne passe pas chez eux.`);
+  add('Le Contrat en béton', bestSeat(made, v => v >= 2), v => `${plural(v, 'contrat')} réussi${v > 1 ? 's' : ''}. Quand il prend, il passe.`);
+  add('Dedans', bestSeat(d => 1 - made(d), v => v >= 1), v => `${fois(v)} dedans. La défense le remercie.`);
+  add('Le Capot', bestSeat(d => (d.capot ? 1 : 0), v => v >= 1), v => `${plural(v, 'capot')}. Tous les plis, sans exception.`);
+  // Atout préféré : la couleur la plus souvent choisie, si elle se détache
+  const byTrump = Object.keys(TRUMPS).map(k => ({ k, n: deals.filter(d => d.trump === k).length })).sort((a, b) => b.n - a.n);
+  if (byTrump[0].n >= 2 && byTrump[0].n > byTrump[1].n) {
+    const t = TRUMPS[byTrump[0].k];
+    const ok = deals.filter(d => d.trump === byTrump[0].k && beloteScore(d).made).length;
+    awards.push({ title: 'La Couleur fétiche', player: `${t.sym} ${t.label}`, desc: `Atout ${fois(byTrump[0].n)}, ${plural(ok, 'contrat')} réussi${ok > 1 ? 's' : ''}.` });
+  }
   add('Belote et rebelote', bestOf(g, per((d, i) => (d.belote === i ? 1 : 0)), v => v >= 2), v => `${fois(v)} le roi et la dame d'atout. La chance des couples royaux.`);
   add('Le Chanteur', bestOf(g, per((d, i) => toInt(d[`ann${i}`])), v => v >= 20), v => `${v} pts d'annonces. Tierces, cinquantes et carrés.`);
-  const best = g.players.map((_, i) => Math.max(...g.rounds.map(r => r[i] ?? 0)));
-  add('La Grosse Donne', bestOf(g, best, v => v > 0), v => `${v} pts en une seule donne.`);
+  // Plus grosse donne de la partie, avec le preneur et l'atout
+  let top = null;
+  g.rounds.forEach((r, ri) => r.forEach((v, i) => { if (!top || v > top.v) top = { v, i, ri }; }));
+  if (top && top.v > 0) {
+    const d = g.details[top.ri];
+    const how = d ? `, ${d.taker === top.i ? 'en attaque' : 'en défense'} sur une prise de ${takerName(g, d)}${TRUMPS[d.trump] ? ` à ${TRUMPS[d.trump].label.toLowerCase()}` : ''}` : '';
+    awards.push({ title: 'La Grosse Donne', player: g.players[top.i].name, desc: `${top.v} pts à la donne ${top.ri + 1}${how}.` });
+  }
   return awards;
 }
 
